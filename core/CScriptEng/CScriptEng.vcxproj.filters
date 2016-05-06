@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="inner">
+      <UniqueIdentifier>{362bf273-b254-4a9b-b303-0d7a6c4bd6da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inner\compile">
+      <UniqueIdentifier>{1417c790-62f4-47aa-9450-07d0b22bb43a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inner\vm">
+      <UniqueIdentifier>{bc05a22b-35fb-4837-9813-09b8dd9b0170}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="compile.h">
+      <Filter>inner\compile</Filter>
+    </ClInclude>
+    <ClInclude Include="vm.h">
+      <Filter>inner\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="CScriptEng.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="scriptDef.h">
+      <Filter>inner</Filter>
+    </ClInclude>
+    <ClInclude Include="arrayType.h">
+      <Filter>inner\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="rtlib.h">
+      <Filter>inner\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="cscript.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cscriptBase.h">
+      <Filter>inner</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BreakStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="whileStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="ContinueStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="DeclStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="doWhileStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="forStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="IfCondStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="PureExpStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="Statement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="StatementBlock.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="SwitchStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="vm.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="compile.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="Trace.cpp">
+      <Filter>inner</Filter>
+    </ClCompile>
+    <ClCompile Include="CScriptEng.cpp">
+      <Filter>inner</Filter>
+    </ClCompile>
+    <ClCompile Include="int32Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="uint32Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="int16Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="uint16Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="int8Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="uint8Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="floatObj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="doubleObj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="stringObj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="breakContinueSupport.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="arrayObj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="rtLib.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="cscript.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugBreakStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CScriptEng.def">
+      <Filter>源文件</Filter>
+    </None>
+  </ItemGroup>
+</Project>
