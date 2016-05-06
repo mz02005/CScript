@@ -44,5 +44,8 @@
     <ClCompile Include="..\script\calc.c">
       <Filter>测试用例</Filter>
     </ClCompile>
+    <ClCompile Include="..\script\forstatement.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
