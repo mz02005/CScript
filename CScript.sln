@@ -6,6 +6,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{21951F67-9F3D-4E2D-9ADA-59A71F1111A1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BFE84BDE-401A-4F27-89B4-E6317DB73BEF}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notstd", "core\notstd\notstd.vcxproj", "{0063FFFB-B55A-405C-8B5A-8F0D1D7E31E4}"
 	ProjectSection(ProjectDependencies) = postProject
