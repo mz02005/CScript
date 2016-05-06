@@ -86,6 +86,9 @@ namespace runtime
 
 		// 为了方便编译代码，还是加上了本指令，用于和VM_jz相对
 		VM_jnz,
+
+		// 为了方便测试，增加本指令，用于退出应用程序的执行
+		VM_debugbreak,
 	};
 
 #pragma pack(push,1)
@@ -446,6 +449,12 @@ namespace compiler
 			uint32_t r = mCompileResult->SaveCurrentCodePosition();
 			mCode.push_back(target);
 			return r;
+		}
+
+		void Insert_debugbreak_Instruction(uint32_t param = 0)
+		{
+			mCode.push_back(runtime::VM_debugbreak);
+			mCode.push_back(param);
 		}
 	};
 }

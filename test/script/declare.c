@@ -9,3 +9,4 @@ float a;
 array arr = CreateArray();
 { array arr; }
 
+println("declare.c finished\n\n");

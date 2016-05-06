@@ -35,5 +35,14 @@
     <ClCompile Include="..\script\declare.c">
       <Filter>测试用例</Filter>
     </ClCompile>
+    <ClCompile Include="..\script\ifstatement.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\setval.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\calc.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

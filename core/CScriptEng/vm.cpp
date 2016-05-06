@@ -1163,6 +1163,12 @@ int runtimeContext::OnInst_debug1(Instruction *inst, uint8_t *moreData, uint32_t
 	return 0;
 }
 
+int runtimeContext::OnInst_debugbreak(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	printf("debugbreak\n");
+	return -1;
+}
+
 template <typename T>
 class OperatorBitwiseAnd
 {
@@ -1378,7 +1384,7 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInst_setParamCount, 0, },
 	{ &runtimeContext::OnInst_debug1, 4, },
 	{ &runtimeContext::OnInst_jnz, 4, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_debugbreak, 4, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },

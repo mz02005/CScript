@@ -164,6 +164,7 @@ namespace runtime {
 		int OnInst_jump(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 		int OnInst_debug1(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_debugbreak(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 	private:
 		void RunInner();

@@ -63,13 +63,12 @@ int ExecuteCode(const std::wstring &filePathName)
 		scriptAPI::ScriptRuntimeContext *runtimeContext
 			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(512, 512);
 		runtimeContext->Execute(h);
-		std::wcout << L"finished." << std::endl;
 		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
 		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
 		return 0;
 	}
 	else
-		std::wcout << L"Compile file " << filePathName << L" fail. " << std::endl;
+		std::wcout << L"Compile file " << filePathName << L" fail. \n\n" << std::endl;
 
 	return -1;
 }
