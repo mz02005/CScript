@@ -1,68 +1,75 @@
 #include "stdafx.h"
 #include "CScriptEng/CScriptEng.h"
 #include "CScriptEng/vm.h"
+#include <iostream>
 
-#if _MSC_VER > 1600
-// 最终要能编译通过这段代码
-static const char codeSection[] = R"(
-float temp = Y1;
-if (temp > 500)
-{
- temp = 0;
-}
-else
-{
- Y2 = floor(temp / 10);
- temp += 0.8;
-}
-Y1 = temp;
-for(temp = 500; temp > 0; temp-=10)
-{
-a += b * 0.8f + 6.f;
-printf("Hello, world!\n");
-/*
-This is a test.
-*/
-}
-)";
-#endif
-
-static const char *codes[] =
-{
-	"float + x;\r\n",
-	"x = -100+(-9.7+(-bloc*100));\r\n",
-	"Y[1] = IN[0] + 1;\r\n",
-	"bloco=&blocos[rand()%7*4];\r\n",
-	"sombra[263]=A=getchar();\r\n",
-	"printf(\"\\033[%d; %dH\",(I=i)/12,i%12*2+28);\r\n",
-	"pd = *(&p+1);\r\n",
-	"*(a+b) = 100;\r\n",
-	"dd=(ad-89.9)*(dd+89)-10086+floor(3.4);",
-	"title = 0.f + 8.9F * (fun(8.3f*0.f)\r\n",
-	"testc = \"\\thello, world!\\x67\", \'c\';\r\n",
-	"a = 4.45+49.34*9;\r\n*28",
-	"a+b-2;\r\n",
-	"!a+b\r\n",
-	"p=dd[a+b]*34\r\n",
-	"a= e+b*(!c-b) / (16+23*(b-fun(a,b[y+16*test])));\r\n",
-	"result = !a + 3.1415926 * pow(r, 2.f);",
-};
+int ExecuteCode(const std::wstring &filePathName);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	scriptAPI::SimpleCScriptEng::Init();
-	scriptAPI::FileStream fs("c:\\work\\test.c");
+
+	std::wstring appDir;
+	appDir.resize(MAX_PATH);
+	appDir.resize(::GetModuleFileNameW(nullptr, &appDir[0], MAX_PATH));
+	appDir.resize(appDir.rfind(L'\\') + 1);
+
+	appDir += L"..\\test\\script\\";
+
+	std::list<std::wstring> fileDirList;
+	fileDirList.push_back(appDir);
+
+	while (!fileDirList.empty())
+	{
+		std::wstring curDir = fileDirList.front();
+		fileDirList.pop_front();
+		std::wstring toFind = curDir + L"*.c";
+
+		HANDLE f;
+		WIN32_FIND_DATAW fd;
+		if ((f = ::FindFirstFile(toFind.c_str(), &fd)) != INVALID_HANDLE_VALUE)
+		{
+			do {
+				if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				{
+					if (fd.cFileName[0] != L'.' && wcscmp(fd.cFileName, L".."))
+						fileDirList.push_back(curDir + fd.cFileName + L"\\");
+				}
+				else
+				{
+					ExecuteCode(curDir + fd.cFileName);
+				}
+			} while (::FindNextFileW(f, &fd));
+			::FindClose(f);
+		}
+	}
+
+	scriptAPI::SimpleCScriptEng::Term();
+	return 0;
+}
+
+int ExecuteCode(const std::wstring &filePathName)
+{
+	std::wcout << L"Source file: " << filePathName << std::endl;
+
+	scriptAPI::FileStream fs(notstd::ICONVext::unicodeToMbcs(filePathName).c_str());
 	scriptAPI::ScriptCompiler compiler;
 
+	std::wcout << L"Compile file " << filePathName << std::endl;
 	HANDLE h = compiler.Compile(&fs, true);
 	if (h)
 	{
+		std::wcout << L"Compile file success. Start to execute. " << std::endl;
 		scriptAPI::ScriptRuntimeContext *runtimeContext
 			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(512, 512);
 		runtimeContext->Execute(h);
+		std::wcout << L"finished." << std::endl;
 		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
 		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
+		return 0;
 	}
-	scriptAPI::SimpleCScriptEng::Term();
-	return 0;
+	else
+		std::wcout << L"Compile file " << filePathName << L" fail. " << std::endl;
+
+	return -1;
 }
