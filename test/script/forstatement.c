@@ -4,7 +4,7 @@ for (;i<100;i+=1);
 int cycle = 100000;
 for (i=1;;i+=1)
 {
-	if (i >= 10000000)
+	if (i >= 1000000)
 		break;
 	float v = i;
 	v /= cycle;
