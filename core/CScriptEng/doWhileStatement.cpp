@@ -3,7 +3,6 @@
 
 using namespace compiler;
 
-
 IMPLEMENT_OBJINFO(DoWhileStatement,Statement)
 
 int DoWhileStatement::Compile(Statement *parent, SimpleCScriptEngContext *context)

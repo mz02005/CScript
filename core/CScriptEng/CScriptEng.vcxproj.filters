@@ -152,6 +152,12 @@
     <ClCompile Include="DebugBreakStatement.cpp">
       <Filter>inner\compile</Filter>
     </ClCompile>
+    <ClCompile Include="functionStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="returnStatement.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CScriptEng.def">

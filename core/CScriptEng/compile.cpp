@@ -30,7 +30,9 @@ const KeywordsTransTable::KeywordsEntry KeywordsTransTable::mKeywords[] =
 	{ "case", CK_CASE, },
 	{ "default", CK_DEFAULT, },
 	{ "array", CK_ARRAY, },
+	{ "function", CK_FUNCTION, },
 	{ "debugbreak", CK_DEBUGBREAK, },
+	{ "return", CK_RETURN, },
 };
 
 const uint32_t KeywordsTransTable::mKeywordsCount = sizeof(KeywordsTransTable::mKeywords) / sizeof(KeywordsTransTable::mKeywords[0]);

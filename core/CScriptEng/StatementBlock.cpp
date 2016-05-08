@@ -260,6 +260,32 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 				ContinueStatement *conStatement = new ContinueStatement;
 				AddStatement(conStatement);
 			}
+			else if (symbol.keywordsType == KeywordsTransTable::CK_FUNCTION)
+			{
+				if ((parseResult = context->GetNextSymbol(symbol)) != 0)
+					return -1;
+				// 名字必须是普通的标志符
+				if (symbol.type != Symbol::CommonSymbol)
+					return -1;
+				FunctionStatement *fs = new FunctionStatement(symbol.symbolOrig);
+				if ((parseResult = fs->Compile(this, context)) != 0)
+				{
+					delete fs;
+					RETHELP(parseResult);
+				}
+				AddStatement(fs);
+			}
+			else if (symbol.keywordsType == KeywordsTransTable::CK_RETURN)
+			{
+				if ((parseResult = context->GetNextSymbol(symbol)) != 0)
+					return -1;
+				if (symbol.symbolOrig != ";")
+					return -1;
+				ReturnStatement *rs = new ReturnStatement;
+				if ((parseResult = rs->Compile(this, context)) < 0)
+					return parseResult;
+				AddStatement(rs);
+			}
 			else if (symbol.keywordsType == KeywordsTransTable::CK_DEBUGBREAK)
 			{
 				if (context->GetNextSymbol(symbol) != 0

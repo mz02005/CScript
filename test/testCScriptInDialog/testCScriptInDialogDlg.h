@@ -14,6 +14,8 @@ public:
 
 public:
 	CListBox mPrintHostBox;
+	BOOL mLoadCodeExists;
+	CString mSourcePath;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
@@ -30,6 +32,5 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnBnClickedOk();
-public:
-	BOOL mLoadCodeExists;
+	afx_msg void OnBnClickedSelectSource();
 };

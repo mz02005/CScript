@@ -104,6 +104,7 @@ END_MESSAGE_MAP()
 CtestCScriptInDialogDlg::CtestCScriptInDialogDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CtestCScriptInDialogDlg::IDD, pParent)
 	, mLoadCodeExists(FALSE)
+	, mSourcePath(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -113,6 +114,7 @@ void CtestCScriptInDialogDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_PRINTHOST, mPrintHostBox);
 	DDX_Check(pDX, IDC_LOADCODE_EXISTS, mLoadCodeExists);
+	DDX_Text(pDX, IDC_SOURCE_PATH, mSourcePath);
 }
 
 void CtestCScriptInDialogDlg::ExecuteThreadProc(void *param)
@@ -157,7 +159,7 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 
 		PushCompileTimeName(cHandle, "println2");
 
-		if ((crHandle = CompileCode("c:\\work\\test.c", cHandle, 1)) == nullptr)
+		if ((crHandle = CompileCode(CW2A(mSourcePath).m_psz, cHandle, 1)) == nullptr)
 			break;
 
 		if (mLoadCodeExists)
@@ -210,6 +212,7 @@ BEGIN_MESSAGE_MAP(CtestCScriptInDialogDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, &CtestCScriptInDialogDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDC_SELECT_SOURCE, &CtestCScriptInDialogDlg::OnBnClickedSelectSource)
 END_MESSAGE_MAP()
 
 
@@ -303,4 +306,15 @@ void CtestCScriptInDialogDlg::OnBnClickedOk()
 	mPrintHostBox.ResetContent();
 	mThread.stopThread();
 	mThread.startThread(&ExecuteThreadProc, this);
+}
+
+void CtestCScriptInDialogDlg::OnBnClickedSelectSource()
+{
+	CFileDialog fd(TRUE, L".c", L"test", OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, 
+		L"(*.c c source file)|*.c||");
+	if (fd.DoModal() == IDOK)
+	{
+		mSourcePath = fd.GetPathName();
+		UpdateData(FALSE);
+	}
 }

@@ -121,11 +121,13 @@
     <ClCompile Include="doWhileStatement.cpp" />
     <ClCompile Include="floatObj.cpp" />
     <ClCompile Include="forStatement.cpp" />
+    <ClCompile Include="functionStatement.cpp" />
     <ClCompile Include="IfCondStatement.cpp" />
     <ClCompile Include="int16Obj.cpp" />
     <ClCompile Include="int32Obj.cpp" />
     <ClCompile Include="int8Obj.cpp" />
     <ClCompile Include="PureExpStatement.cpp" />
+    <ClCompile Include="returnStatement.cpp" />
     <ClCompile Include="rtLib.cpp" />
     <ClCompile Include="Statement.cpp" />
     <ClCompile Include="StatementBlock.cpp" />

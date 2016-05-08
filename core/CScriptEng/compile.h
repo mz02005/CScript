@@ -32,6 +32,9 @@ namespace compiler
 			//CK_UNSIGNED,// 为了方便编译，略去这个关键字
 			// 扩充类型
 			CK_ARRAY,
+			// 扩充，函数调用
+			CK_FUNCTION,
+
 			CK_VOID,
 			CK_IF,
 			CK_ELSE,
@@ -45,6 +48,7 @@ namespace compiler
 			CK_CASE,
 			CK_DEFAULT,
 			CK_STRUCT,
+			CK_RETURN,
 
 			// 扩充，用来在代码中国插入debug指令
 			CK_DEBUGBREAK,
@@ -86,7 +90,7 @@ namespace compiler
 		void Reset();
 
 		static bool isDataType(int keywordType) {
-			return keywordType >= CK_CHAR && keywordType <= CK_ARRAY;
+			return keywordType >= CK_CHAR && keywordType <= CK_FUNCTION;
 		}
 	};
 
@@ -607,6 +611,41 @@ namespace compiler
 	class DebugBreakStatement : public Statement
 	{
 		DECLARE_OBJINFO(DebugBreakStatement)
+
+	public:
+		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
+		virtual int GenerateInstruction(CompileResult *compileResult);
+	};
+
+	class FunctionStatement : public Statement
+	{
+		DECLARE_OBJINFO(FunctionStatement)
+
+	private:
+		std::string mName;
+
+		struct Param
+		{
+			int type;
+			std::string name;
+		};
+		std::list<Param> mParamList;
+
+		StatementBlock mFunctionBlock;
+
+	private:
+		int ParseParamList(SimpleCScriptEngContext *context);
+
+	public:
+		FunctionStatement(const std::string &name);
+		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
+		virtual int GenerateInstruction(CompileResult *compileResult);
+		std::string GetName() const { return mName; }
+	};
+
+	class ReturnStatement : public Statement
+	{
+		DECLARE_OBJINFO(ReturnStatement)
 
 	public:
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
