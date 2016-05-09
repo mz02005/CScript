@@ -66,6 +66,14 @@ void StatementBlock::InsertCreateTypeInstructionByDeclType(
 		giHelper->Insert_createArray_Instruction();
 		break;
 
+	case KeywordsTransTable::CK_FUNCTION:
+		giHelper->Insert_createFunction_Instruction();
+		break;
+
+		// 对于压入的参数，无需理会
+	case -1:
+		break;
+
 	default:
 		SCRIPT_TRACE("Invalid data type to create\n");
 		exit(1);
@@ -267,6 +275,13 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 				// 名字必须是普通的标志符
 				if (symbol.type != Symbol::CommonSymbol)
 					return -1;
+				uint32_t l, i;
+				// 名字重复
+				if (FindName(symbol.symbolOrig.c_str(), l, i))
+				{
+					SCRIPT_TRACE("name [%s] already exists.", symbol.symbolOrig.c_str());
+					return -1;
+				}
 				FunctionStatement *fs = new FunctionStatement(symbol.symbolOrig);
 				if ((parseResult = fs->Compile(this, context)) != 0)
 				{
@@ -277,10 +292,6 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 			}
 			else if (symbol.keywordsType == KeywordsTransTable::CK_RETURN)
 			{
-				if ((parseResult = context->GetNextSymbol(symbol)) != 0)
-					return -1;
-				if (symbol.symbolOrig != ";")
-					return -1;
 				ReturnStatement *rs = new ReturnStatement;
 				if ((parseResult = rs->Compile(this, context)) < 0)
 					return parseResult;

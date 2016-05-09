@@ -51,7 +51,7 @@ public:
 		{
 			mDlg->mPrintHostBox.AddString(CA2W(s).m_psz);
 			mDlg->mPrintHostBox.SetCurSel(
-				mDlg->mPrintHostBox.GetCount() - 1);
+				mDlg->mPrintHostBox.GetCount());
 		}
 		return this;
 	}

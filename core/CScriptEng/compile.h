@@ -473,7 +473,6 @@ namespace compiler
 		// 从当前代码块开始寻找符号定义，如果没有找到返回false；否则从level和index返回位置
 		bool FindName(const char *name, uint32_t &level, uint32_t &index) const;
 		virtual int GenerateInstruction(CompileResult *compileResult);
-		int CompileWithCertainParent(Statement *parent, SimpleCScriptEngContext *context, bool mayLackOfBrace);
 		std::list<Statement*>& GetStatementList() { return mStatementList; }
 	};
 
@@ -499,7 +498,7 @@ namespace compiler
 	public:
 		DeclareStatement();
 		virtual ~DeclareStatement();
-
+		
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
 		virtual int GenerateInstruction(CompileResult *compileResult);
 	};
@@ -617,7 +616,7 @@ namespace compiler
 		virtual int GenerateInstruction(CompileResult *compileResult);
 	};
 
-	class FunctionStatement : public Statement
+	class FunctionStatement : public StatementBlock
 	{
 		DECLARE_OBJINFO(FunctionStatement)
 
@@ -630,9 +629,7 @@ namespace compiler
 			std::string name;
 		};
 		std::list<Param> mParamList;
-
-		StatementBlock mFunctionBlock;
-
+		
 	private:
 		int ParseParamList(SimpleCScriptEngContext *context);
 
@@ -646,6 +643,8 @@ namespace compiler
 	class ReturnStatement : public Statement
 	{
 		DECLARE_OBJINFO(ReturnStatement)
+
+		PostfixExpression mExp;
 
 	public:
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);

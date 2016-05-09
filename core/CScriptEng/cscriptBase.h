@@ -20,6 +20,7 @@ namespace runtime {
 		DT_double,
 		DT_string,
 		DT_array,
+		DT_function,
 
 		DT_UserTypeBegin,
 	};
@@ -58,6 +59,7 @@ namespace runtime {
 	public:
 		virtual LONG AddRef() = 0;
 		virtual LONG Release() = 0;
+		virtual LONG ReleaseNotDelete() = 0;
 	};
 
 	template <typename T>
@@ -81,6 +83,14 @@ namespace runtime {
 			LONG r =  --mRef;
 			if (!r) {
 				delete this;
+				return 0;
+			}
+			return r;
+		}
+		
+		virtual LONG ReleaseNotDelete() {
+			LONG r =  --mRef;
+			if (!r) {
 				return 0;
 			}
 			return r;
@@ -111,6 +121,15 @@ namespace runtime {
 			LONG r =  --mRef;
 			if (!r) {
 				delete this;
+				return 0;
+			}
+			return r;
+		}
+
+		virtual LONG ReleaseNotDelete() {
+			mContainer->Release();
+			LONG r =  --mRef;
+			if (!r) {
 				return 0;
 			}
 			return r;

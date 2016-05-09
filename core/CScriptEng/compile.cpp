@@ -663,7 +663,7 @@ int PostfixExpression::GenerateInstruction(ExpressionNode *root, Statement *stat
 {
 	int r = 0;
 	std::list<ExpressionNode*> parseList;
-
+	
 	if (root->isInheritFrom(OBJECT_INFO(QuestionExpression)))
 	{
 		if ((r = root->GenerateInstruction(statement, compileResult)) < 0)
@@ -723,7 +723,14 @@ int PostfixExpression::GenerateInstruction(ExpressionNode *root, Statement *stat
 
 int PostfixExpression::GenerateInstruction(Statement *statement, CompileResult *compileResult)
 {
-	int val;
+	int val, parseResult;
+
+	if (!mGrammaTreeRoot)
+	{
+		if ((parseResult = CreateExpressionTree()) < 0)
+			return parseResult;
+	}
+
 	try {
 		if (IsConstIntergerExpression(val))
 		{
@@ -1794,13 +1801,18 @@ HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeS
 			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Compile fail [%d].\n", r);
 			break;
 		}
+		
+		GenerateInstructionHelper gih(mCompileResult);
+		//uint32_t jp = gih.Insert_jump_Instruction(0);
+		//std::pair<uint32_t,uint32_t> t = gih.InsertStringDataToCode("this is a script file.");
+		//gih.SetCode(jp, t.first + t.second);
 		if ((r = mTopLevelBlock.GenerateInstruction(mCompileResult)) < 0)
 		{
 			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Generate instruction fail [%d]\n", r);
 			break;
 		}
 		if (end)
-			GenerateInstructionHelper(mCompileResult).Insert_end_Instruction();
+			gih.Insert_end_Instruction();
 	} while (0);
 	if (r < 0)
 	{

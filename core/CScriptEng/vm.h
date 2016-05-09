@@ -3,6 +3,8 @@
 #include "scriptDef.h"
 
 namespace runtime {
+	class FunctionObject;
+
 	struct VMConfig
 	{
 		uint32_t stackSize;
@@ -15,6 +17,8 @@ namespace runtime {
 
 	class runtimeContext : public doCallContext
 	{
+		friend class FunctionObject;
+
 	private:
 		// µ÷ÓÃ¶ÑÕ»
 		std::vector<runtimeObjectBase*> mRuntimeStack;
@@ -28,11 +32,12 @@ namespace runtime {
 		uint32_t mParamCount;
 
 		compiler::CompileResult *mCompileResult;
+		uint32_t *mSectionHeader;
 		uint32_t *mPC;
 		uint32_t *mPCEnd;
 
 		VMConfig mConfig;
-
+		
 	private:
 		void SetCompareResult(bool r);
 
@@ -166,6 +171,9 @@ namespace runtime {
 		int OnInst_debug1(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_debugbreak(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
+		int OnInst_createFunction(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_return(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+
 	private:
 		void RunInner();
 
@@ -179,10 +187,11 @@ namespace runtime {
 		static const InstructionEntry mIES[256];
 
 	public:
+		compiler::CompileResult* GetCompileResult() { return mCompileResult; }
 		int PushObject(runtimeObjectBase *obj);
 
 		int Execute(compiler::CompileResult *compileResult);
-		int Execute(void *code, compiler::CompileResult *compileResult);
+		int Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack = false);
 
 		runtimeContext(VMConfig *config);
 		~runtimeContext();

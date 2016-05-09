@@ -11,10 +11,21 @@ int ReturnStatement::Compile(Statement *parent, SimpleCScriptEngContext *context
 		|| parent->GetThisObjInfo() != OBJECT_INFO(FunctionStatement))
 		return -1;
 
-	return 0;
+	char c;
+	int parseResult;
+	if ((parseResult = context->ParseExpressionEndWith(c, &mExp, ";")) < 0)
+		return parseResult;
+
+	return parseResult;
 }
 
 int ReturnStatement::GenerateInstruction(CompileResult *compileResult)
 {
-	return 0;
+	// 从函数中的pushStackFrame返回
+	GenerateInstructionHelper gih(compileResult);
+	int r = mExp.GenerateInstruction(this, compileResult);
+	if (r < 0)
+		return r;
+	gih.Insert_return_Instruction();
+	return r;
 }

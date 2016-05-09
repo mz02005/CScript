@@ -1169,6 +1169,174 @@ int runtimeContext::OnInst_debugbreak(Instruction *inst, uint8_t *moreData, uint
 	return -1;
 }
 
+namespace runtime {
+	class FunctionObject : public runtimeObjectBase
+	{
+	private:
+		FunctionDesc mFuncDesc;
+		uint32_t *mInstHead, *mInstTail;
+		runtimeContext *mContext;
+		std::string mFuncName;
+
+	public:
+		FunctionObject()
+			: mInstHead(nullptr)
+			, mInstTail(nullptr)
+		{
+			memset(&mFuncDesc, 0, sizeof(mFuncDesc));
+		}
+
+		bool ReadFuncHeader(uint32_t *codeHeader, uint32_t *codeTail, 
+			uint32_t off, runtimeContext *context)
+		{
+			// 代码超出了界限
+			if (codeHeader + off + sizeof(FunctionDesc) / sizeof(uint32_t) > codeTail)
+				return false;
+
+			FunctionDesc *fd = reinterpret_cast<FunctionDesc*>(
+				codeHeader + off);
+			mFuncDesc = *fd;				
+
+			if (mFuncDesc.len / 4 * 4 != mFuncDesc.len)
+				return false;
+
+			mContext = context;
+			mInstHead = codeHeader + off + sizeof(FunctionDesc) / sizeof(uint32_t);
+			mInstTail = mInstHead + mFuncDesc.len / 4;
+			if (mInstTail > codeTail)
+				return false;
+
+			if (mFuncDesc.stringId)
+			{
+				if (!mContext->GetCompileResult()->GetStringData()->GetString(
+					mFuncDesc.stringId, mFuncName))
+					return false;
+			}
+
+			return true;
+		}
+
+		virtual uint32_t GetObjectTypeId() const
+		{
+			return DT_function;
+		}
+
+		virtual runtimeObjectBase* Add(const runtimeObjectBase *obj)
+		{
+			return nullptr;
+		}
+		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj)
+		{
+			return nullptr;
+		}
+		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj)
+		{
+			return nullptr;
+		}
+		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj)
+		{
+			return nullptr;
+		}
+
+		// =二元运算
+		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj)
+		{
+			if (obj->GetObjectTypeId() != DT_function)
+				return nullptr;
+
+			const FunctionObject *fo = static_cast<const FunctionObject*>(obj);
+			mFuncDesc = fo->mFuncDesc;
+			mInstHead = fo->mInstHead;
+			mInstTail = fo->mInstTail;
+			mContext = fo->mContext;
+			mFuncName = fo->mFuncName;
+
+			return this;
+		}
+
+		// 处理.操作符（一元的）
+		virtual runtimeObjectBase* GetMember(const char *memName)
+		{
+			return nullptr;
+		}
+
+		// docall（函数调用一元运算）
+		virtual runtimeObjectBase* doCall(doCallContext *context)
+		{
+			if (context->GetParamCount() != mFuncDesc.paramCount)
+			{
+				SCRIPT_TRACE("FunctionObject::doCall: param count not match.\n");
+				return nullptr;
+			}
+			uint32_t *pcSaved = mContext->mPC;
+			uint32_t *sectionHeaderSaved = mContext->mSectionHeader;
+			uint32_t *pcEndSaved = mContext->mPCEnd;
+
+			scriptAPI::ScriptCompiler::CompileCode cc;
+			cc.code = mInstHead;
+			cc.sizeInUint32 = mInstTail - mInstHead;
+			mContext->OnInst_pushStackFrame(nullptr, nullptr, 0);
+			uint32_t tempStackPos = mContext->mCurrentStack;
+			for (uint32_t pi = 0; pi < mFuncDesc.paramCount; pi++)
+			{
+				mContext->PushObject(mContext->mRuntimeStack[tempStackPos - mFuncDesc.paramCount + pi]);
+			}
+			mContext->Execute(&cc, mContext->GetCompileResult());
+			// 当前栈顶元素就是返回值，保存它
+			runtimeObjectBase *o = mContext->mRuntimeStack[mContext->mCurrentStack - 1];
+			o->AddRef();
+			mContext->OnInst_popStackFrame(nullptr, nullptr, 0);
+			// 将保存的对象压入堆栈，同时为了平衡刚才为了保留它不被清理而增加的引用计数，Release一下
+			o->ReleaseNotDelete();
+			// 恢复指令指针
+			mContext->mPC = pcSaved;
+			mContext->mSectionHeader = sectionHeaderSaved;
+			mContext->mPCEnd = pcEndSaved;
+			return o;
+		}
+
+		// getindex（索引访问一元运算）
+		virtual runtimeObjectBase* getIndex(int i)
+		{
+			return nullptr;
+		}
+
+		// 对象转化为字符串
+		virtual stringObject* toString()
+		{
+			return nullptr;
+		}
+
+		// 比较
+		virtual bool isGreaterThan(const runtimeObjectBase *obj)
+		{
+			return false;
+		}
+		virtual bool isEqual(const runtimeObjectBase *obj)
+		{
+			return false;
+		}
+	};
+}
+
+int runtimeContext::OnInst_createFunction(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	FunctionObject *funcObject = new runtime::ObjectModule<FunctionObject>;
+	uint32_t code = *reinterpret_cast<uint32_t*>(moreData);
+	// 0表示还没有初始化函数对象
+	if (code)
+	{
+		if (!funcObject->ReadFuncHeader(mSectionHeader, mPCEnd, *reinterpret_cast<uint32_t*>(moreData), this))
+			return -1;
+	}
+	return PushObject(funcObject);
+}
+
+int runtimeContext::OnInst_return(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	return -1;
+}
+
 template <typename T>
 class OperatorBitwiseAnd
 {
@@ -1385,8 +1553,8 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInst_debug1, 4, },
 	{ &runtimeContext::OnInst_jnz, 4, },
 	{ &runtimeContext::OnInst_debugbreak, 4, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_createFunction, 4, },
+	{ &runtimeContext::OnInst_return, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
@@ -1662,36 +1830,38 @@ void runtimeContext::RunInner()
 	}
 }
 
-int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult)
+int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack)
 {
 	scriptAPI::ScriptCompiler::CompileCode *theCode = 
 		reinterpret_cast<scriptAPI::ScriptCompiler::CompileCode*>(code);
 
 	mCompileResult = compileResult;
+	mSectionHeader = theCode->code;
 	mPC = theCode->code;
 	mPCEnd = mPC + theCode->sizeInUint32;
 
+	uint32_t stackPosition = mCurrentStack;
+
 	RunInner();
+
+	if (recoveryStack)
+	{
+		// 恢复堆栈，以便下一次运行
+		for (uint32_t x = mCurrentStack - 1; x >= stackPosition; x--)
+			mRuntimeStack[x]->Release();
+		mCurrentStack = stackPosition;
+	}
 
 	return 0;
 }
 
 int runtimeContext::Execute(compiler::CompileResult *compileResult)
 {
-	mCompileResult = compileResult;
-	mPC = &mCompileResult->GetCode()[0];
-	mPCEnd = mPC + mCompileResult->GetCode().size();
+	scriptAPI::ScriptCompiler::CompileCode cc;
+	cc.code = &compileResult->GetCode()[0];
+	cc.sizeInUint32 = compileResult->GetCode().size();
 	
-	uint32_t stackPosition = mCurrentStack;
-
-	RunInner();
-
-	// 恢复堆栈，以便下一次运行
-	for (uint32_t x = mCurrentStack - 1; x >= stackPosition; x--)
-		mRuntimeStack[x]->Release();
-	mCurrentStack = stackPosition;
-
-	return 0;
+	return Execute(&cc, compileResult, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

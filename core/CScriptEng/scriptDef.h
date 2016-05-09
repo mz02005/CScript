@@ -4,6 +4,7 @@
 namespace runtime
 {
 	class runtimeContext;
+	class FunctionObject;
 
 	enum
 	{
@@ -89,6 +90,15 @@ namespace runtime
 
 		// 为了方便测试，增加本指令，用于退出应用程序的执行
 		VM_debugbreak,
+
+		// 创建函数对象，此时，4字节的额外数据指向了函数对象的说明区域
+		// 说明区域是一个函数对象的说明结构，struct FunctionDesc
+		// 调用函数时，会处理栈帧，而从函数返回时也会从栈帧中弹出最顶的元素
+		// 恢复之前的执行栈
+		VM_createFunction,
+
+		// 从函数调用返回
+		VM_return,
 	};
 
 #pragma pack(push,1)
@@ -97,6 +107,17 @@ namespace runtime
 		uint32_t code : 8;
 		uint32_t extCode : 8;
 		uint32_t data : 16;
+	};
+
+	struct FunctionDesc
+	{
+		// 函数的字节长度，必须是4的整倍数
+		uint32_t len;
+		// 函数的名称id，如果为0，表示这个函数是匿名函数
+		uint32_t stringId;
+
+		// 函数的参数个数
+		uint32_t paramCount;
 	};
 #pragma pack(pop)
 	typedef uint32_t CommonInstruction;
@@ -141,6 +162,7 @@ namespace compiler
 		friend class GenerateInstructionHelper;
 		friend class runtime::runtimeContext;
 		friend class scriptAPI::ScriptCompiler;
+		friend class runtime::FunctionObject;
 
 	public:
 		typedef std::vector<uint32_t> ScriptCode;
@@ -192,6 +214,23 @@ namespace compiler
 		inline void SetCode(uint32_t pos, uint32_t val)
 		{
 			mCode[pos] = val;
+		}
+
+		inline uint32_t RegistName(const char *name)
+		{
+			return mCompileResult->GetStringData()->RegistString(name);
+		}
+
+		// 直接在代码中插入字符串，返回first是插入的位置，second是基于uint32_t的长度
+		// 这些可见的字符便于查看代码时，较易定位
+		std::pair<uint32_t,uint32> InsertStringDataToCode(const char *str)
+		{
+			uint32_t l = (uint32_t)strlen(str);
+			uint32_t actInsertLen = (l + 3) / 4;
+			uint32_t sNow = mCode.size();
+			mCode.resize(sNow + actInsertLen);
+			memcpy(&mCode[sNow], str, l + 1);
+			return std::make_pair(sNow, actInsertLen);
 		}
 
 		void Insert_add_Instruction()
@@ -455,6 +494,26 @@ namespace compiler
 		{
 			mCode.push_back(runtime::VM_debugbreak);
 			mCode.push_back(param);
+		}
+
+		uint32_t Insert_createFunction_Instruction()
+		{
+			mCode.push_back(runtime::VM_createFunction);
+			uint32_t r = mCompileResult->SaveCurrentCodePosition();
+			mCode.push_back(0);
+			return r;
+		}
+
+		void InsertFunctionDesc(runtime::FunctionDesc *funcDesc)
+		{
+			uint32_t s = mCode.size();
+			mCode.resize(s + sizeof(runtime::FunctionDesc) / 4);
+			*reinterpret_cast<runtime::FunctionDesc*>(&mCode[s]) = *funcDesc;
+		}
+
+		void Insert_return_Instruction()
+		{
+			mCode.push_back(runtime::VM_return);
 		}
 	};
 }
