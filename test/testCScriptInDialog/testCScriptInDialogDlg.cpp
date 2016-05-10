@@ -160,7 +160,10 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 		PushCompileTimeName(cHandle, "println2");
 
 		if ((crHandle = CompileCode(CW2A(mSourcePath).m_psz, cHandle, 1)) == nullptr)
+		{
+			MessageBox(L"±‡“Î¥ÌŒÛ");
 			break;
+		}
 
 		if (mLoadCodeExists)
 		{

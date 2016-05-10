@@ -110,13 +110,14 @@ int DeclareStatement::GenerateInstruction(CompileResult *compileResult)
 		if (iter->mSetValueExpression)
 		{
 			uint32_t l, i;
+			bool throughFunc;
+
 			// 手动加一条赋值语句进去
-			GetBlockParent()->FindName(iter->mVarName.c_str(), l, i);
-			gih.Insert_copyAtFrame_Instruction(l, i);
+			GetBlockParent()->FindName(iter->mVarName.c_str(), throughFunc, l, i);
+			gih.Insert_copyAtFrame_Instruction(throughFunc, l, i);
 
 			if ((r = iter->mSetValueExpression->GenerateInstruction(this, compileResult)) < 0)
 				return r;
-
 
 			gih.Insert_setVal_Instruction();
 			// 处理多压进去的那个对象

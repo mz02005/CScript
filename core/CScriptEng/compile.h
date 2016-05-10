@@ -446,6 +446,8 @@ namespace compiler
 
 	protected:
 		bool mSaveFrame;
+		// 在处理栈帧时会计数层次
+		bool mCalcCallLayer;
 
 		// 保存当前程序块中定义的名字（变量表）
 		std::map<std::string,uint32_t> mLocalNameStack;
@@ -466,12 +468,13 @@ namespace compiler
 		virtual ~StatementBlock();
 
 		void SetSaveFrame(bool sf) { mSaveFrame = sf; }
+		void SetCallLayerCounter(bool b) { mCalcCallLayer = b; }
 		void AddStatement(Statement *statement);
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
 		int Compile(Statement *parent, SimpleCScriptEngContext *context, bool mayLackOfBrace);
 		int PushName(const char *name, uint32_t declType = 0);
 		// 从当前代码块开始寻找符号定义，如果没有找到返回false；否则从level和index返回位置
-		bool FindName(const char *name, uint32_t &level, uint32_t &index) const;
+		bool FindName(const char *name, bool &throughFunc, uint32_t &level, uint32_t &index) const;
 		virtual int GenerateInstruction(CompileResult *compileResult);
 		std::list<Statement*>& GetStatementList() { return mStatementList; }
 	};
@@ -625,7 +628,6 @@ namespace compiler
 
 		struct Param
 		{
-			int type;
 			std::string name;
 		};
 		std::list<Param> mParamList;

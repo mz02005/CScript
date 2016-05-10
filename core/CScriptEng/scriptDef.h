@@ -99,6 +99,13 @@ namespace runtime
 
 		// 从函数调用返回
 		VM_return,
+
+		// 需考虑函数对象
+		VM_copyAtFrame2,
+
+		// 用于return，指定执行多少次popStackFrame操作，同时保存栈顶pop之前的
+		// 栈顶元素到新的栈顶
+		VM_popStackFrameAndSaveResult,
 	};
 
 #pragma pack(push,1)
@@ -444,10 +451,10 @@ namespace compiler
 			mCode.push_back(runtime::VM_pop);
 		}
 
-		void Insert_copyAtFrame_Instruction(uint16_t frameOff, uint32_t index)
+		void Insert_copyAtFrame_Instruction(bool throughFunc, uint16_t frameOff, uint32_t index)
 		{
 			runtime::Instruction inst;
-			inst.code = runtime::VM_copyAtFrame;
+			inst.code = throughFunc ? runtime::VM_copyAtFrame2 : runtime::VM_copyAtFrame;
 			inst.data = frameOff;
 			mCode.push_back(*reinterpret_cast<uint32_t*>(&inst));
 			mCode.push_back(index);
@@ -514,6 +521,15 @@ namespace compiler
 		void Insert_return_Instruction()
 		{
 			mCode.push_back(runtime::VM_return);
+		}
+
+		void Insert_popStackFrameAndSaveResult_Instruction(uint16_t layer)
+		{
+			runtime::CommonInstruction ci;
+			runtime::Instruction *inst = reinterpret_cast<runtime::Instruction*>(&ci);
+			inst->code = runtime::VM_popStackFrameAndSaveResult;
+			inst->data = layer;
+			mCode.push_back(ci);
 		}
 	};
 }

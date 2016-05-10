@@ -193,7 +193,8 @@ int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResul
 			sb = statement->GetBlockParent();
 			assert(sb);
 			uint32_t l, i;
-			if (!sb->FindName(mSymbol.symbolOrig.c_str(), l, i))
+			bool throughFunc;
+			if (!sb->FindName(mSymbol.symbolOrig.c_str(), throughFunc, l, i))
 			{
 				SCRIPT_TRACE("variable or symbol [%s] not defined.\n", mSymbol.symbolOrig.c_str());
 				return -13;
@@ -203,7 +204,7 @@ int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResul
 				SCRIPT_TRACE("invalid stack frame level [%u].\n", l);
 				return -14;
 			}
-			gih.Insert_copyAtFrame_Instruction(l, i);
+			gih.Insert_copyAtFrame_Instruction(throughFunc, l, i);
 		}
 		break;
 	}

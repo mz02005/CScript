@@ -139,6 +139,7 @@ runtimeContext::runtimeContext(VMConfig *config)
 	, mPCEnd(nullptr)
 	, mCurrentStack(0)
 	, mParamCount(0)
+	, mCallStackLayer(0)
 {
 	if (config) {
 		mConfig = *config;
@@ -293,6 +294,18 @@ const char* runtimeContext::GetStringParam(uint32_t i) {
 	r = static_cast<stringObject*>(o)->mVal;
 
 	return r->c_str();
+}
+
+runtimeObjectBase* runtimeContext::GetObject(uint32_t i)
+{
+	if (i >= mParamCount || i >= mCurrentStack)
+		throw std::exception("runtimeContext::GetObject: out of range\n");
+
+	runtimeObjectBase *o = mRuntimeStack[mCurrentStack - mParamCount + 1];
+	// 需要使用者Release来平衡引用计数
+	o->AddRef();
+
+	return o;
 }
 
 uint32_t runtimeContext::GetArrayParamElemCount(uint32_t i)
@@ -513,6 +526,26 @@ const char* runtimeContext::GetStringElemOfArrayParam(uint32_t i, uint32_t e)
 	r = static_cast<stringObject*>(sub)->mVal;
 
 	return r->c_str();
+}
+
+runtimeObjectBase* runtimeContext::GetObjectOfArrayParam(uint32_t i, uint32_t e)
+{
+	if (i >= mParamCount || i >= mCurrentStack)
+		throw std::exception("runtimeContext::GetStringElemOfArrayParam: out of range\n");
+
+	runtimeObjectBase *o = mRuntimeStack[mCurrentStack - mParamCount + i];
+
+	if (o->GetObjectTypeId() != DT_array)
+		throw std::bad_cast("runtimeContext::GetStringElemOfArrayParam: not array\n");
+
+	arrayObject *a = static_cast<arrayObject*>(o);
+	if (e >= a->mData->size())
+		throw std::out_of_range("runtimeContext::GetStringElemOfArrayParam");
+
+	runtimeObjectBase *sub = a->mData->operator[](e);
+	sub->AddRef();
+
+	return sub;
 }
 
 int runtimeContext::OnInvalidInstruction(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
@@ -852,12 +885,63 @@ int runtimeContext::OnInst_popStackFrame(Instruction *inst, uint8_t *moreData, u
 	return 0;
 }
 
-int runtimeContext::OnInst_copyAtFrame(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+int runtimeContext::OnInst_popStackFrameAndSaveResult(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	uint32_t count = inst->data;
+	runtimeObjectBase *o = mRuntimeStack[mCurrentStack - 1];
+	while (count--)
+	{
+		if (!mStackFrameSize)
+		{
+			SCRIPT_TRACE("OnInst_popStackFrameAndSaveResult时栈帧队列为空\n");
+			return -1;
+		}
+		o->AddRef();
+		uint32_t oldStack = mCurrentStack;
+		mCurrentStack = mStackFrame[--mStackFrameSize];
+		for (uint32_t i = mCurrentStack; i < oldStack; i ++)
+		{
+			mRuntimeStack[i]->Release();
+		}
+	}
+	o->AddRef();
+	for (uint32_t i = 0; i < inst->data; i ++)
+		o->Release();
+	PushObject(o);
+	o->Release();
+	return 0;
+}
+
+int runtimeContext::OnInst_copyAtFrame2(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
 	assert(moreSize == 4);
 	uint32_t index = *reinterpret_cast<uint32_t*>(moreData);
 	uint32_t level = inst->data;
 
+	level += level * (mCallStackLayer - 1);
+	
+	if (level >= mStackFrameSize)
+	{
+		SCRIPT_TRACE("OnInst_copyAtFrame2访问栈帧越界.\n");
+		return -1;
+	}
+
+	uint32_t stackPos = mStackFrame[mStackFrameSize - level - 1] + index;
+	if (stackPos >= mCurrentStack)
+	{
+		SCRIPT_TRACE("OnInst_copyAtFrame2企图访问不存在数据的栈空间.\n");
+		return -1;
+	}
+	
+	return PushObject(mRuntimeStack[stackPos]);
+}
+
+int runtimeContext::OnInst_copyAtFrame(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	assert(moreSize == 4);
+	uint32_t index = *reinterpret_cast<uint32_t*>(moreData);
+	uint32_t level = inst->data;
+	
 	if (level >= mStackFrameSize)
 	{
 		SCRIPT_TRACE("OnInst_copyAtFrame访问栈帧越界.\n");
@@ -1268,9 +1352,13 @@ namespace runtime {
 				SCRIPT_TRACE("FunctionObject::doCall: param count not match.\n");
 				return nullptr;
 			}
+
+			// 保存执行环境
 			uint32_t *pcSaved = mContext->mPC;
 			uint32_t *sectionHeaderSaved = mContext->mSectionHeader;
 			uint32_t *pcEndSaved = mContext->mPCEnd;
+			uint32_t paramCountSaved = mContext->mParamCount;
+			uint32_t callLayerSaved = mContext->mCallStackLayer;
 
 			scriptAPI::ScriptCompiler::CompileCode cc;
 			cc.code = mInstHead;
@@ -1281,6 +1369,7 @@ namespace runtime {
 			{
 				mContext->PushObject(mContext->mRuntimeStack[tempStackPos - mFuncDesc.paramCount + pi]);
 			}
+			mContext->mCallStackLayer++;
 			mContext->Execute(&cc, mContext->GetCompileResult());
 			// 当前栈顶元素就是返回值，保存它
 			runtimeObjectBase *o = mContext->mRuntimeStack[mContext->mCurrentStack - 1];
@@ -1288,10 +1377,13 @@ namespace runtime {
 			mContext->OnInst_popStackFrame(nullptr, nullptr, 0);
 			// 将保存的对象压入堆栈，同时为了平衡刚才为了保留它不被清理而增加的引用计数，Release一下
 			o->ReleaseNotDelete();
-			// 恢复指令指针
+
+			// 恢复当前级别的执行环境
 			mContext->mPC = pcSaved;
 			mContext->mSectionHeader = sectionHeaderSaved;
 			mContext->mPCEnd = pcEndSaved;
+			mContext->mParamCount = paramCountSaved;
+			mContext->mCallStackLayer = callLayerSaved;
 			return o;
 		}
 
@@ -1555,8 +1647,8 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInst_debugbreak, 4, },
 	{ &runtimeContext::OnInst_createFunction, 4, },
 	{ &runtimeContext::OnInst_return, 0, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_copyAtFrame2, 4, },
+	{ &runtimeContext::OnInst_popStackFrameAndSaveResult, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 

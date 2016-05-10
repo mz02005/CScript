@@ -8,6 +8,7 @@ IMPLEMENT_OBJINFO(StatementBlock,Statement)
 
 StatementBlock::StatementBlock()
 : mSaveFrame(true)
+, mCalcCallLayer(false)
 {
 }
 
@@ -124,10 +125,11 @@ int StatementBlock::PushName(const char *name, uint32_t declType)
 	return 0;
 }
 
-bool StatementBlock::FindName(const char *name, uint32_t &level, uint32_t &index) const
+bool StatementBlock::FindName(const char *name, bool &throughFunc, uint32_t &level, uint32_t &index) const
 {
 	const StatementBlock *p = this;
 	level = 0;
+	throughFunc = false;
 	while (p)
 	{
 		auto iter = p->mLocalNameStack.find(name);
@@ -138,8 +140,10 @@ bool StatementBlock::FindName(const char *name, uint32_t &level, uint32_t &index
 		}
 		else
 		{
+			if (p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
+				throughFunc = true;
 			if (p->GetParent()) {
-				if (p->mSaveFrame)
+				if (p->mSaveFrame || p->mCalcCallLayer)
 					level ++;
 				p = p->GetParent()->GetBlockParent();
 			}
@@ -277,7 +281,8 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 					return -1;
 				uint32_t l, i;
 				// Ãû×ÖÖØ¸´
-				if (FindName(symbol.symbolOrig.c_str(), l, i))
+				bool throughFunc;
+				if (FindName(symbol.symbolOrig.c_str(), throughFunc, l, i))
 				{
 					SCRIPT_TRACE("name [%s] already exists.", symbol.symbolOrig.c_str());
 					return -1;

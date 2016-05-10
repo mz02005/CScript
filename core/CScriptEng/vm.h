@@ -36,6 +36,8 @@ namespace runtime {
 		uint32_t *mPC;
 		uint32_t *mPCEnd;
 
+		uint32_t mCallStackLayer;
+
 		VMConfig mConfig;
 		
 	private:
@@ -173,6 +175,8 @@ namespace runtime {
 
 		int OnInst_createFunction(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_return(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_copyAtFrame2(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_popStackFrameAndSaveResult(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 	private:
 		void RunInner();
@@ -208,6 +212,7 @@ namespace runtime {
 		virtual uint8_t GetUint8Param(uint32_t i);
 		virtual int8_t GetInt8Param(uint32_t i);
 		virtual const char* GetStringParam(uint32_t i);
+		virtual runtimeObjectBase* GetObject(uint32_t i);
 
 		virtual uint32_t GetArrayParamElemCount(uint32_t i);
 		virtual double GetDoubleElemOfArrayParam(uint32_t i, uint32_t e);
@@ -219,5 +224,6 @@ namespace runtime {
 		virtual uint8_t GetUint8ElemOfArrayParam(uint32_t i, uint32_t e);
 		virtual int8_t GetInt8ElemOfArrayParam(uint32_t i, uint32_t e);
 		virtual const char* GetStringElemOfArrayParam(uint32_t i, uint32_t e);
+		virtual runtimeObjectBase* GetObjectOfArrayParam(uint32_t i, uint32_t e);
 	};
 }

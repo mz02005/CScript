@@ -7,9 +7,19 @@ IMPLEMENT_OBJINFO(ReturnStatement,Statement)
 
 int ReturnStatement::Compile(Statement *parent, SimpleCScriptEngContext *context)
 {
-	if (parent == nullptr
-		|| parent->GetThisObjInfo() != OBJECT_INFO(FunctionStatement))
+	if (parent == nullptr)
 		return -1;
+
+	Statement *p = parent;
+	while (p && !p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
+	{
+		p = p->GetParent();
+	}
+	if (!p)
+	{
+		SCRIPT_TRACE("return statement not in function object.\n");
+		return -1;
+	}
 
 	char c;
 	int parseResult;
@@ -26,6 +36,15 @@ int ReturnStatement::GenerateInstruction(CompileResult *compileResult)
 	int r = mExp.GenerateInstruction(this, compileResult);
 	if (r < 0)
 		return r;
+
+	Statement *p = GetParent();
+	while (p && !p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
+		p = p->GetParent();
+	if (!p)
+		return -1;
+	gih.Insert_popStackFrameAndSaveResult_Instruction(
+		Statement::BlockDistance<FunctionStatement>(static_cast<FunctionStatement*>(p), this));
+
 	gih.Insert_return_Instruction();
 	return r;
 }

@@ -15,16 +15,22 @@ int FunctionStatement::ParseParamList(SimpleCScriptEngContext *context)
 	int parseResult;
 	Symbol symbol;
 
+	if ((parseResult = context->GetNextSymbol(symbol)) != 0)
+		RETHELP(parseResult);
+	if (symbol.symbolOrig == ")")
+		return 0;
+
+	context->GoBack();
 	for (;;)
 	{
-		int dataType;
+		//int dataType;
 
-		if ((parseResult = context->GetNextSymbol(symbol)) != 0)
-			RETHELP(parseResult);
-		if (symbol.type != symbol.Keywords
-			|| !KeywordsTransTable::isDataType(symbol.keywordsType))
-			return -1;
-		dataType = symbol.keywordsType;
+		//if ((parseResult = context->GetNextSymbol(symbol)) != 0)
+		//	RETHELP(parseResult);
+		//if (symbol.type != symbol.Keywords
+		//	|| !KeywordsTransTable::isDataType(symbol.keywordsType))
+		//	return -1;
+		//dataType = symbol.keywordsType;
 		// 形参，必须得有
 		if ((parseResult = context->GetNextSymbol(symbol)) != 0)
 			RETHELP(parseResult);
@@ -33,7 +39,6 @@ int FunctionStatement::ParseParamList(SimpleCScriptEngContext *context)
 			return -1;
 
 		Param param;
-		param.type = dataType;
 		param.name = symbol.symbolOrig;
 		mParamList.emplace_back(param);
 
@@ -71,15 +76,11 @@ int FunctionStatement::Compile(Statement *parent, SimpleCScriptEngContext *conte
 		RETHELP(parseResult);
 	if (symbol.symbolOrig != "{")
 		return -1;
+	context->GoBack();
 
 	if ((parseResult = __super::Compile(parent, context)) < 0)
 		return parseResult;
-
-	if ((parseResult = context->GetNextSymbol(symbol)) != 0)
-		RETHELP(parseResult);
-	if (symbol.symbolOrig != "}")
-		return -1;
-
+	
 	return parseResult;
 }
 
@@ -88,10 +89,11 @@ int FunctionStatement::GenerateInstruction(CompileResult *compileResult)
 	GenerateInstructionHelper gih(compileResult);
 
 	uint32_t l, i;
-	GetParent()->GetBlockParent()->FindName(mName.c_str(), l, i);
+	bool throughFunc = false;
+	GetParent()->GetBlockParent()->FindName(mName.c_str(), throughFunc, l, i);
 
 	// 这里准备再插入一条赋值语句给函数对象
-	gih.Insert_copyAtFrame_Instruction(l, i);
+	gih.Insert_copyAtFrame_Instruction(throughFunc, l, i);
 	uint32_t x = gih.Insert_createFunction_Instruction();
 	uint32_t jumpToFuncEnd = gih.Insert_jump_Instruction(0);
 
@@ -104,6 +106,7 @@ int FunctionStatement::GenerateInstruction(CompileResult *compileResult)
 
 	// 生成其它代码
 	__super::SetSaveFrame(false);
+	__super::SetCallLayerCounter(true);
 	int r = __super::GenerateInstruction(compileResult);
 	if (r < 0)
 		return r;
