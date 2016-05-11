@@ -210,17 +210,6 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 	UninitializeCScriptEngine();
 }
 
-BEGIN_MESSAGE_MAP(CtestCScriptInDialogDlg, CDialogEx)
-	ON_WM_SYSCOMMAND()
-	ON_WM_PAINT()
-	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDOK, &CtestCScriptInDialogDlg::OnBnClickedOk)
-	ON_BN_CLICKED(IDC_SELECT_SOURCE, &CtestCScriptInDialogDlg::OnBnClickedSelectSource)
-END_MESSAGE_MAP()
-
-
-// CtestCScriptInDialogDlg 消息处理程序
-
 BOOL CtestCScriptInDialogDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -250,10 +239,19 @@ BOOL CtestCScriptInDialogDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
-	// TODO: 在此添加额外的初始化代码
+	mSourcePath = AfxGetApp()->GetProfileString(L"ui", L"lastRun", L"");
+	UpdateData(FALSE);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
+
+BEGIN_MESSAGE_MAP(CtestCScriptInDialogDlg, CDialogEx)
+	ON_WM_SYSCOMMAND()
+	ON_WM_PAINT()
+	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDOK, &CtestCScriptInDialogDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDC_SELECT_SOURCE, &CtestCScriptInDialogDlg::OnBnClickedSelectSource)
+END_MESSAGE_MAP()
 
 void CtestCScriptInDialogDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -267,10 +265,6 @@ void CtestCScriptInDialogDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
-
-// 如果向对话框添加最小化按钮，则需要下面的代码
-//  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
-//  这将由框架自动完成。
 
 void CtestCScriptInDialogDlg::OnPaint()
 {
@@ -306,6 +300,7 @@ HCURSOR CtestCScriptInDialogDlg::OnQueryDragIcon()
 
 void CtestCScriptInDialogDlg::OnBnClickedOk()
 {
+	AfxGetApp()->WriteProfileString(L"ui", L"lastRun", mSourcePath);
 	mPrintHostBox.ResetContent();
 	mThread.stopThread();
 	mThread.startThread(&ExecuteThreadProc, this);

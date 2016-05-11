@@ -158,6 +158,12 @@
     <ClCompile Include="returnStatement.cpp">
       <Filter>inner\compile</Filter>
     </ClCompile>
+    <ClCompile Include="varContainer.cpp">
+      <Filter>inner\compile</Filter>
+    </ClCompile>
+    <ClCompile Include="doCallContext.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CScriptEng.def">

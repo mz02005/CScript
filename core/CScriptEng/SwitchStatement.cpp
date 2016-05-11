@@ -224,7 +224,6 @@ int SwitchStatement::GenerateInstruction(CompileResult *compileResult)
 		for (auto sbIter = entry->mStatementBlocks.begin();
 			sbIter != entry->mStatementBlocks.end(); sbIter++)
 		{
-			(*sbIter)->SetSaveFrame(false);
 			if ((result = (*sbIter)->GenerateInstruction(compileResult)) < 0)
 				return result;
 		}

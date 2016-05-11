@@ -100,12 +100,18 @@ namespace runtime
 		// 从函数调用返回
 		VM_return,
 
+		// 废弃
 		// 需考虑函数对象
 		VM_copyAtFrame2,
 
+		// 废弃
 		// 用于return，指定执行多少次popStackFrame操作，同时保存栈顶pop之前的
 		// 栈顶元素到新的栈顶
 		VM_popStackFrameAndSaveResult,
+
+		// 加载数据的指令
+		// 它的参数和初代的copyAtFrame一样
+		VM_loadData,
 	};
 
 #pragma pack(push,1)
@@ -451,24 +457,33 @@ namespace compiler
 			mCode.push_back(runtime::VM_pop);
 		}
 
-		void Insert_copyAtFrame_Instruction(bool throughFunc, uint16_t frameOff, uint32_t index)
+		void Insert_loadData_Instruction(uint16_t dist, uint32_t index)
 		{
 			runtime::Instruction inst;
-			inst.code = throughFunc ? runtime::VM_copyAtFrame2 : runtime::VM_copyAtFrame;
-			inst.data = frameOff;
+			inst.code = runtime::VM_loadData;
+			inst.data = dist;
 			mCode.push_back(*reinterpret_cast<uint32_t*>(&inst));
 			mCode.push_back(index);
 		}
 
-		void Insert_pushStackFrame_Instruction()
-		{
-			mCode.push_back(runtime::VM_pushStackFrame);
-		}
-		
-		void Insert_popStackFrame_Instruction()
-		{
-			mCode.push_back(runtime::VM_popStackFrame);
-		}
+		//void Insert_copyAtFrame_Instruction(bool throughFunc, uint16_t frameOff, uint32_t index)
+		//{
+		//	runtime::Instruction inst;
+		//	inst.code = throughFunc ? runtime::VM_copyAtFrame2 : runtime::VM_copyAtFrame;
+		//	inst.data = frameOff;
+		//	mCode.push_back(*reinterpret_cast<uint32_t*>(&inst));
+		//	mCode.push_back(index);
+		//}
+
+		//void Insert_pushStackFrame_Instruction()
+		//{
+		//	mCode.push_back(runtime::VM_pushStackFrame);
+		//}
+		//
+		//void Insert_popStackFrame_Instruction()
+		//{
+		//	mCode.push_back(runtime::VM_popStackFrame);
+		//}
 
 		void Insert_end_Instruction()
 		{
@@ -523,13 +538,13 @@ namespace compiler
 			mCode.push_back(runtime::VM_return);
 		}
 
-		void Insert_popStackFrameAndSaveResult_Instruction(uint16_t layer)
-		{
-			runtime::CommonInstruction ci;
-			runtime::Instruction *inst = reinterpret_cast<runtime::Instruction*>(&ci);
-			inst->code = runtime::VM_popStackFrameAndSaveResult;
-			inst->data = layer;
-			mCode.push_back(ci);
-		}
+		//void Insert_popStackFrameAndSaveResult_Instruction(uint16_t layer)
+		//{
+		//	runtime::CommonInstruction ci;
+		//	runtime::Instruction *inst = reinterpret_cast<runtime::Instruction*>(&ci);
+		//	inst->code = runtime::VM_popStackFrameAndSaveResult;
+		//	inst->data = layer;
+		//	mCode.push_back(ci);
+		//}
 	};
 }

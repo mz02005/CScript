@@ -14,7 +14,7 @@ namespace runtime {
 	class rtLibHelper
 	{
 	public:
-		static bool RegistObjNames(compiler::StatementBlock *sb);
+		static bool RegistObjNames(compiler::FunctionStatement *sb);
 		static bool RegistRuntimeObjs(runtimeContext *context);
 	};
 

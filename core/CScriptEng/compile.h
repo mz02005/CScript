@@ -371,6 +371,7 @@ namespace compiler
 		bool IsConstIntergerExpression(int &val);
 	};
 
+	class FunctionStatement;
 	class Statement : public objBase
 	{
 		friend class StatementBlock;
@@ -390,36 +391,22 @@ namespace compiler
 		Statement();
 		virtual ~Statement();
 
-		template <typename StatementType>
-		static uint32_t BlockDistance(StatementType *parent, Statement *sun)
-		{
-			uint32_t c = 0;
-			Statement *s = sun->GetParent();
-			while (s)
-			{
-				if (static_cast<StatementType*>(static_cast<Statement*>(s)) == parent)
-					break;
-
-				if (s->isInheritFrom(OBJECT_INFO(StatementBlock)))
-					c++;
-
-				s = s->GetParent();
-			}
-			return c;
-		}
-
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context) { return -1; }
 		virtual int GenerateInstruction(CompileResult *compileResult) {
-#if defined(DEBUG) || defined(_DEBUG)
 			SCRIPT_TRACE("GenerateInstruction function does not implement by [%s].\n",
 				GetThisObjInfo()->className);
-#endif
 			return -1;
 		}
 		const Statement* GetParent() const { return mParentBlock; }
 		Statement* GetParent() { return mParentBlock; }
-		StatementBlock* GetBlockParent();
-		const StatementBlock* GetBlockParent() const;
+
+		FunctionStatement* GetFunctionParent();
+		const FunctionStatement* GetFunctionParent() const;
+		
+		// 由于StatementBlock和FunctionStatement都是变量的容器
+		// 所以，这里是找到最近的Block或者Function，并注册变量
+		bool RegistName(const char *name, uint32_t type);
+		bool FindName(const char *name, uint32_t &l, uint32_t &i) const;
 
 		Statement* isInLoopStatementBlock(uint32_t breakOrContinue);
 		virtual uint32_t isLoopStatement() const { return 0; }
@@ -445,38 +432,26 @@ namespace compiler
 		DECLARE_OBJINFO(StatementBlock)
 
 	protected:
-		bool mSaveFrame;
-		// 在处理栈帧时会计数层次
-		bool mCalcCallLayer;
-
-		// 保存当前程序块中定义的名字（变量表）
-		std::map<std::string,uint32_t> mLocalNameStack;
-		// 如果是0，表示普通的对象，这种对象可能由外部在虚拟机执行前
-		// 压入堆栈；否则应该代表声明的变量类型
-		std::vector<uint32_t> mLocalNameType;
+		// key中保存当前块中保存的变量名列表
+		// value中保存该变量在父级VariableContainer中的id
+		std::map<std::string,size_t> mLocalNameStack;
+		std::vector<uint32_t> mPointerToType;
 
 		std::list<Statement*> mStatementList;
-
-	private:
-		//// 由声明的类型转成create***指令
-		//runtime::CommonInstruction DeclTypeToCreateInstuction(uint32_t declType) const;
-		// 根据声明类型，插入create***指令
-		void InsertCreateTypeInstructionByDeclType(uint32_t declType, GenerateInstructionHelper *giHelper);
 
 	public:
 		StatementBlock();
 		virtual ~StatementBlock();
 
-		void SetSaveFrame(bool sf) { mSaveFrame = sf; }
-		void SetCallLayerCounter(bool b) { mCalcCallLayer = b; }
 		void AddStatement(Statement *statement);
-		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
 		int Compile(Statement *parent, SimpleCScriptEngContext *context, bool mayLackOfBrace);
-		int PushName(const char *name, uint32_t declType = 0);
-		// 从当前代码块开始寻找符号定义，如果没有找到返回false；否则从level和index返回位置
-		bool FindName(const char *name, bool &throughFunc, uint32_t &level, uint32_t &index) const;
-		virtual int GenerateInstruction(CompileResult *compileResult);
+
+		bool RegistNameInBlock(const char *name, uint32_t declType = 0);
+		bool FindNameInBlock(const char *name, uint32_t &l, uint32_t &i) const;
 		std::list<Statement*>& GetStatementList() { return mStatementList; }
+
+		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
+		virtual int GenerateInstruction(CompileResult *compileResult);
 	};
 
 	// TODO: 注意，声明语句中，没有处理指针（包括多级指针），也没有处理数组声明（包括初始化）
@@ -619,9 +594,19 @@ namespace compiler
 		virtual int GenerateInstruction(CompileResult *compileResult);
 	};
 
-	class FunctionStatement : public StatementBlock
+	class FunctionStatement
+		: public Statement
 	{
 		DECLARE_OBJINFO(FunctionStatement)
+
+	public:
+		static const char mEntryFuncName[];
+
+	protected:
+		// 当前层容纳的变量
+		std::map<std::string,uint32_t> mLocalName;
+		std::vector<uint32_t> mLocalType;
+		bool mIsTopLevel;
 
 	private:
 		std::string mName;
@@ -631,15 +616,43 @@ namespace compiler
 			std::string name;
 		};
 		std::list<Param> mParamList;
+
+		StatementBlock mFunctionBody;
 		
 	private:
 		int ParseParamList(SimpleCScriptEngContext *context);
+		int GenerateLocalVariableInstruction(CompileResult *compileResult);
+				
+		//// 由声明的类型转成create***指令
+		//runtime::CommonInstruction DeclTypeToCreateInstuction(uint32_t declType) const;
+		// 根据声明类型，插入create***指令
+		void InsertCreateTypeInstructionByDeclType(uint32_t declType, GenerateInstructionHelper *giHelper);
 
 	public:
+		FunctionStatement();
 		FunctionStatement(const std::string &name);
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context);
 		virtual int GenerateInstruction(CompileResult *compileResult);
 		std::string GetName() const { return mName; }
+		bool isTopLevelFun() const { return mIsTopLevel; }
+
+		FunctionStatement* GetParentFunction();
+		
+		bool RegistNameInContainer(const char *name, uint32_t declType);
+		bool FindNameInContainer(const char *name, uint32_t &level, uint32_t &index) const;
+		bool GetNameType(uint32_t id, uint32_t &type) const {
+			if (id >= mLocalType.size())
+				return false;
+			type = mLocalType[id];
+			return true;
+		}
+		bool SetNameType(uint32_t id, uint32_t type) {
+			if (id >= mLocalType.size())
+				return false;
+			mLocalType[id] = type;
+			return true;
+		}
+		uint32_t ReservedVariableRoom(uint32_t type = -1);
 	};
 
 	class ReturnStatement : public Statement
@@ -736,7 +749,7 @@ namespace compiler
 
 		ConstStringData mConstStringData;
 		CompileResult *mCompileResult;
-		StatementBlock mTopLevelBlock;
+		FunctionStatement mTopLevelFunction;
 
 	private:
 		// 返回>=256的值表示读到了终结字符terminal

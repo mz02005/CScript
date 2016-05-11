@@ -27,13 +27,18 @@ namespace runtime {
 		// 记录栈帧
 		std::vector<uint32_t> mStackFrame;
 		uint32_t mStackFrameSize;
+		std::vector<std::pair<uint32_t*,uint32_t*> > mPCFrame;
 
 		// 记录当前doCall的参数个数
 		uint32_t mParamCount;
 
 		compiler::CompileResult *mCompileResult;
+
+		// 当前栈帧的代码头
 		uint32_t *mSectionHeader;
+		// 指令指针
 		uint32_t *mPC;
+		// 指令尾部
 		uint32_t *mPCEnd;
 
 		uint32_t mCallStackLayer;
@@ -42,6 +47,8 @@ namespace runtime {
 		
 	private:
 		void SetCompareResult(bool r);
+
+		void GetOrigPC(uint32_t *&header, uint32_t *&tail) const;
 
 		static inline bool isZero(runtimeObjectBase *base)
 		{
@@ -178,6 +185,8 @@ namespace runtime {
 		int OnInst_copyAtFrame2(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_popStackFrameAndSaveResult(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
+		int OnInst_loadData(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+
 	private:
 		void RunInner();
 
@@ -194,11 +203,11 @@ namespace runtime {
 		compiler::CompileResult* GetCompileResult() { return mCompileResult; }
 		int PushObject(runtimeObjectBase *obj);
 
-		int Execute(compiler::CompileResult *compileResult);
-		int Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack = false);
-
 		runtimeContext(VMConfig *config);
 		~runtimeContext();
+
+		int Execute(compiler::CompileResult *compileResult);
+		int Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack = false);
 
 		// doCallContext
 		virtual uint32_t GetParamCount();

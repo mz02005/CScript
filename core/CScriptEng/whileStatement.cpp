@@ -64,11 +64,11 @@ int WhileStatement::GenerateBreakStatementCode(BreakStatement *bs, CompileResult
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	uint32_t c = Statement::BlockDistance<WhileStatement>(this, bs);
+	//uint32_t c = Statement::BlockDistance<WhileStatement>(this, bs);
 
-	// 需要退出栈帧
-	for (uint32_t i = 0; i < c; i++)
-		gih.Insert_popStackFrame_Instruction();
+	//// 需要退出栈帧
+	//for (uint32_t i = 0; i < c; i++)
+	//	gih.Insert_popStackFrame_Instruction();
 
 	// 跳转语句
 	mBreakToFillList.push_back(gih.Insert_jump_Instruction(0));
@@ -80,11 +80,11 @@ int WhileStatement::GenerateContinueStatementCode(ContinueStatement *cs, Compile
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	uint32_t c = Statement::BlockDistance<WhileStatement>(this, cs);
+	//uint32_t c = Statement::BlockDistance<WhileStatement>(this, cs);
 
-	// 需要退出栈帧
-	for (uint32_t i = 0; i < c; i ++)
-		gih.Insert_popStackFrame_Instruction();
+	//// 需要退出栈帧
+	//for (uint32_t i = 0; i < c; i ++)
+	//	gih.Insert_popStackFrame_Instruction();
 
 	// 跳转语句
 	mContinueToFillList.push_back(gih.Insert_jump_Instruction(0));

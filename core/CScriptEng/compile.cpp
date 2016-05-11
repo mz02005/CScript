@@ -162,7 +162,6 @@ void SymbolExpressionNode::DebugPrint() const
 
 int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResult *compileResult)
 {
-	StatementBlock *sb;
 	GenerateInstructionHelper gih(compileResult);
 
 	switch (mSymbol.type)
@@ -190,11 +189,8 @@ int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResul
 		}
 		else
 		{
-			sb = statement->GetBlockParent();
-			assert(sb);
-			uint32_t l, i;
-			bool throughFunc;
-			if (!sb->FindName(mSymbol.symbolOrig.c_str(), throughFunc, l, i))
+			uint32_t l = 0, i = 0;
+			if (!statement->FindName(mSymbol.symbolOrig.c_str(), l, i))
 			{
 				SCRIPT_TRACE("variable or symbol [%s] not defined.\n", mSymbol.symbolOrig.c_str());
 				return -13;
@@ -204,7 +200,7 @@ int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResul
 				SCRIPT_TRACE("invalid stack frame level [%u].\n", l);
 				return -14;
 			}
-			gih.Insert_copyAtFrame_Instruction(throughFunc, l, i);
+			gih.Insert_loadData_Instruction(l, i);
 		}
 		break;
 	}
@@ -1130,8 +1126,8 @@ SimpleCScriptEngContext::SimpleCScriptEngContext()
 	, mCompileResult(nullptr)
 {
 	mKeywordsTransTable.Init();
-	mTopLevelBlock.PushName("CreateArray");
-	runtime::rtLibHelper::RegistObjNames(&mTopLevelBlock);
+	mTopLevelFunction.RegistNameInContainer("CreateArray", -1);
+	runtime::rtLibHelper::RegistObjNames(&mTopLevelFunction);
 }
 
 SimpleCScriptEngContext::~SimpleCScriptEngContext()
@@ -1797,17 +1793,13 @@ HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeS
 	
 	mCompileResult = new CompileResult(&mConstStringData);
 	do {
-		if ((r = mTopLevelBlock.Compile(NULL, this, true)) < 0)
+		if ((r = mTopLevelFunction.Compile(nullptr, this)) < 0)
 		{
 			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Compile fail [%d].\n", r);
 			break;
 		}
-		
 		GenerateInstructionHelper gih(mCompileResult);
-		//uint32_t jp = gih.Insert_jump_Instruction(0);
-		//std::pair<uint32_t,uint32_t> t = gih.InsertStringDataToCode("this is a script file.");
-		//gih.SetCode(jp, t.first + t.second);
-		if ((r = mTopLevelBlock.GenerateInstruction(mCompileResult)) < 0)
+		if ((r = mTopLevelFunction.GenerateInstruction(mCompileResult)) < 0)
 		{
 			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Generate instruction fail [%d]\n", r);
 			break;
@@ -1825,8 +1817,7 @@ HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeS
 
 int SimpleCScriptEngContext::PushName(const char *name)
 {
-	mTopLevelBlock.PushName(name);
-	return 0;
+	return mTopLevelFunction.RegistNameInContainer(name, -1) ? 0 : -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

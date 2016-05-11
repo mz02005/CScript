@@ -7,8 +7,6 @@ using namespace compiler;
 IMPLEMENT_OBJINFO(StatementBlock,Statement)
 
 StatementBlock::StatementBlock()
-: mSaveFrame(true)
-, mCalcCallLayer(false)
 {
 }
 
@@ -19,86 +17,11 @@ StatementBlock::~StatementBlock()
 	mStatementList.clear();
 }
 
-//runtime::CommonInstruction StatementBlock::DeclTypeToCreateInstuction(uint32_t declType) const
-//{
-//	assert(KeywordsTransTable::isDataType(declType));
-//	return runtime::VM_createchar + (declType - compiler::KeywordsTransTable::CK_CHAR);
-//}
-
-void StatementBlock::InsertCreateTypeInstructionByDeclType(
-	uint32_t declType, GenerateInstructionHelper *giHelper)
-{
-	//assert(KeywordsTransTable::isDataType(declType));
-	switch (declType)
-	{
-	case KeywordsTransTable::CK_CHAR:
-		giHelper->Insert_createChar_Instruction(0);
-		break;
-
-	case KeywordsTransTable::CK_SHORT:
-		giHelper->Insert_createShort_Instruction(0);
-		break;
-
-	case KeywordsTransTable::CK_USHORT:
-		giHelper->Insert_createUshort_Instruction(0);
-		break;
-
-	case KeywordsTransTable::CK_INT:
-		giHelper->Insert_createInt_Instruction(0);
-		break;
-
-	case KeywordsTransTable::CK_UINT:
-		giHelper->Insert_createUint_Instruction(0);
-		break;
-
-	case KeywordsTransTable::CK_FLOAT:
-		giHelper->Insert_createFloat_Instruction(0.f);
-		break;
-
-	case KeywordsTransTable::CK_DOUBLE:
-		giHelper->Insert_createDouble_Instruction(0.f);
-		break;
-
-	case KeywordsTransTable::CK_STRING:
-		giHelper->Insert_createString_Instruction("");
-		break;
-
-	case KeywordsTransTable::CK_ARRAY:
-		giHelper->Insert_createArray_Instruction();
-		break;
-
-	case KeywordsTransTable::CK_FUNCTION:
-		giHelper->Insert_createFunction_Instruction();
-		break;
-
-		// 对于压入的参数，无需理会
-	case -1:
-		break;
-
-	default:
-		SCRIPT_TRACE("Invalid data type to create\n");
-		exit(1);
-	}
-}
-
 int StatementBlock::GenerateInstruction(CompileResult *compileResult)
 {
 	int r = 0;
 
 	GenerateInstructionHelper gih(compileResult);
-
-	// 维护栈帧
-	if (mParentBlock && mSaveFrame)
-		gih.Insert_pushStackFrame_Instruction();
-
-	// 为声明的类型生成将基本数据类型压入堆栈的操作
-	for (auto iter = mLocalNameType.begin(); iter != mLocalNameType.end(); iter++)
-	{
-		if (*iter != 0)
-		{
-			InsertCreateTypeInstructionByDeclType(*iter, &gih);
-		}
-	}
 
 	for (auto iter = mStatementList.begin(); iter != mStatementList.end(); iter++)
 	{
@@ -106,52 +29,46 @@ int StatementBlock::GenerateInstruction(CompileResult *compileResult)
 			return r;
 	}
 
-	if (mParentBlock && mSaveFrame)
-		gih.Insert_popStackFrame_Instruction();
-
+	// 如果父亲是函数，且不是顶层函数，则在末尾增加一个return语句
+	// 这可以保证如果用户忘了写return语句，堆栈还能够平衡
+	if (mParentBlock->GetThisObjInfo() == OBJECT_INFO(FunctionStatement)
+		&& !static_cast<FunctionStatement*>(mParentBlock)->isTopLevelFun())
+	{
+		// 返回的是整数0
+		gih.Insert_createInt_Instruction(0);
+		gih.Insert_return_Instruction();
+	}
+	
 	return r;
 }
 
-int StatementBlock::PushName(const char *name, uint32_t declType)
+bool StatementBlock::RegistNameInBlock(const char *name, uint32_t declType)
 {
 	// 名字重复了
 	if (mLocalNameStack.find(std::string(name)) != mLocalNameStack.end())
 	{
 		SCRIPT_TRACE("The symbol or variable (%s) is defined.\n", name);
-		return -11;
+		return false;
 	}
-	mLocalNameStack[std::string(name)] = mLocalNameType.size();
-	mLocalNameType.push_back(declType);
-	return 0;
+
+	// TODO: 下面这部分代码可以整理一下
+	FunctionStatement *fs = GetFunctionParent();
+	assert(fs);
+	uint32_t index = fs->ReservedVariableRoom(declType);
+	mLocalNameStack[name] = mPointerToType.size();
+	mPointerToType.push_back(index);
+	return true;
 }
 
-bool StatementBlock::FindName(const char *name, bool &throughFunc, uint32_t &level, uint32_t &index) const
+bool StatementBlock::FindNameInBlock(const char *name, uint32_t &l, uint32_t &i) const
 {
-	const StatementBlock *p = this;
-	level = 0;
-	throughFunc = false;
-	while (p)
+	auto iter = mLocalNameStack.find(name);
+	if (iter != mLocalNameStack.end())
 	{
-		auto iter = p->mLocalNameStack.find(name);
-		if (iter != p->mLocalNameStack.end())
-		{
-			index = iter->second;
-			return true;
-		}
-		else
-		{
-			if (p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
-				throughFunc = true;
-			if (p->GetParent()) {
-				if (p->mSaveFrame || p->mCalcCallLayer)
-					level ++;
-				p = p->GetParent()->GetBlockParent();
-			}
-			else
-				return false;
-		}
+		i = mPointerToType[iter->second];
+		return true;
 	}
-	return false;
+	return GetParent()->FindName(name, l, i);
 }
 
 void StatementBlock::AddStatement(Statement *statement)
@@ -279,10 +196,9 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 				// 名字必须是普通的标志符
 				if (symbol.type != Symbol::CommonSymbol)
 					return -1;
-				uint32_t l, i;
+				uint32_t l = 0, i = 0;
 				// 名字重复
-				bool throughFunc;
-				if (FindName(symbol.symbolOrig.c_str(), throughFunc, l, i))
+				if (FindName(symbol.symbolOrig.c_str(), l, i))
 				{
 					SCRIPT_TRACE("name [%s] already exists.", symbol.symbolOrig.c_str());
 					return -1;
@@ -326,9 +242,17 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 			{
 				return -1;
 			}
-			if (mayLackOfBrace && !hasBraceAtBegin && mParentBlock)
+			if (mayLackOfBrace && !hasBraceAtBegin)
 			{
-				break;
+				if (GetParent()->isInheritFrom(OBJECT_INFO(FunctionStatement))
+					&& static_cast<FunctionStatement*>(GetParent())->isTopLevelFun())
+				{
+					// 如果是顶层函数，则不要退出，继续分析
+				}
+				else
+				{
+					break;
+				}
 			}
 			if ((parseResult = context->GetNextSymbol(symbol)) == 0)
 			{
@@ -395,8 +319,14 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 				RETHELP(parseResult);
 			}
 			AddStatement(pureExp);
-			if (!hasBraceAtBegin && mParentBlock != nullptr)
-				return 0;
+			if (!hasBraceAtBegin)
+			{
+				if (!(GetParent()->isInheritFrom(OBJECT_INFO(FunctionStatement))
+					&& static_cast<FunctionStatement*>(GetParent())->isTopLevelFun()))
+				{
+					return 0;
+				}
+			}
 		}
 	}
 

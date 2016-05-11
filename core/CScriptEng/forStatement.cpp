@@ -117,7 +117,7 @@ int ForStatement::GenerateInstruction(CompileResult *compileResult)
 	}
 
 	uint32_t endPosToFill = gih.Insert_jz_Instruction(0);
-
+	gih.Insert_debug1_Instruction();
 	if ((r = mStatementBlock.GenerateInstruction(compileResult)) < 0)
 		return r;
 
@@ -144,10 +144,10 @@ int ForStatement::GenerateBreakStatementCode(BreakStatement *bs, CompileResult *
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	uint32_t c = Statement::BlockDistance<ForStatement>(this, bs);
-	// 需要退出栈帧
-	for (uint32_t i = 0; i < c; i++)
-		gih.Insert_popStackFrame_Instruction();
+	//uint32_t c = Statement::BlockDistance<ForStatement>(this, bs);
+	//// 需要退出栈帧
+	//for (uint32_t i = 0; i < c; i++)
+	//	gih.Insert_popStackFrame_Instruction();
 
 	// 跳转语句
 	mBreakToFillList.push_back(gih.Insert_jump_Instruction(0));
@@ -158,10 +158,10 @@ int ForStatement::GenerateContinueStatementCode(ContinueStatement *cs, CompileRe
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	uint32_t c = Statement::BlockDistance<ForStatement>(this, cs);
-	// 需要退出栈帧
-	for (uint32_t i = 0; i < c; i ++)
-		gih.Insert_popStackFrame_Instruction();
+	//uint32_t c = Statement::BlockDistance<ForStatement>(this, cs);
+	//// 需要退出栈帧
+	//for (uint32_t i = 0; i < c; i ++)
+	//	gih.Insert_popStackFrame_Instruction();
 
 	// 跳转语句
 	mContinueToFillList.push_back(gih.Insert_jump_Instruction(0));

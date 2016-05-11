@@ -28,15 +28,15 @@ runtimeObjectBase* sleepObj::doCall(runtime::doCallContext *context)
 
 
 
-bool rtLibHelper::RegistObjNames(compiler::StatementBlock *sb)
+bool rtLibHelper::RegistObjNames(compiler::FunctionStatement *sb)
 {
-	sb->PushName("sleep");
-	sb->PushName("print");
-	sb->PushName("println");
-	sb->PushName("rand");
-	sb->PushName("srand");
-	sb->PushName("sin");
-	sb->PushName("time");
+	sb->RegistNameInContainer("sleep", -1);
+	sb->RegistNameInContainer("print", -1);
+	sb->RegistNameInContainer("println", -1);
+	sb->RegistNameInContainer("rand", -1);
+	sb->RegistNameInContainer("srand", -1);
+	sb->RegistNameInContainer("sin", -1);
+	sb->RegistNameInContainer("time", -1);
 	return true;
 }
 

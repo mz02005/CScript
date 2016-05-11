@@ -117,6 +117,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="doCallContext.cpp" />
     <ClCompile Include="doubleObj.cpp" />
     <ClCompile Include="doWhileStatement.cpp" />
     <ClCompile Include="floatObj.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="uint16Obj.cpp" />
     <ClCompile Include="uint32Obj.cpp" />
     <ClCompile Include="uint8Obj.cpp" />
+    <ClCompile Include="varContainer.cpp" />
     <ClCompile Include="vm.cpp" />
     <ClCompile Include="whileStatement.cpp" />
   </ItemGroup>

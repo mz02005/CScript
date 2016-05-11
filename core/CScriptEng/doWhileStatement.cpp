@@ -69,10 +69,10 @@ int DoWhileStatement::GenerateBreakStatementCode(BreakStatement *bs, CompileResu
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	uint32_t c = Statement::BlockDistance<DoWhileStatement>(this, bs);
-	// 需要退出栈帧
-	for (uint32_t i = 0; i < c; i++)
-		gih.Insert_popStackFrame_Instruction();
+	//uint32_t c = Statement::BlockDistance<DoWhileStatement>(this, bs);
+	//// 需要退出栈帧
+	//for (uint32_t i = 0; i < c; i++)
+	//	gih.Insert_popStackFrame_Instruction();
 
 	// 跳转语句
 	mBreakToFillList.push_back(gih.Insert_jump_Instruction(0));
@@ -83,10 +83,10 @@ int DoWhileStatement::GenerateContinueStatementCode(ContinueStatement *cs, Compi
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	uint32_t c = Statement::BlockDistance<DoWhileStatement>(this, cs);
-	// 需要退出栈帧
-	for (uint32_t i = 0; i < c; i ++)
-		gih.Insert_popStackFrame_Instruction();
+	//uint32_t c = Statement::BlockDistance<DoWhileStatement>(this, cs);
+	//// 需要退出栈帧
+	//for (uint32_t i = 0; i < c; i ++)
+	//	gih.Insert_popStackFrame_Instruction();
 
 	// 跳转语句
 	mContinueToFillList.push_back(gih.Insert_jump_Instruction(0));

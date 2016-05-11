@@ -88,8 +88,8 @@ int DeclareStatement::Compile(Statement *parent, SimpleCScriptEngContext *contex
 	
 	for (auto iter = mInfoList.begin(); iter != mInfoList.end(); iter++)
 	{
-		if ((r = GetBlockParent()->PushName(iter->mVarName.c_str(), mDeclType)) < 0)
-			return r;
+		if (!RegistName(iter->mVarName.c_str(), mDeclType))
+			return -1;
 		if (iter->mSetValueExpression)
 		{
 			if ((r = iter->mSetValueExpression->CreateExpressionTree()) < 0)
@@ -109,12 +109,16 @@ int DeclareStatement::GenerateInstruction(CompileResult *compileResult)
 	{
 		if (iter->mSetValueExpression)
 		{
-			uint32_t l, i;
-			bool throughFunc;
+			uint32_t l = 0, i = 0;
 
 			// 手动加一条赋值语句进去
-			GetBlockParent()->FindName(iter->mVarName.c_str(), throughFunc, l, i);
-			gih.Insert_copyAtFrame_Instruction(throughFunc, l, i);
+
+			if (!FindName(iter->mVarName.c_str(), l, i))
+			{
+				SCRIPT_TRACE("Varaible [%s] not found\n", iter->mVarName.c_str());
+				return -1;
+			}
+			gih.Insert_loadData_Instruction(l, i);
 
 			if ((r = iter->mSetValueExpression->GenerateInstruction(this, compileResult)) < 0)
 				return r;

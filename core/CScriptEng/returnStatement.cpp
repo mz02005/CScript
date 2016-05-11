@@ -42,8 +42,8 @@ int ReturnStatement::GenerateInstruction(CompileResult *compileResult)
 		p = p->GetParent();
 	if (!p)
 		return -1;
-	gih.Insert_popStackFrameAndSaveResult_Instruction(
-		Statement::BlockDistance<FunctionStatement>(static_cast<FunctionStatement*>(p), this));
+	//gih.Insert_popStackFrameAndSaveResult_Instruction(
+	//	Statement::BlockDistance<FunctionStatement>(static_cast<FunctionStatement*>(p), this));
 
 	gih.Insert_return_Instruction();
 	return r;
