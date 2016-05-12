@@ -7,13 +7,22 @@ IMPLEMENT_OBJINFO(DoWhileStatement,Statement)
 
 int DoWhileStatement::Compile(Statement *parent, SimpleCScriptEngContext *context)
 {
+	int parseResult;
+	Symbol symbol;
+
 	mParentBlock = parent;
 
-	int parseResult = mStatementBlock.Compile(this, context, false);
+	bool hasBrace = false;
+	if ((parseResult = context->GetNextSymbol(symbol)))
+		return -1;
+	if (symbol.symbolOrig == "{")
+		hasBrace = true;
+	else
+		context->GoBack();
+	parseResult = mStatementBlock.Compile(this, context, hasBrace);
 	if (parseResult != 0)
 		RETHELP(parseResult);
 
-	Symbol symbol;
 	parseResult = context->GetNextSymbol(symbol);
 	if (parseResult != 0)
 		RETHELP(parseResult);
@@ -69,10 +78,14 @@ int DoWhileStatement::GenerateBreakStatementCode(BreakStatement *bs, CompileResu
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	//uint32_t c = Statement::BlockDistance<DoWhileStatement>(this, bs);
-	//// 需要退出栈帧
-	//for (uint32_t i = 0; i < c; i++)
-	//	gih.Insert_popStackFrame_Instruction();
+	// 需要退出栈帧
+	uint32_t c;
+	bool b = Statement::BlockDistance<DoWhileStatement>(this, bs, c);
+	if (b)
+	{
+		for (uint32_t x = 0; x < c; x++)
+			gih.Insert_leaveBlock_Instruction();
+	}
 
 	// 跳转语句
 	mBreakToFillList.push_back(gih.Insert_jump_Instruction(0));
@@ -83,10 +96,14 @@ int DoWhileStatement::GenerateContinueStatementCode(ContinueStatement *cs, Compi
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	//uint32_t c = Statement::BlockDistance<DoWhileStatement>(this, cs);
-	//// 需要退出栈帧
-	//for (uint32_t i = 0; i < c; i ++)
-	//	gih.Insert_popStackFrame_Instruction();
+	// 需要退出栈帧
+	uint32_t c;
+	bool b = Statement::BlockDistance<DoWhileStatement>(this, cs, c);
+	if (b)
+	{
+		for (uint32_t x = 0; x < c; x++)
+			gih.Insert_leaveBlock_Instruction();
+	}
 
 	// 跳转语句
 	mContinueToFillList.push_back(gih.Insert_jump_Instruction(0));

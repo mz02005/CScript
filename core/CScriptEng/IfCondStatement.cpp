@@ -41,7 +41,14 @@ int IfConditionStatement::Compile(Statement *parent, SimpleCScriptEngContext *co
 	if (result != 0)
 		return -1;
 
-	result = mTrueBlock.Compile(this, context, true);
+	bool hasBrace = false;
+	if ((result = context->GetNextSymbol(symbol)) != 0)
+		return -1;
+	if (symbol.symbolOrig == "{")
+		hasBrace = true;
+	else
+		context->GoBack();
+	result = mTrueBlock.Compile(this, context, hasBrace);
 	if (result < 0)
 		return result;
 
@@ -69,7 +76,15 @@ int IfConditionStatement::Compile(Statement *parent, SimpleCScriptEngContext *co
 				eib.sb = new StatementBlock;
 				if ((result = context->ParseExpressionEndWith(c, eib.judg, ")")) != 0)
 					return -1;
-				if ((result = eib.sb->Compile(this, context, true)) != 0)
+
+				bool hasBrace = false;
+				if ((result = context->GetNextSymbol(symbol)) != 0)
+					return -1;
+				if (symbol.symbolOrig == "{")
+					hasBrace = true;
+				else
+					context->GoBack();
+				if ((result = eib.sb->Compile(this, context, hasBrace)) != 0)
 					return -1;
 				mElseIfStatementList.push_back(eib);
 				//StatementBlock *elseifSB = new StatementBlock;
@@ -83,7 +98,15 @@ int IfConditionStatement::Compile(Statement *parent, SimpleCScriptEngContext *co
 				// ÊÇelseÓï¾ä
 				context->GoBack();
 				mElseStatement = new StatementBlock;
-				result = mElseStatement->Compile(this, context, true);
+
+				bool hasBrace = false;
+				if ((result = context->GetNextSymbol(symbol)) != 0)
+					return -1;
+				if (symbol.symbolOrig == "{")
+					hasBrace = true;
+				else
+					context->GoBack();
+				result = mElseStatement->Compile(this, context, hasBrace);
 				if (result != 0)
 				{
 					delete mElseStatement;

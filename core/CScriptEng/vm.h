@@ -29,8 +29,15 @@ namespace runtime {
 		uint32_t mStackFrameSize;
 		std::vector<std::pair<uint32_t*,uint32_t*> > mPCFrame;
 
+		// 记录块帧，用于释放块内对象的内存
+		std::vector<uint32_t> mBlockFrame;
+		uint32_t mBlockFrameSize;
+
 		// 记录当前doCall的参数个数
 		uint32_t mParamCount;
+
+		// 临时寄存器，保存return之前的返回值
+		runtimeObjectBase *mA;
 
 		compiler::CompileResult *mCompileResult;
 
@@ -49,6 +56,9 @@ namespace runtime {
 		void SetCompareResult(bool r);
 
 		void GetOrigPC(uint32_t *&header, uint32_t *&tail) const;
+		
+		static const int mBlockFrameSectionSize = 4096;
+		void CheckForBlockFrameSize();
 
 		static inline bool isZero(runtimeObjectBase *base)
 		{
@@ -186,9 +196,12 @@ namespace runtime {
 		int OnInst_popStackFrameAndSaveResult(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 		int OnInst_loadData(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_enterBlock(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_leaveBlock(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_saveToA(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 	private:
-		void RunInner();
+		int RunInner();
 
 	private:
 		typedef int(runtimeContext::*OnInstruction)(Instruction *inst, uint8_t *moreData, uint32_t moreSize);

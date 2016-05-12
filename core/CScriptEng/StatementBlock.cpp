@@ -23,6 +23,8 @@ int StatementBlock::GenerateInstruction(CompileResult *compileResult)
 
 	GenerateInstructionHelper gih(compileResult);
 
+	gih.Insert_enterBlock_Instruction();
+
 	for (auto iter = mStatementList.begin(); iter != mStatementList.end(); iter++)
 	{
 		if ((r = (*iter)->GenerateInstruction(compileResult)) < 0)
@@ -36,9 +38,14 @@ int StatementBlock::GenerateInstruction(CompileResult *compileResult)
 	{
 		// 返回的是整数0
 		gih.Insert_createInt_Instruction(0);
+		gih.Insert_saveToA_Instruction();
+
+		gih.Insert_leaveBlock_Instruction();
 		gih.Insert_return_Instruction();
 	}
 	
+	gih.Insert_leaveBlock_Instruction();
+
 	return r;
 }
 
@@ -83,33 +90,18 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context)
 	return Compile(parent, context, true);
 }
 
-int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context, bool mayLackOfBrace)
+int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context, bool beginWithBrace)
 {
 	int r;
-	bool hasBraceAtBegin = false;
 	Symbol symbol;
 
 	mParentBlock = parent;
 
 	if (context->GetNextSymbol(symbol) != 0)
 		return -1;
-	if (!mayLackOfBrace && symbol.symbolOrig != "{")
-		return -1;
-	if (symbol.symbolOrig == "{")
-	{
-		// 
-		if (!mParentBlock)
-		{
-			// 为了处理{符号出现在代码第一个符号的情况
-			context->GoBack();
-		}
-		else
-			hasBraceAtBegin = true;
-	}
-	else {
-		if (mayLackOfBrace)
-			context->GoBack();
-	}
+	if (symbol.symbolOrig == "}" && !beginWithBrace)
+		return -2;
+	context->GoBack();
 
 	int parseResult;
 	while ((r = context->GetNextSymbol(symbol)) == 0)
@@ -172,8 +164,7 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 				// 没有循环可以跳出
 				if ((loopStatement = isInLoopStatementBlock(Statement::SupportBreak)) == nullptr)
 					return -1;
-				if (context->GetNextSymbol(symbol) != 0
-					|| symbol.symbolOrig != ";")
+				if (!context->GetNextSymbolMustBe(symbol, ";"))
 					return -1;
 				BreakStatement *breakStatement = new BreakStatement;
 				AddStatement(breakStatement);
@@ -183,8 +174,7 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 				Statement *loopStatement;
 				if ((loopStatement = isInLoopStatementBlock(Statement::SupportContinue)) == nullptr)
 					return -1;
-				if (context->GetNextSymbol(symbol) != 0
-					|| symbol.symbolOrig != ";")
+				if (!context->GetNextSymbolMustBe(symbol, ";"))
 					return -1;
 				ContinueStatement *conStatement = new ContinueStatement;
 				AddStatement(conStatement);
@@ -220,8 +210,7 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 			}
 			else if (symbol.keywordsType == KeywordsTransTable::CK_DEBUGBREAK)
 			{
-				if (context->GetNextSymbol(symbol) != 0
-					|| symbol.symbolOrig != ";")
+				if (!context->GetNextSymbolMustBe(symbol, ";"))
 					return -1;
 				DebugBreakStatement *db = new DebugBreakStatement;
 				AddStatement(db);
@@ -242,56 +231,27 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 			{
 				return -1;
 			}
-			if (mayLackOfBrace && !hasBraceAtBegin)
-			{
-				if (GetParent()->isInheritFrom(OBJECT_INFO(FunctionStatement))
-					&& static_cast<FunctionStatement*>(GetParent())->isTopLevelFun())
-				{
-					// 如果是顶层函数，则不要退出，继续分析
-				}
-				else
-				{
-					break;
-				}
-			}
-			if ((parseResult = context->GetNextSymbol(symbol)) == 0)
-			{
-				if (symbol.symbolOrig == ";")
-				{
-					if (!hasBraceAtBegin)
-						return 0;
-				}
-				context->GoBack();
-			}
 		}
 		else if (symbol.type == Symbol::terminalChar)
 		{
 			if (symbol.symbolOrig == "}")
 			{
-				if (!hasBraceAtBegin)
-				{
-					// 出现了右花括号，而当前块不是由花括号开始的，那就表明当前块结束了
-					if (mParentBlock)
-					{
-						context->GoBack();
-						return 0;
-					}
+				// 顶层function是不会遇到}的
+				if (GetParent()->isInheritFrom(OBJECT_INFO(FunctionStatement))
+					&& GetFunctionParent()->isTopLevelFun())
 					return -1;
-				}
+				if (!beginWithBrace)
+					return -1;
 				return 0;
 			}
 			else if (symbol.symbolOrig == ";")
 			{
-				// 不能因为一个分号而退出了顶层的编译
-				if (!hasBraceAtBegin && mParentBlock != nullptr)
-					return 0;
 			}
 			else if (symbol.symbolOrig == "{")
 			{
 				// 一个空的block
-				context->GoBack();
 				StatementBlock *blockStatement = new StatementBlock;
-				int result = blockStatement->Compile(this, context);
+				int result = blockStatement->Compile(this, context, true);
 				if (result != 0) {
 					delete blockStatement;
 					RETHELP(result);
@@ -319,15 +279,10 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 				RETHELP(parseResult);
 			}
 			AddStatement(pureExp);
-			if (!hasBraceAtBegin)
-			{
-				if (!(GetParent()->isInheritFrom(OBJECT_INFO(FunctionStatement))
-					&& static_cast<FunctionStatement*>(GetParent())->isTopLevelFun()))
-				{
-					return 0;
-				}
-			}
 		}
+
+		if (!beginWithBrace)
+			return 0;
 	}
 
 	return r;

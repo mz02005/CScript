@@ -140,6 +140,7 @@ runtimeContext::runtimeContext(VMConfig *config)
 	, mCurrentStack(0)
 	, mParamCount(0)
 	, mCallStackLayer(0)
+	, mBlockFrameSize(0)
 {
 	if (config) {
 		mConfig = *config;
@@ -607,6 +608,45 @@ int runtimeContext::OnInst_loadData(Instruction *inst, uint8_t *moreData, uint32
 	return PushObject(mRuntimeStack[stackPos]);
 }
 
+void runtimeContext::CheckForBlockFrameSize()
+{
+	if (mBlockFrameSize == mBlockFrame.size())
+		mBlockFrame.resize(mBlockFrame.size() + mBlockFrameSectionSize);
+}
+
+int runtimeContext::OnInst_enterBlock(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	CheckForBlockFrameSize();
+	mBlockFrame[mBlockFrameSize++] = mCurrentStack;
+	return 0;
+}
+
+int runtimeContext::OnInst_leaveBlock(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	if (!mBlockFrameSize)
+	{
+		SCRIPT_TRACE("runtimeContext::OnInst_leaveBlock: Underflow.\n");
+		return -1;
+	}
+	uint32_t up = mCurrentStack;
+	mCurrentStack = mBlockFrame[--mBlockFrameSize];
+	for (uint32_t x = mCurrentStack; x < up; x++)
+		mRuntimeStack[x]->Release();
+	return 0;
+}
+
+int runtimeContext::OnInst_saveToA(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	if (!mCurrentStack)
+	{
+		SCRIPT_TRACE("runtimeContext::OnInst_saveToA: downflow.\n");
+		return -1;
+	}
+	mA = mRuntimeStack[mCurrentStack - 1];
+	mA->AddRef();
+	return 0;
+}
+
 int runtimeContext::OnInst_setVal(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
 	if (mCurrentStack < 2)
@@ -1012,6 +1052,7 @@ namespace runtime {
 		// docall（函数调用一元运算）
 		virtual runtimeObjectBase* doCall(doCallContext *context)
 		{
+			int calRet;
 			if (context->GetParamCount() != mFuncDesc.paramCount)
 			{
 				SCRIPT_TRACE("FunctionObject::doCall: param count not match.\n");
@@ -1035,13 +1076,13 @@ namespace runtime {
 				mContext->PushObject(mContext->mRuntimeStack[tempStackPos - mFuncDesc.paramCount + pi]);
 			}
 			mContext->mCallStackLayer++;
-			mContext->Execute(&cc, mContext->GetCompileResult());
+			if ((calRet = mContext->Execute(&cc, mContext->GetCompileResult())) != -100)
+			{
+				return nullptr;
+			}
 			// 当前栈顶元素就是返回值，保存它
-			runtimeObjectBase *o = mContext->mRuntimeStack[mContext->mCurrentStack - 1];
-			o->AddRef();
+			runtimeObjectBase *o = mContext->mA;
 			mContext->OnInst_popStackFrame(nullptr, nullptr, 0);
-			// 将保存的对象压入堆栈，同时为了平衡刚才为了保留它不被清理而增加的引用计数，Release一下
-			o->ReleaseNotDelete();
 
 			// 恢复当前级别的执行环境
 			mContext->mPC = pcSaved;
@@ -1049,6 +1090,7 @@ namespace runtime {
 			mContext->mPCEnd = pcEndSaved;
 			mContext->mParamCount = paramCountSaved;
 			mContext->mCallStackLayer = callLayerSaved;
+			o->ReleaseNotDelete();
 			return o;
 		}
 
@@ -1093,7 +1135,7 @@ int runtimeContext::OnInst_createFunction(Instruction *inst, uint8_t *moreData, 
 
 int runtimeContext::OnInst_return(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
-	return -1;
+	return -100;
 }
 
 template <typename T>
@@ -1317,11 +1359,11 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInst_copyAtFrame2, 4, },
 	{ &runtimeContext::OnInst_popStackFrameAndSaveResult, 0, },
 	{ &runtimeContext::OnInst_loadData, 4, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_enterBlock, 0, },
 
 	// 51
-	{ &runtimeContext::OnInvalidInstruction, 0, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_leaveBlock, 0, },
+	{ &runtimeContext::OnInst_saveToA, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
@@ -1567,8 +1609,9 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 };
 
-void runtimeContext::RunInner()
+int runtimeContext::RunInner()
 {
+	int r = 0;
 	for (;;)
 	{
 		if (mPC >= mPCEnd)
@@ -1577,7 +1620,6 @@ void runtimeContext::RunInner()
 		Instruction *inst = reinterpret_cast<Instruction*>(mPC++);
 		OnInstruction onInst = mIES[inst->code].inst;
 
-		int r;
 		uint32_t s = mIES[inst->code].moreSize;
 		// 返回<0的值表示退出
 		// 返回=0表示指令指针需要按需调整
@@ -1587,6 +1629,7 @@ void runtimeContext::RunInner()
 		if (s && !r)
 			mPC = reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(mPC)+s);
 	}
+	return r;
 }
 
 int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack)
@@ -1601,7 +1644,7 @@ int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, 
 
 	uint32_t stackPosition = mCurrentStack;
 
-	RunInner();
+	int r = RunInner();
 
 	if (recoveryStack)
 	{
@@ -1611,7 +1654,7 @@ int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, 
 		mCurrentStack = stackPosition;
 	}
 
-	return 0;
+	return r;
 }
 
 int runtimeContext::Execute(compiler::CompileResult *compileResult)

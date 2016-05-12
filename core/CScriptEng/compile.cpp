@@ -1532,6 +1532,14 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 	return -1;
 }
 
+bool SimpleCScriptEngContext::GetNextSymbolMustBe(Symbol &symbol, const std::string &v)
+{
+	if (GetNextSymbol(symbol) != 0
+		|| symbol.symbolOrig != v)
+		return false;
+	return true;
+}
+
 int SimpleCScriptEngContext::GetNextSymbol(Symbol &symbol)
 {
 	symbol.symbolOrig.clear();

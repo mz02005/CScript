@@ -105,7 +105,15 @@ int FunctionStatement::Compile(Statement *parent, SimpleCScriptEngContext *conte
 		context->GoBack();
 	}
 
-	if ((parseResult = mFunctionBody.Compile(this, context, true)) < 0)
+	bool hasBrace = true;
+	if (!isTopLevelFun())
+	{
+		if ((parseResult = context->GetNextSymbol(symbol)) != 0)
+			return -1;
+		if (symbol.symbolOrig != "{")
+			return -1;
+	}
+	if ((parseResult = mFunctionBody.Compile(this, context, hasBrace)) < 0)
 		return parseResult;
 	
 	return parseResult;

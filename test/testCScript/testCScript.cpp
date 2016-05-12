@@ -5,10 +5,25 @@
 
 int ExecuteCode(const std::wstring &filePathName);
 
+void RunTestCase();
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	scriptAPI::SimpleCScriptEng::Init();
+	if (argc == 1)
+	{
+		RunTestCase();
+	}
+	else
+	{
+		ExecuteCode(argv[1]);
+	}
+	scriptAPI::SimpleCScriptEng::Term();
+	return 0;
+}
 
+void RunTestCase()
+{
 	std::wstring appDir;
 	appDir.resize(MAX_PATH);
 	appDir.resize(::GetModuleFileNameW(nullptr, &appDir[0], MAX_PATH));
@@ -43,9 +58,6 @@ int _tmain(int argc, _TCHAR* argv[])
 			::FindClose(f);
 		}
 	}
-
-	scriptAPI::SimpleCScriptEng::Term();
-	return 0;
 }
 
 int ExecuteCode(const std::wstring &filePathName)

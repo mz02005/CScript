@@ -71,6 +71,7 @@ namespace runtime
 		// 类似于间接地址访问
 		VM_copyAtFrame,
 
+		// 已废弃
 		// 栈帧的维护，最多有65536*256个栈帧，目前本虚拟机还不支持子过程调用
 		// 仅支持对象的功能调用。但是，将来支持子过程调用的话，也将使用栈帧来
 		// 维护调用栈，所以，最终只支持这么多级的调用
@@ -112,6 +113,13 @@ namespace runtime
 		// 加载数据的指令
 		// 它的参数和初代的copyAtFrame一样
 		VM_loadData,
+
+		// 代替原来的VM_pushStackFrame和VM_popStackFrame
+		VM_enterBlock,
+		VM_leaveBlock,
+
+		// 用来在leaveBlock之前保存函数返回值
+		VM_saveToA,
 	};
 
 #pragma pack(push,1)
@@ -546,5 +554,20 @@ namespace compiler
 		//	inst->data = layer;
 		//	mCode.push_back(ci);
 		//}
+
+		void Insert_enterBlock_Instruction()
+		{
+			mCode.push_back(runtime::VM_enterBlock);
+		}
+
+		void Insert_leaveBlock_Instruction()
+		{
+			mCode.push_back(runtime::VM_leaveBlock);
+		}
+
+		void Insert_saveToA_Instruction()
+		{
+			mCode.push_back(runtime::VM_saveToA);
+		}
 	};
 }

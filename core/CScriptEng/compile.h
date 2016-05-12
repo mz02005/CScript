@@ -154,7 +154,7 @@ namespace compiler
 			const char *operString;
 			int participator;
 			int priority;
-			// 用于计算整数常亮表达式（用于switch语句）
+			// 用于计算整数常量表达式（用于switch语句）
 			bool (*CalcIntConst)(int &a, int l, int r);
 			// 指定结合方向，0是左结合，1是右结合
 			int combineDir;
@@ -253,7 +253,7 @@ namespace compiler
 		bool mHasConstruct;
 
 		// 本编译器在处理超过2元的运算时，也会将其处理为2元
-		// 这个变量用来指示是否已经处理了左右字表达式（如果有的话）
+		// 这个变量用来指示是否已经处理了左右子表达式（如果有的话）
 		bool mHasGenerate;
 
 		// 指示析构的时候是否删除子对象
@@ -261,10 +261,7 @@ namespace compiler
 
 		const OperatorHelper::OperatorTableEntry *mOperatorEntry;
 		ExpressionNode *mSubNodes[2];
-
-		//// 如果是.操作符，则在分析符号的时候，会将该成员设置为字符串的id
-		//uint32_t mDotOperatorStrId;
-
+		
 		// 当是点操作（取成员操作符）时，记录成员的名称
 		std::string mMemberName;
 
@@ -281,7 +278,6 @@ namespace compiler
 		DECLARE_OBJINFO(SubProcCallExpression)
 
 	private:
-		//std::string mSubProcName;
 		// 实参表达式列表
 		std::list<PostfixExpression*> mRealParams;
 
@@ -391,6 +387,27 @@ namespace compiler
 		Statement();
 		virtual ~Statement();
 
+		template <typename StatementType>
+		static bool BlockDistance(StatementType *parent, Statement *sun, uint32_t &dist)
+		{
+			dist = 0;
+			Statement *s = sun->GetParent();
+			while (s)
+			{
+				if (s->isInheritFrom(OBJECT_INFO(StatementType)) && static_cast<StatementType*>(s) == parent)
+					break;
+
+				if (s->isInheritFrom(OBJECT_INFO(FunctionStatement)))
+					return false;
+
+				if (s->isInheritFrom(OBJECT_INFO(StatementBlock)))
+					dist++;
+
+				s = s->GetParent();
+			}
+			return true;
+		}
+
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context) { return -1; }
 		virtual int GenerateInstruction(CompileResult *compileResult) {
 			SCRIPT_TRACE("GenerateInstruction function does not implement by [%s].\n",
@@ -444,7 +461,7 @@ namespace compiler
 		virtual ~StatementBlock();
 
 		void AddStatement(Statement *statement);
-		int Compile(Statement *parent, SimpleCScriptEngContext *context, bool mayLackOfBrace);
+		int Compile(Statement *parent, SimpleCScriptEngContext *context, bool beginWithBrace);
 
 		bool RegistNameInBlock(const char *name, uint32_t declType = 0);
 		bool FindNameInBlock(const char *name, uint32_t &l, uint32_t &i) const;
@@ -775,6 +792,7 @@ namespace compiler
 
 		int BeginParseSymbol(scriptAPI::ScriptSourceCodeStream *codeStream);
 		int GetNextSymbol(Symbol &symbol);
+		bool GetNextSymbolMustBe(Symbol &symbol, const std::string &v);
 		void GoBack();
 		int ParseExpressionEndWith(char &c, PostfixExpression *pe, const std::string &terminalC = "\0");
 		int PushName(const char *name);

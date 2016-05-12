@@ -93,18 +93,19 @@ int SwitchStatement::OnCaseOrDefault(SimpleCScriptEngContext *context, bool isDe
 				break;
 			}
 
-			bool mayLackOfBrace = true;
+			bool hasBrace = false;
 			if (symbol.symbolOrig == "{")
-				mayLackOfBrace = false;
-			context->GoBack();
+				hasBrace = true;
+			else
+				context->GoBack();
 
 			sb = new StatementBlock;
-			if ((result = sb->Compile(this, context, mayLackOfBrace)) < 0)
+			if ((result = sb->Compile(this, context, hasBrace)) < 0)
 			{
 				delete sb;
 				break;
 			}
-			if (mayLackOfBrace)
+			if (hasBrace)
 			{
 				std::list<Statement*> &sl = sb->GetStatementList();
 				for (auto iter = sl.begin(); iter != sl.end(); iter++)
@@ -152,9 +153,7 @@ int SwitchStatement::Compile(Statement *parent, SimpleCScriptEngContext *context
 	if ((result = context->ParseExpressionEndWith(c, &mSwitchExpression, ")")) < 0)
 		return result;
 
-	if ((result = context->GetNextSymbol(symbol)) != 0)
-		RETHELP(result);
-	if (symbol.symbolOrig != "{")
+	if (!context->GetNextSymbolMustBe(symbol, "{"))
 		return -1;
 
 	// case£¨default£¨ªÚ’ﬂ}
@@ -300,6 +299,14 @@ int SwitchStatement::GenerateInstruction(CompileResult *compileResult)
 int SwitchStatement::GenerateBreakStatementCode(BreakStatement *bs, CompileResult *compileResult)
 {
 	GenerateInstructionHelper gih(compileResult);
+
+	uint32_t dist;
+	bool b = Statement::BlockDistance<SwitchStatement>(this, bs, dist);
+	if (b)
+	{
+		for (uint32_t x = 0; x < dist; x++)
+			gih.Insert_leaveBlock_Instruction();
+	}
 
 	// Ã¯◊™”Ôæ‰
 	mBreakToFillList.push_back(gih.Insert_jump_Instruction(0));

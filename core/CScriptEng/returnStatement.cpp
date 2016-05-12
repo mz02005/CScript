@@ -37,6 +37,8 @@ int ReturnStatement::GenerateInstruction(CompileResult *compileResult)
 	if (r < 0)
 		return r;
 
+	gih.Insert_saveToA_Instruction();
+
 	Statement *p = GetParent();
 	while (p && !p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
 		p = p->GetParent();
@@ -45,6 +47,11 @@ int ReturnStatement::GenerateInstruction(CompileResult *compileResult)
 	//gih.Insert_popStackFrameAndSaveResult_Instruction(
 	//	Statement::BlockDistance<FunctionStatement>(static_cast<FunctionStatement*>(p), this));
 
+	uint32_t c;
+	bool b = Statement::BlockDistance<FunctionStatement>(
+		static_cast<FunctionStatement*>(p), this, c);
+	for (uint32_t x = 0; x < c; x++)
+		gih.Insert_leaveBlock_Instruction();
 	gih.Insert_return_Instruction();
 	return r;
 }

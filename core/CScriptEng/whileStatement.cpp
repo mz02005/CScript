@@ -22,7 +22,14 @@ int WhileStatement::Compile(Statement *parent, SimpleCScriptEngContext *context)
 	if ((parseResult = context->ParseExpressionEndWith(c, &mJudgementExpression, ")")) != 0)
 		RETHELP(parseResult);
 	
-	if ((parseResult = mStatementBlock.Compile(this, context, false)) != 0)
+	bool hasBrace = false;
+	if ((parseResult = context->GetNextSymbol(symbol)) != 0)
+		return -1;
+	if (symbol.symbolOrig == "{")
+		hasBrace = true;
+	else
+		context->GoBack();
+	if ((parseResult = mStatementBlock.Compile(this, context, hasBrace)) != 0)
 		RETHELP(parseResult);
 
 	return mJudgementExpression.CreateExpressionTree();
@@ -64,11 +71,14 @@ int WhileStatement::GenerateBreakStatementCode(BreakStatement *bs, CompileResult
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	//uint32_t c = Statement::BlockDistance<WhileStatement>(this, bs);
-
-	//// 需要退出栈帧
-	//for (uint32_t i = 0; i < c; i++)
-	//	gih.Insert_popStackFrame_Instruction();
+	// 需要退出栈帧
+	uint32_t c;
+	bool b = Statement::BlockDistance<WhileStatement>(this, bs, c);
+	if (b)
+	{
+		for (uint32_t x = 0; x < c; x++)
+			gih.Insert_leaveBlock_Instruction();
+	}
 
 	// 跳转语句
 	mBreakToFillList.push_back(gih.Insert_jump_Instruction(0));
@@ -80,11 +90,14 @@ int WhileStatement::GenerateContinueStatementCode(ContinueStatement *cs, Compile
 {
 	GenerateInstructionHelper gih(compileResult);
 
-	//uint32_t c = Statement::BlockDistance<WhileStatement>(this, cs);
-
-	//// 需要退出栈帧
-	//for (uint32_t i = 0; i < c; i ++)
-	//	gih.Insert_popStackFrame_Instruction();
+	// 需要退出栈帧
+	uint32_t c;
+	bool b = Statement::BlockDistance<WhileStatement>(this, cs, c);
+	if (b)
+	{
+		for (uint32_t x = 0; x < c; x++)
+			gih.Insert_leaveBlock_Instruction();
+	}
 
 	// 跳转语句
 	mContinueToFillList.push_back(gih.Insert_jump_Instruction(0));

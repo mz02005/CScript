@@ -44,6 +44,12 @@ Statement* Statement::isInLoopStatementBlock(uint32_t breakOrContinue)
 			return nullptr;
 		}
 
+		if (p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
+		{
+			// 循环之类的，被FunctionStatement截断
+			// 说明在当前FunctionStatement中，不存在相匹配的循环代码
+			break;
+		}
 		p = p->GetParent();
 	}
 	return nullptr;
