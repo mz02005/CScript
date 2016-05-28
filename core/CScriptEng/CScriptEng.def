@@ -20,6 +20,7 @@ EXPORTS
 	DestroyVirtualMachine
 	PushRuntimeObject
 	VirtualMachineExecute
+	ReplaceRuntimeFunc
 
 	CreateInt32Instance
 	SetInt32Value

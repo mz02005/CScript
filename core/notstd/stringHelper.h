@@ -217,31 +217,34 @@ public:
 		return str;
 	}
 
-	static std::string& StringHelper::Format(std::string &str, const char *szFormat, ...)
+	static std::string& Format(std::string &str, const char *szFormat, ...)
 	{
 		va_list argList;
 		va_start(argList,szFormat);
 
-		str.clear();
+		//str.clear();
 
-		int size = 64;
-		char *buffer = reinterpret_cast<char*>(malloc(size));
-		if (!buffer)
-			return str;
+		std::string::size_type size = 64;
+		//char *buffer = reinterpret_cast<char*>(malloc(size));
+		//if (!buffer)
+		//	return str;
+		str.resize(size);
+		int n = vsnprintf(&str[0], size - 1, szFormat, argList);
 
-		int n = vsnprintf(buffer, size - 1, szFormat, argList);
+		//int n = vsnprintf(buffer, size - 1, szFormat, argList);
 		do {
-#if defined(PLATFORM_WINDOWS)
+#if defined(WIN32)
 			while (n == -1)
 			{
 				if (size > 1024)
 					size += 1024;
 				else
 					size *= 2;
-				buffer = reinterpret_cast<char*>(realloc(buffer, size));
-				if (!buffer)
-					return str;
-				n = vsnprintf(buffer, size - 1, szFormat, argList);
+				//buffer = reinterpret_cast<char*>(realloc(buffer, size));
+				//if (!buffer)
+				//	return str;
+				str.resize(size);
+				n = vsnprintf(&str[0], size - 1, szFormat, argList);
 			}
 #else
 			if (n < 0)
@@ -249,17 +252,19 @@ public:
 			if (n >= size)
 			{
 				size = n * 2;
-				buffer = reinterpret_cast<char*>(realloc(size));
+				buffer = reinterpret_cast<char*>(realloc(buffer, size));
 				n = vsnprintf(buffer, size - 1, szFormat, argList);
 			}
 #endif
 		} while (0);
 		va_end(argList);
-		if (buffer)
+
+		if (n >= 0)
 		{
-			buffer[n] = 0;
-			str = buffer;
-			free(buffer);
+			//buffer[n] = 0;
+			//str = buffer;
+			//free(buffer);
+			str.resize(n);
 		}
 		return str;
 	}

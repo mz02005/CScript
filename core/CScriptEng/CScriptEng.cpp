@@ -3,6 +3,7 @@
 #include "vm.h"
 #include <io.h>
 #include <algorithm>
+#include "cscript.h"
 
 #ifdef min
 #undef min
@@ -174,6 +175,11 @@ int ScriptCompiler::PushName(const char *name)
 	return mCompilerContext->PushName(name);
 }
 
+int ScriptCompiler::FindGlobalName(const char *name)
+{
+	return mCompilerContext->FindGlobalName(name);
+}
+
 HANDLE ScriptCompiler::Compile(ScriptSourceCodeStream *stream, bool end)
 {
 	return mCompilerContext->Compile(stream, end);
@@ -266,3 +272,13 @@ ScriptRuntimeContext* ScriptRuntimeContext::CreateScriptRuntimeContext(uint32_t 
 {
 	return new ScriptRuntimeContext(stackSize, stackFrameSize);
 }
+
+int ScriptRuntimeContext::ReplaceRuntimeFunc(const char *toReplace, void *runtimeObj, void *cHandle)
+{
+	ScriptCompiler *compiler = reinterpret_cast<ScriptCompiler*>(cHandle);
+	int r = compiler->FindGlobalName(toReplace);
+	if (r < 0)
+		return r;
+	return mContextInner->ReplaceObject(r, reinterpret_cast<runtimeObjectBase*>(runtimeObj));
+}
+

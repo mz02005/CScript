@@ -796,6 +796,7 @@ namespace compiler
 		void GoBack();
 		int ParseExpressionEndWith(char &c, PostfixExpression *pe, const std::string &terminalC = "\0");
 		int PushName(const char *name);
+		int FindGlobalName(const char *name);
 
 		CompileResult& GetCompileResult() { return *mCompileResult; }
 

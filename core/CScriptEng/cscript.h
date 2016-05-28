@@ -33,6 +33,7 @@ CSCRIPT_API int CreateVirtualMachine(VirtualMachineHandle *handle,
 CSCRIPT_API void DestroyVirtualMachine(VirtualMachineHandle handle);
 CSCRIPT_API int PushRuntimeObject(VirtualMachineHandle handle, void *object);
 CSCRIPT_API int VirtualMachineExecute(VirtualMachineHandle handle, CompileResultHandle compileResult);
+CSCRIPT_API int ReplaceRuntimeFunc(const char *toReplace, void *runtimeObj, CompilerHandle cHandle, VirtualMachineHandle vmHandle);
 
 CSCRIPT_API int CreateInt32Instance(void **intObj);
 CSCRIPT_API int SetInt32Value(void *intObj, int value);

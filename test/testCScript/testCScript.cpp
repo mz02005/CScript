@@ -3,7 +3,7 @@
 #include "CScriptEng/vm.h"
 #include <iostream>
 
-int ExecuteCode(const std::wstring &filePathName);
+int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile = false);
 
 void RunTestCase();
 
@@ -16,7 +16,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	else
 	{
-		ExecuteCode(argv[1]);
+		ExecuteCode(argv[1], true);
 	}
 	scriptAPI::SimpleCScriptEng::Term();
 	return 0;
@@ -60,7 +60,7 @@ void RunTestCase()
 	}
 }
 
-int ExecuteCode(const std::wstring &filePathName)
+int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile)
 {
 	std::wcout << L"Source file: " << filePathName << std::endl;
 
@@ -71,6 +71,28 @@ int ExecuteCode(const std::wstring &filePathName)
 	HANDLE h = compiler.Compile(&fs, true);
 	if (h)
 	{
+		if (saveCodeToFile)
+		{
+			// 保存到和被执行的代码相同的路径中，扩展名为.txt
+			std::wstring codePath = filePathName + L".txt";
+			FILE *file = nullptr;
+			::_wfopen_s(&file, codePath.c_str(), L"wb");
+			do {
+				if (!file)
+				{
+					printf("Open code file file.\n");
+					break;
+				}
+				if (
+					compiler.SaveCodeToFile(h, file) < 0
+					|| compiler.SaveConstStringTableInResultToFile(h, file) < 0)
+				{
+					printf("Save code fail.\n");
+				}
+				::fclose(file);
+			} while (0);
+		}
+
 		std::wcout << L"Compile file success. Start to execute. " << std::endl;
 		scriptAPI::ScriptRuntimeContext *runtimeContext
 			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(512, 512);

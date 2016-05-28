@@ -15,6 +15,6 @@ int DebugBreakStatement::Compile(Statement *parent, SimpleCScriptEngContext *con
 int DebugBreakStatement::GenerateInstruction(CompileResult *compileResult)
 {
 	GenerateInstructionHelper gih(compileResult);
-	gih.Insert_debugbreak_Instruction();
+	gih.Insert_debug1_Instruction();
 	return 0;
 }

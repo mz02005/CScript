@@ -215,6 +215,7 @@ namespace runtime {
 	public:
 		compiler::CompileResult* GetCompileResult() { return mCompileResult; }
 		int PushObject(runtimeObjectBase *obj);
+		int ReplaceObject(int pos, runtimeObjectBase *obj);
 
 		runtimeContext(VMConfig *config);
 		~runtimeContext();

@@ -105,6 +105,12 @@ extern "C"
 		return rc->ExecuteCode(codeHandle, compileResult);
 	}
 
+	int ReplaceRuntimeFunc(const char *toReplace, void *runtimeObj, CompilerHandle cHandle, VirtualMachineHandle vmHandle)
+	{
+		scriptAPI::ScriptRuntimeContext *rc = reinterpret_cast<scriptAPI::ScriptRuntimeContext*>(vmHandle);
+		return rc->ReplaceRuntimeFunc(toReplace, runtimeObj, cHandle);
+	}
+
 	int CreateInt32Instance(void **intObj)
 	{
 		*intObj = reinterpret_cast<void*>(new runtime::ObjectModule<runtime::intObject>);

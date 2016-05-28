@@ -191,6 +191,8 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 		println->mDlg = this;
 		PushRuntimeObject(virtualMachine, println);
 
+		ReplaceRuntimeFunc("println", println, cHandle, virtualMachine);
+
 		if (VirtualMachineExecute(virtualMachine, crHandle) < 0)
 			break;
 

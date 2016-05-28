@@ -58,4 +58,11 @@ namespace runtime {
 	public:
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
+
+	// ×Ö·û´®¸¨Öúº¯Êý
+	class substrObj : public runtime::baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
+	};
 }

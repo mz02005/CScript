@@ -37,6 +37,7 @@ bool rtLibHelper::RegistObjNames(compiler::FunctionStatement *sb)
 	sb->RegistNameInContainer("srand", -1);
 	sb->RegistNameInContainer("sin", -1);
 	sb->RegistNameInContainer("time", -1);
+	sb->RegistNameInContainer("substr", -1);
 	return true;
 }
 
@@ -56,6 +57,8 @@ bool rtLibHelper::RegistRuntimeObjs(runtimeContext *context)
 	context->PushObject(new runtime::ObjectModule<runtime::sinObj>);
 
 	context->PushObject(new runtime::ObjectModule<runtime::timeObj>);
+
+	context->PushObject(new runtime::ObjectModule<runtime::substrObj>);
 
 	return true;
 }
@@ -77,9 +80,12 @@ runtimeObjectBase* printObj::doCall(runtime::doCallContext *context)
 	runtime::stringObject *s = context->GetParam(0)->toString();
 	if (s)
 	{
-		printf("%s", s->mVal->c_str());
+		printf("%s%s", s->mVal->c_str(), mPrintLine ? "\n" : "");
+#if defined(WIN32) && (defined(DEBUG) || defined(_DEBUG))
+		OutputDebugStringA(s->mVal->c_str());
 		if (mPrintLine)
-			printf("\n");
+			OutputDebugStringA("\n");
+#endif
 		return s;
 	}
 	return new runtime::ObjectModule<runtime::baseObjDefault>();
@@ -152,4 +158,30 @@ runtimeObjectBase* timeObj::doCall(runtime::doCallContext *context)
 	a->AddSub(runtime::intObject::CreateIntObject(r.tm_sec));
 
 	return a;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+runtimeObjectBase* substrObj::doCall(runtime::doCallContext *context)
+{
+	uint32_t c = context->GetParamCount();
+	std::string::size_type from = 0, size = -1;
+	stringObject *r = new runtime::ObjectModule<stringObject>;
+	std::string s;
+	if (c < 2)
+		return r;
+	if (c >= 1)
+	{
+		s = context->GetStringParam(0);
+	}
+	if (c >= 2)
+	{
+		from = context->GetUint32Param(1);
+	}
+	if (c >= 3)
+	{
+		size = context->GetUint32Param(2);
+	}
+	*r->mVal = StringHelper::Mid(s, from, size);
+	return r;
 }

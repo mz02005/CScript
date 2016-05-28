@@ -681,6 +681,20 @@ int runtimeContext::PushObject(runtimeObjectBase *obj)
 	return 0;
 }
 
+int runtimeContext::ReplaceObject(int pos, runtimeObjectBase *obj)
+{
+	uint32_t m = (uint32_t)pos;
+	if (m >= mCurrentStack)
+	{
+		SCRIPT_TRACE("ReplaceObject outof range\n");
+		return -1;
+	}
+	mRuntimeStack[m]->Release();
+	mRuntimeStack[m] = obj;
+	obj->AddRef();
+	return 0;
+}
+
 void runtimeContext::SetCompareResult(bool r)
 {
 	mRuntimeStack[mCurrentStack - 2]->Release();
@@ -957,7 +971,7 @@ int runtimeContext::OnInst_debugbreak(Instruction *inst, uint8_t *moreData, uint
 }
 
 namespace runtime {
-	class FunctionObject : public runtimeObjectBase
+	class FunctionObject : public baseTypeObject
 	{
 	private:
 		FunctionDesc mFuncDesc;
@@ -1046,7 +1060,7 @@ namespace runtime {
 		// 处理.操作符（一元的）
 		virtual runtimeObjectBase* GetMember(const char *memName)
 		{
-			return nullptr;
+			return __super::GetMember(memName);
 		}
 
 		// docall（函数调用一元运算）
@@ -1103,7 +1117,9 @@ namespace runtime {
 		// 对象转化为字符串
 		virtual stringObject* toString()
 		{
-			return nullptr;
+			stringObject *s = new runtime::ObjectModule<stringObject>;
+			s->mVal->append(mFuncName);
+			return s;
 		}
 
 		// 比较

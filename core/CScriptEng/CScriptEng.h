@@ -502,6 +502,7 @@ namespace scriptAPI {
 		ScriptCompiler();
 		~ScriptCompiler();
 		int PushName(const char *name);
+		int FindGlobalName(const char *name);
 		HANDLE Compile(ScriptSourceCodeStream *stream, bool end = true);
 		static int SaveConstStringTableInResultToFile(HANDLE crHandle, FILE *file);
 		static int LoadConstStringTableToResultFromFile(HANDLE crHandle, FILE *file);
@@ -529,5 +530,7 @@ namespace scriptAPI {
 
 		// 执行codeHandle指定的代码，但是使用compileResult指定的符号表
 		int ExecuteCode(HANDLE code, HANDLE compileResult);
+
+		int ReplaceRuntimeFunc(const char *toReplace, void *runtimeObj, void *cHandle);
 	};
 }

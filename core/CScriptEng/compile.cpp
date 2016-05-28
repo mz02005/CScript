@@ -901,27 +901,27 @@ const OperatorHelper::OperatorTableEntry OperatorHelper::mOperTable[] =
 	{ OP_bitwise_xor,"^", 2, 40, &ConstIntegerCalucator::bitwise_xor, },
 	{ OP_bitwise_and,"&", 2, 40, &ConstIntegerCalucator::bitwise_and, },
 	{ OP_bitwise_not, "~", 1, 100, &ConstIntegerCalucator::bitwise_not, 1, },
-	{ OP_bitwise_or,"|", 2, 20, &ConstIntegerCalucator::bitwise_or, },
+	{ OP_bitwise_or,"|", 2, 30, &ConstIntegerCalucator::bitwise_or, },
 	{ OP_mul,"*", 2, 50, &ConstIntegerCalucator::mul, },
 	{ OP_sub,"-", 2, 40, &ConstIntegerCalucator::sub, },
 	{ OP_add,"+", 2, 40, &ConstIntegerCalucator::add, },
 	{ OP_div,"/", 2, 50, &ConstIntegerCalucator::div, },
 	{ OP_setval,"=", 2, 10, nullptr, 1, },
-	{ OP_lessthan, "<", 2, 20, &ConstIntegerCalucator::lessthan, },
-	{ OP_greaterthan, ">", 2, 20, &ConstIntegerCalucator::greaterthan, },
+	{ OP_lessthan, "<", 2, 30, &ConstIntegerCalucator::lessthan, },
+	{ OP_greaterthan, ">", 2, 30, &ConstIntegerCalucator::greaterthan, },
 
-	{ OP_isnotequal, "!=", 2, 20, &ConstIntegerCalucator::isnotequal, },
-	{ OP_mod_setval, "%=", 2, 20, },
-	{ OP_bitwise_xor_setval, "^=", 2, 20, },
-	{ OP_bitwise_and_setval, "&=", 2, 20, },
-	{ OP_bitwise_or_setval, "|=", 2, 20, },
-	{ OP_mul_setval, "*=", 2, 20, },
-	{ OP_add_setval, "+=", 2, 20, },
-	{ OP_sub_setval, "-=", 2, 20, },
-	{ OP_div_setval, "/=", 2, 20, },
-	{ OP_isequal, "==", 2, 20, &ConstIntegerCalucator::iseuqal, },
-	{ OP_lessthan_equalto, "<=", 2, 20, &ConstIntegerCalucator::lessthan_equalto, },
-	{ OP_greaterthan_equalto, ">=", 2, 20, &ConstIntegerCalucator::greaterthan_equalto, },
+	{ OP_isnotequal, "!=", 2, 30, &ConstIntegerCalucator::isnotequal, },
+	{ OP_mod_setval, "%=", 2, 30, },
+	{ OP_bitwise_xor_setval, "^=", 2, 30, },
+	{ OP_bitwise_and_setval, "&=", 2, 30, },
+	{ OP_bitwise_or_setval, "|=", 2, 30, },
+	{ OP_mul_setval, "*=", 2, 30, },
+	{ OP_add_setval, "+=", 2, 30, },
+	{ OP_sub_setval, "-=", 2, 30, },
+	{ OP_div_setval, "/=", 2, 30, },
+	{ OP_isequal, "==", 2, 30, &ConstIntegerCalucator::iseuqal, },
+	{ OP_lessthan_equalto, "<=", 2, 30, &ConstIntegerCalucator::lessthan_equalto, },
+	{ OP_greaterthan_equalto, ">=", 2, 30, &ConstIntegerCalucator::greaterthan_equalto, },
 
 	{ OP_logic_not, "!", 1, 100, &ConstIntegerCalucator::logic_not, 1, },
 	{ OP_logic_and, "&&", 2, 20, &ConstIntegerCalucator::logic_and, },
@@ -1828,6 +1828,15 @@ int SimpleCScriptEngContext::PushName(const char *name)
 	return mTopLevelFunction.RegistNameInContainer(name, -1) ? 0 : -1;
 }
 
+int SimpleCScriptEngContext::FindGlobalName(const char *name)
+{
+	uint32_t l = 0, i;
+	if (!mTopLevelFunction.FindNameInContainer(name, l, i)
+		|| l > 0)
+		return -1;
+	return (int)i;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 Operator::~Operator()
@@ -2028,6 +2037,7 @@ int SimpleCScriptEngContext::ParseExpressionEndWith(char &c,
 			if ((parseResult = indexOperator->Compile(this)) < 0)
 				return parseResult;
 			OnOperator(pe, &operatorList, lastIsOperatorOrFirstInLocal, indexOperator);
+			lastIsOperatorOrFirstInLocal = false;
 		}
 		else
 		{

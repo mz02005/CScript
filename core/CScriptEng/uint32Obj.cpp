@@ -17,22 +17,72 @@ uint32_t uintObject::GetObjectTypeId() const
 
 runtimeObjectBase* uintObject::Add(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	if (mIsConst)
+	{
+		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("add on const variable");
+		return nullptr;
+	}
+
+	if (!isNumberType(obj))
+		return nullptr;
+
+	uintObject *val = new ObjectModule<uintObject>;
+	val->mVal = mVal + getObjectDataOrig<uint32_t>(obj);
+	return val;
 }
 
 runtimeObjectBase* uintObject::Sub(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	if (mIsConst)
+	{
+		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("sub on const variable");
+		return nullptr;
+	}
+	
+	if (!isNumberType(obj))
+		return nullptr;
+
+	uintObject *val = new ObjectModule<uintObject>;
+	val->mVal = mVal - getObjectDataOrig<uint32_t>(obj);
+	return val;
 }
 
 runtimeObjectBase* uintObject::Mul(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	if (mIsConst)
+	{
+		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Mul on const variable");
+		return nullptr;
+	}
+		
+	if (!isNumberType(obj))
+		return nullptr;
+
+	uintObject *val = new ObjectModule<uintObject>;
+	val->mVal = mVal * getObjectDataOrig<uint32_t>(obj);
+	return val;
 }
 
 runtimeObjectBase* uintObject::Div(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	if (mIsConst)
+	{
+		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Div on const variable");
+		return nullptr;
+	}
+		
+	if (!isNumberType(obj))
+		return nullptr;
+
+	uintObject *val = new ObjectModule<uintObject>;
+	int divisor = getObjectDataOrig<uint32_t>(obj);
+	if (!divisor)
+	{
+		SCRIPT_TRACE("Divided by zero\n");
+		return nullptr;
+	}
+	val->mVal = mVal / divisor;
+	return val;
 }
 
 runtimeObjectBase* uintObject::SetValue(const runtimeObjectBase *obj)

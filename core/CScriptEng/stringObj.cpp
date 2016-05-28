@@ -99,7 +99,7 @@ runtimeObjectBase* stringObject::GetMember(const char *memName)
 {
 	if (!strcmp(memName, "len"))
 	{
-		uintObject *obj = baseTypeObject::CreateBaseTypeObject<uintObject>(true);
+		uintObject *obj = baseTypeObject::CreateBaseTypeObject<uintObject>(false);
 		obj->mVal = mVal->size();
 		return obj;
 	}
