@@ -589,7 +589,7 @@ int runtimeContext::OnInst_loadData(Instruction *inst, uint8_t *moreData, uint32
 	uint32_t index = *reinterpret_cast<uint32_t*>(moreData);
 	uint32_t level = inst->data;
 
-	if (mCallStackLayer && level)
+	if (mCallStackLayer > level && level > 0)
 		level += mCallStackLayer - level;
 
 	if (level >= mStackFrameSize)

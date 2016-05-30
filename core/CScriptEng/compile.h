@@ -425,6 +425,12 @@ namespace compiler
 		bool RegistName(const char *name, uint32_t type);
 		bool FindName(const char *name, uint32_t &l, uint32_t &i) const;
 
+		// 上面的FindName要配合这个函数来判断返回的数据是否正确，
+		// 由于上面的FindName仅返回name距离当前Function的距离，但是目前本语言不支持
+		// 闭包，所以不允许将上一层的Function中的数据自动传到本级数据，除了顶级函数之外
+		// 又由于FindName是递归实现的，所以这里只能由调用FindName的地方来检查一下了
+		bool CheckValidLayer(uint32_t l) const;
+
 		Statement* isInLoopStatementBlock(uint32_t breakOrContinue);
 		virtual uint32_t isLoopStatement() const { return 0; }
 		virtual int GenerateBreakStatementCode(BreakStatement *bs, CompileResult *compileResult) { return -1; }

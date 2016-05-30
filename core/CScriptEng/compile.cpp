@@ -190,7 +190,8 @@ int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResul
 		else
 		{
 			uint32_t l = 0, i = 0;
-			if (!statement->FindName(mSymbol.symbolOrig.c_str(), l, i))
+			if (!statement->FindName(mSymbol.symbolOrig.c_str(), l, i)
+				|| !statement->CheckValidLayer(l))
 			{
 				SCRIPT_TRACE("variable or symbol [%s] not defined.\n", mSymbol.symbolOrig.c_str());
 				return -13;
@@ -1074,7 +1075,7 @@ int CompileResult::SaveCodeToFile(FILE *file) const
 	if (c >= (ScriptCode::size_type)((uint32_t)-1))
 		return -1;
 
-	fwrite(&c, sizeof(c), 1, file);
+	fwrite(&c, 1, sizeof(c), file);
 	fwrite(&mCode[0], sizeof(uint32_t), c, file);
 
 	return 0;

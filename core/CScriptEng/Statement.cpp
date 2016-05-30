@@ -76,6 +76,22 @@ bool Statement::RegistName(const char *name, uint32_t type)
 	return false;
 }
 
+bool Statement::CheckValidLayer(uint32_t l) const
+{
+	if (l < 1)
+		return true;
+
+	const FunctionStatement *f = GetFunctionParent();
+	assert(f);
+	for (uint32_t i = 0; i < l; i++)
+	{
+		f = f->GetParent()->GetFunctionParent();
+		if (!f)
+			return false;
+	}
+	return f->isTopLevelFun();
+}
+
 bool Statement::FindName(const char *name, uint32_t &l, uint32_t &i) const
 {
 	const Statement *p = this;

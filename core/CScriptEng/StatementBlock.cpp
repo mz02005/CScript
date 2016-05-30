@@ -188,7 +188,8 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 					return -1;
 				uint32_t l = 0, i = 0;
 				// Ãû×ÖÖØ¸´
-				if (FindName(symbol.symbolOrig.c_str(), l, i))
+				if (FindName(symbol.symbolOrig.c_str(), l, i)
+					&& CheckValidLayer(l - 1))
 				{
 					SCRIPT_TRACE("name [%s] already exists.", symbol.symbolOrig.c_str());
 					return -1;

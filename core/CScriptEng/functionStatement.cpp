@@ -199,7 +199,8 @@ int FunctionStatement::GenerateInstruction(CompileResult *compileResult)
 	if (parent)
 	{
 		uint32_t l = 0, i = 0;
-		if (!GetParent()->FindName(mName.c_str(), l, i))
+		if (!GetParent()->FindName(mName.c_str(), l, i)
+			|| !GetParent()->CheckValidLayer(l))
 		{
 			return -1;
 		}

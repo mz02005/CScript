@@ -52,6 +52,12 @@ namespace runtime {
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
 	
+	class powfObj : public runtime::baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
+	};
+
 	// 获取时间
 	class timeObj : public runtime::baseObjDefault
 	{

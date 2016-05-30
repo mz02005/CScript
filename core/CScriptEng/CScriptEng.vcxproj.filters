@@ -57,6 +57,9 @@
     <ClInclude Include="cscriptBase.h">
       <Filter>inner</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BreakStatement.cpp">
@@ -169,5 +172,10 @@
     <None Include="CScriptEng.def">
       <Filter>源文件</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CScriptEng.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -36,6 +36,7 @@ bool rtLibHelper::RegistObjNames(compiler::FunctionStatement *sb)
 	sb->RegistNameInContainer("rand", -1);
 	sb->RegistNameInContainer("srand", -1);
 	sb->RegistNameInContainer("sin", -1);
+	sb->RegistNameInContainer("pow", -1);
 	sb->RegistNameInContainer("time", -1);
 	sb->RegistNameInContainer("substr", -1);
 	return true;
@@ -55,6 +56,7 @@ bool rtLibHelper::RegistRuntimeObjs(runtimeContext *context)
 	context->PushObject(new runtime::ObjectModule<runtime::srandObj>);
 
 	context->PushObject(new runtime::ObjectModule<runtime::sinObj>);
+	context->PushObject(new runtime::ObjectModule<runtime::powfObj>);
 
 	context->PushObject(new runtime::ObjectModule<runtime::timeObj>);
 
@@ -77,6 +79,8 @@ void printObj::SetIsPrintLine(bool isPrintLine)
 
 runtimeObjectBase* printObj::doCall(runtime::doCallContext *context)
 {
+	if (context->GetParamCount() != 1)
+		return nullptr;
 	runtime::stringObject *s = context->GetParam(0)->toString();
 	if (s)
 	{
@@ -131,6 +135,20 @@ runtimeObjectBase* sinObj::doCall(runtime::doCallContext *context)
 	runtime::floatObject *f = new runtime::ObjectModule<runtime::floatObject>;
 
 	f->mVal = static_cast<float>(sin(context->GetDoubleParam(0)));
+	return f;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+runtimeObjectBase* powfObj::doCall(runtime::doCallContext *context)
+{
+	runtime::floatObject *f = new runtime::ObjectModule<runtime::floatObject>;
+	f->mVal = 1.f;
+
+	if (context->GetParamCount() != 2)
+		return f;
+
+	f->mVal = (float)pow(context->GetDoubleParam(0), context->GetDoubleParam(1));
 	return f;
 }
 

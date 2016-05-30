@@ -113,7 +113,8 @@ int DeclareStatement::GenerateInstruction(CompileResult *compileResult)
 
 			// 手动加一条赋值语句进去
 
-			if (!FindName(iter->mVarName.c_str(), l, i))
+			if (!FindName(iter->mVarName.c_str(), l, i)
+				|| !CheckValidLayer(l))
 			{
 				SCRIPT_TRACE("Varaible [%s] not found\n", iter->mVarName.c_str());
 				return -1;

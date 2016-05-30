@@ -64,7 +64,8 @@ int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile)
 {
 	std::wcout << L"Source file: " << filePathName << std::endl;
 
-	scriptAPI::FileStream fs(notstd::ICONVext::unicodeToMbcs(filePathName).c_str());
+	std::string fName = notstd::ICONVext::unicodeToMbcs(filePathName);
+	scriptAPI::FileStream fs(fName.c_str());
 	scriptAPI::ScriptCompiler compiler;
 
 	std::wcout << L"Compile file " << filePathName << std::endl;
@@ -76,9 +77,9 @@ int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile)
 			// 保存到和被执行的代码相同的路径中，扩展名为.txt
 			std::wstring codePath = filePathName + L".txt";
 			FILE *file = nullptr;
-			::_wfopen_s(&file, codePath.c_str(), L"wb");
+			errno_t ret = ::_wfopen_s(&file, codePath.c_str(), L"wb");
 			do {
-				if (!file)
+				if (ret || !file)
 				{
 					printf("Open code file file.\n");
 					break;
@@ -95,7 +96,7 @@ int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile)
 
 		std::wcout << L"Compile file success. Start to execute. " << std::endl;
 		scriptAPI::ScriptRuntimeContext *runtimeContext
-			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(512, 512);
+			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
 		runtimeContext->Execute(h);
 		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
 		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
