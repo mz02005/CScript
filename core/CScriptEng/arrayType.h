@@ -21,7 +21,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -37,7 +37,6 @@ namespace runtime {
 	class CreateArrayObj : public runtime::baseObjDefault
 	{
 	public:
-		virtual uint32_t GetObjectTypeId() const;
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
 
@@ -50,7 +49,6 @@ namespace runtime {
 
 	public:
 		Array_addObj();
-		virtual uint32_t GetObjectTypeId() const;
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
 
@@ -63,7 +61,6 @@ namespace runtime {
 
 	public:
 		Array_deleteObj();
-		virtual uint32_t GetObjectTypeId() const;
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
 
@@ -76,7 +73,6 @@ namespace runtime {
 
 	public:
 		Array_clearObj();
-		virtual uint32_t GetObjectTypeId() const;
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
 }

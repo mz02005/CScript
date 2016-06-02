@@ -3,6 +3,7 @@
 #include "compile.h"
 #include "CScriptEng.h"
 #include "arrayType.h"
+#include "objType.h"
 #include "rtlib.h"
 
 using namespace runtime;
@@ -50,7 +51,7 @@ runtimeObjectBase* baseObjDefault::Div(const runtimeObjectBase *obj)
 	return nullptr;
 }
 
-runtimeObjectBase* baseObjDefault::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* baseObjDefault::SetValue(runtimeObjectBase *obj)
 {
 	return nullptr;
 }
@@ -472,6 +473,13 @@ int runtimeContext::OnInst_createString(Instruction *inst, uint8_t *moreData, ui
 int runtimeContext::OnInst_createArray(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
 	if (PushObject(baseTypeObject::CreateBaseTypeObject<arrayObject>(false)) < 0)
+		return -1;
+	return 0;
+}
+
+int runtimeContext::OnInst_createObject(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	if (PushObject(baseTypeObject::CreateBaseTypeObject<objTypeObject>(false)) < 0)
 		return -1;
 	return 0;
 }
@@ -1042,7 +1050,7 @@ namespace runtime {
 		}
 
 		// =二元运算
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj)
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj)
 		{
 			if (obj->GetObjectTypeId() != DT_function)
 				return nullptr;
@@ -1067,9 +1075,11 @@ namespace runtime {
 		virtual runtimeObjectBase* doCall(doCallContext *context)
 		{
 			int calRet;
-			if (context->GetParamCount() != mFuncDesc.paramCount)
+			// 参数栈中的参数个数超过了函数声明能够处理的参数个数了
+			if (context->GetParamCount() >= mFuncDesc.paramCount)
 			{
-				SCRIPT_TRACE("FunctionObject::doCall: param count not match.\n");
+				SCRIPT_TRACE("FunctionObject::doCall: "
+					"param count of function [%s] does not match.\n", mFuncName.c_str());
 				return nullptr;
 			}
 
@@ -1380,7 +1390,7 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	// 51
 	{ &runtimeContext::OnInst_leaveBlock, 0, },
 	{ &runtimeContext::OnInst_saveToA, 0, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_createObject, 4, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },

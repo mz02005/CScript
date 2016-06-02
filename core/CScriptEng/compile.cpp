@@ -30,6 +30,7 @@ const KeywordsTransTable::KeywordsEntry KeywordsTransTable::mKeywords[] =
 	{ "case", CK_CASE, },
 	{ "default", CK_DEFAULT, },
 	{ "array", CK_ARRAY, },
+	{ "object", CK_OBJECT, },
 	{ "function", CK_FUNCTION, },
 	{ "debugbreak", CK_DEBUGBREAK, },
 	{ "return", CK_RETURN, },
@@ -690,6 +691,7 @@ int PostfixExpression::GenerateInstruction(ExpressionNode *root, Statement *stat
 		{
 			if ((r = e->GenerateInstruction(statement, compileResult)) < 0)
 				return r;
+			parseList.pop_back();
 		}
 		else if (HasChildren(e))
 		{
@@ -941,7 +943,7 @@ const OperatorHelper::OperatorTableEntry OperatorHelper::mOperTable[] =
 	{ OP_getrefof, "getrefof*", 1, 100, },
 
 	// 取负数
-	{ OP_neg, "neg-", 1, 40, &ConstIntegerCalucator::neg, },
+	{ OP_neg, "neg-", 1, 60, &ConstIntegerCalucator::neg, 1, },
 
 	// 调用函数对象，就是调用virtual RuntimeObject* DoCall(void *runtimeContext) = 0;
 	{ OP_docall, "docall", 1, 70, },
@@ -1952,7 +1954,7 @@ void SimpleCScriptEngContext::OnOperator(PostfixExpression *pe,
 		if (operList->empty()
 			|| operList->back()->mOperatorEntry->priority < oper->mOperatorEntry->priority
 			// 处理右结合的问题
-			|| (oper->mOperatorEntry->combineDir && operList->back()->mOperatorEntry->priority == oper->mOperatorEntry->priority))
+			|| (oper->mOperatorEntry->combineDir && operList->back()->mOperatorEntry->priority <= oper->mOperatorEntry->priority))
 		{
 			operList->push_back(oper);
 			break;
@@ -2006,6 +2008,7 @@ int SimpleCScriptEngContext::ParseExpressionEndWith(char &c,
 		{
 			// 如果结束字符中，没有说明';'是结束字符，但是却读到了该字符
 			// 说明解析存在错误
+			SCRIPT_TRACE("Unexpected symbol: ':'\n");
 			return -1;
 		}
 

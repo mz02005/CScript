@@ -77,7 +77,7 @@ runtimeObjectBase* stringObject::Div(const runtimeObjectBase *obj)
 	return nullptr;
 }
 
-runtimeObjectBase* stringObject::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* stringObject::SetValue(runtimeObjectBase *obj)
 {
 	if (mIsConst)
 	{

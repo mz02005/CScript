@@ -85,7 +85,7 @@ runtimeObjectBase* uintObject::Div(const runtimeObjectBase *obj)
 	return val;
 }
 
-runtimeObjectBase* uintObject::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* uintObject::SetValue(runtimeObjectBase *obj)
 {
 	return nullptr;
 }

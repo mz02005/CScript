@@ -35,7 +35,7 @@ runtimeObjectBase* ushortObject::Div(const runtimeObjectBase *obj)
 	return nullptr;
 }
 
-runtimeObjectBase* ushortObject::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* ushortObject::SetValue(runtimeObjectBase *obj)
 {
 	return nullptr;
 }

@@ -35,7 +35,7 @@ runtimeObjectBase* byteObject::Div(const runtimeObjectBase *obj)
 	return nullptr;
 }
 
-runtimeObjectBase* byteObject::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* byteObject::SetValue(runtimeObjectBase *obj)
 {
 	return nullptr;
 }

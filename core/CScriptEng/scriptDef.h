@@ -120,6 +120,8 @@ namespace runtime
 
 		// 用来在leaveBlock之前保存函数返回值
 		VM_saveToA,
+
+		VM_createObject,
 	};
 
 #pragma pack(push,1)
@@ -449,6 +451,12 @@ namespace compiler
 		void Insert_createArray_Instruction()
 		{
 			mCode.push_back(runtime::VM_createArray);
+			mCode.push_back(0);
+		}
+
+		void Insert_createObject_Instruction()
+		{
+			mCode.push_back(runtime::VM_createObject);
 			mCode.push_back(0);
 		}
 

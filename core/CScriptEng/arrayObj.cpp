@@ -46,7 +46,7 @@ runtimeObjectBase* arrayObject::Div(const runtimeObjectBase *obj)
 	return nullptr;
 }
 
-runtimeObjectBase* arrayObject::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* arrayObject::SetValue(runtimeObjectBase *obj)
 {
 	Clear();
 	if (obj->GetObjectTypeId() != DT_array)
@@ -156,11 +156,6 @@ void arrayObject::AddSub(runtime::runtimeObjectBase *o)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-uint32_t CreateArrayObj::GetObjectTypeId() const
-{
-	return runtime::DT_UserTypeBegin;
-}
-
 runtimeObjectBase* CreateArrayObj::doCall(runtime::doCallContext *context)
 {
 	uint32_t paramCount = context->GetParamCount();
@@ -181,11 +176,6 @@ runtimeObjectBase* CreateArrayObj::doCall(runtime::doCallContext *context)
 Array_addObj::Array_addObj()
 	: mArrayObject(nullptr)
 {
-}
-
-uint32_t Array_addObj::GetObjectTypeId() const
-{
-	return runtime::DT_UserTypeBegin;
 }
 
 runtimeObjectBase* Array_addObj::doCall(runtime::doCallContext *context)
@@ -219,12 +209,6 @@ Array_deleteObj::Array_deleteObj()
 {
 }
 
-
-uint32_t Array_deleteObj::GetObjectTypeId() const
-{
-	return runtime::DT_UserTypeBegin;
-}
-
 runtimeObjectBase* Array_deleteObj::doCall(runtime::doCallContext *context)
 {
 	if (context->GetParamCount() != 1)
@@ -252,11 +236,6 @@ runtimeObjectBase* Array_deleteObj::doCall(runtime::doCallContext *context)
 Array_clearObj::Array_clearObj()
 	: mArrayObject(nullptr)
 {
-}
-
-uint32_t Array_clearObj::GetObjectTypeId() const
-{
-	return runtime::DT_UserTypeBegin;
 }
 
 runtimeObjectBase* Array_clearObj::doCall(runtime::doCallContext *context)

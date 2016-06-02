@@ -32,6 +32,8 @@ namespace compiler
 			//CK_UNSIGNED,// 为了方便编译，略去这个关键字
 			// 扩充类型
 			CK_ARRAY,
+			// 扩充类型
+			CK_OBJECT,
 			// 扩充，函数调用
 			CK_FUNCTION,
 

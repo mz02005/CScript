@@ -93,6 +93,7 @@
     <ClInclude Include="cscript.h" />
     <ClInclude Include="cscriptBase.h" />
     <ClInclude Include="CScriptEng.h" />
+    <ClInclude Include="objType.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rtlib.h" />
     <ClInclude Include="scriptDef.h" />
@@ -128,6 +129,7 @@
     <ClCompile Include="int16Obj.cpp" />
     <ClCompile Include="int32Obj.cpp" />
     <ClCompile Include="int8Obj.cpp" />
+    <ClCompile Include="objType.cpp" />
     <ClCompile Include="PureExpStatement.cpp" />
     <ClCompile Include="returnStatement.cpp" />
     <ClCompile Include="rtLib.cpp" />

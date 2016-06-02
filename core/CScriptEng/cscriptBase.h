@@ -21,6 +21,7 @@ namespace runtime {
 		DT_string,
 		DT_array,
 		DT_function,
+		DT_object,
 
 		DT_UserTypeBegin,
 	};
@@ -149,7 +150,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj) = 0;
 
 		// =二元运算
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj) = 0;
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) = 0;
 
 		// 处理.操作符（一元的）
 		virtual runtimeObjectBase* GetMember(const char *memName) = 0;

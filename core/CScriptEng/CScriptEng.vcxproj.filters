@@ -60,6 +60,9 @@
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="objType.h">
+      <Filter>inner\vm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BreakStatement.cpp">
@@ -165,6 +168,9 @@
       <Filter>inner\compile</Filter>
     </ClCompile>
     <ClCompile Include="doCallContext.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="objType.cpp">
       <Filter>inner\vm</Filter>
     </ClCompile>
   </ItemGroup>

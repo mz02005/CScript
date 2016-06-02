@@ -65,7 +65,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
 
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
@@ -113,7 +113,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -139,7 +139,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -163,7 +163,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -185,7 +185,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -207,7 +207,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -229,7 +229,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -251,7 +251,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -275,7 +275,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
@@ -298,7 +298,7 @@ namespace runtime {
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
-		virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);

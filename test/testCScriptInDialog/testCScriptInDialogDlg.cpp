@@ -32,7 +32,7 @@ public:
 	virtual runtimeObjectBase* Div(const runtimeObjectBase *obj){ return nullptr; }
 
 	// =二元运算
-	virtual runtimeObjectBase* SetValue(const runtimeObjectBase *obj) { return nullptr; }
+	virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) { return nullptr; }
 
 	// 处理.操作符（一元的）
 	virtual runtimeObjectBase* GetMember(const char *memName) { return nullptr; }
@@ -43,9 +43,11 @@ public:
 		if (context->GetParamCount() < 1)
 			return this;
 
-		const char *s = context->GetStringParam(0);
-		if (!s)
+		runtimeObjectBase *o = context->GetParam(0);
+		if (!o)
 			return this;
+		runtime::stringObject *so = o->toString();
+		const char *s = so->mVal->c_str();
 
 		if (mDlg && ::IsWindow(mDlg->GetSafeHwnd()))
 		{
@@ -53,6 +55,9 @@ public:
 			mDlg->mPrintHostBox.SetCurSel(
 				mDlg->mPrintHostBox.GetCount());
 		}
+
+		so->AddRef();
+		so->Release();
 		return this;
 	}
 
@@ -192,6 +197,7 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 		PushRuntimeObject(virtualMachine, println);
 
 		ReplaceRuntimeFunc("println", println, cHandle, virtualMachine);
+		ReplaceRuntimeFunc("print", println, cHandle, virtualMachine);
 
 		if (VirtualMachineExecute(virtualMachine, crHandle) < 0)
 			break;

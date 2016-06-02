@@ -160,6 +160,10 @@ void FunctionStatement::InsertCreateTypeInstructionByDeclType(
 		giHelper->Insert_createArray_Instruction();
 		break;
 
+	case KeywordsTransTable::CK_OBJECT:
+		giHelper->Insert_createObject_Instruction();
+		break;
+
 	case KeywordsTransTable::CK_FUNCTION:
 		giHelper->Insert_createFunction_Instruction();
 		break;

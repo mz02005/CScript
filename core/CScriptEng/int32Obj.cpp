@@ -85,7 +85,7 @@ runtimeObjectBase* intObject::Div(const runtimeObjectBase *obj)
 	return val;
 }
 
-runtimeObjectBase* intObject::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* intObject::SetValue(runtimeObjectBase *obj)
 {
 	if (!isNumberType(obj))
 		return nullptr;

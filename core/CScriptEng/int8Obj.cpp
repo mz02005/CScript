@@ -35,7 +35,7 @@ runtimeObjectBase* charObject::Div(const runtimeObjectBase *obj)
 	return nullptr;
 }
 
-runtimeObjectBase* charObject::SetValue(const runtimeObjectBase *obj)
+runtimeObjectBase* charObject::SetValue(runtimeObjectBase *obj)
 {
 	return nullptr;
 }
