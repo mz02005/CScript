@@ -113,7 +113,12 @@ runtimeObjectBase* stringObject::doCall(doCallContext *context)
 
 runtimeObjectBase* stringObject::getIndex(int i)
 {
-	return nullptr;
+	std::string::size_type l = mVal->size();
+	if (i < 0 || i >= l)
+		return nullptr;
+	intObject *r = new runtime::ObjectModule<intObject>;
+	r->mVal = (int)mVal->operator[](i);
+	return r;
 }
 
 stringObject* stringObject::toString()

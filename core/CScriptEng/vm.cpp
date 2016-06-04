@@ -1076,7 +1076,7 @@ namespace runtime {
 		{
 			int calRet;
 			// 参数栈中的参数个数超过了函数声明能够处理的参数个数了
-			if (context->GetParamCount() >= mFuncDesc.paramCount)
+			if (context->GetParamCount() > mFuncDesc.paramCount)
 			{
 				SCRIPT_TRACE("FunctionObject::doCall: "
 					"param count of function [%s] does not match.\n", mFuncName.c_str());

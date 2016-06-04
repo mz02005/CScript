@@ -1781,13 +1781,8 @@ int SimpleCScriptEngContext::GetNextSymbol(Symbol &symbol)
 			tn = nullptr;
 		}
 		else {
-			if (symbol.type == Symbol::Keywords)
-				symbol.type = Symbol::CommonSymbol;
+			symbol.type = Symbol::CommonSymbol;
 		}
-		//if (!tn || !tn->keywordsId && symbol.type == Symbol::Keywords)
-		//	symbol.type = Symbol::CommonSymbol;
-		//else
-		//	symbol.keywordsType = tn->keywordsId;
 		mSymbolStack.push_back(symbol);
 		mCurrentStack = mSymbolStack.end();
 		symbol.codePos = mCodePosition;
