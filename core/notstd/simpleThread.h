@@ -10,8 +10,8 @@ public:
 
 private:
 	void *mUser;
-	Handle<> mThread;
-	Handle<> mStopEvent;
+	Handle<NormalHandleType> mThread;
+	Handle<NormalHandleType> mStopEvent;
 	//Handle<LONG(NULL)> mThread;
 	//Handle<LONG(NULL)> mStopEvent;
 	OnThreadProc mOnThread;

@@ -162,7 +162,7 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 			{
 				Statement *loopStatement;
 				// 没有循环可以跳出
-				if ((loopStatement = isInLoopStatementBlock(Statement::SupportBreak)) == nullptr)
+				if ((loopStatement = isInLoopStatementBlock(Statement::SupportBreak)) == NULL)
 					return -1;
 				if (!context->GetNextSymbolMustBe(symbol, ";"))
 					return -1;
@@ -172,7 +172,7 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 			else if (symbol.keywordsType == KeywordsTransTable::CK_CONTINUE)
 			{
 				Statement *loopStatement;
-				if ((loopStatement = isInLoopStatementBlock(Statement::SupportContinue)) == nullptr)
+				if ((loopStatement = isInLoopStatementBlock(Statement::SupportContinue)) == NULL)
 					return -1;
 				if (!context->GetNextSymbolMustBe(symbol, ";"))
 					return -1;

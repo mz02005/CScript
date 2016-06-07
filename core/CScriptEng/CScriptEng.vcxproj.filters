@@ -178,6 +178,8 @@
     <None Include="CScriptEng.def">
       <Filter>源文件</Filter>
     </None>
+    <None Include="..\..\Makefile" />
+    <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CScriptEng.rc">

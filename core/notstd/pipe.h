@@ -56,7 +56,7 @@ class NOTSTD_API PipeManager
 	friend class NamedPipe;
 
 private:
-	Handle<> mIOCP;
+	Handle<NormalHandleType> mIOCP;
 
 	DWORD mThreadCount;
 	HANDLE *mConcurrentThreads;

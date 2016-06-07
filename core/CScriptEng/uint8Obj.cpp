@@ -17,42 +17,42 @@ uint32_t byteObject::GetObjectTypeId() const
 
 runtimeObjectBase* byteObject::Add(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* byteObject::Sub(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* byteObject::Mul(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* byteObject::Div(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* byteObject::SetValue(runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* byteObject::GetMember(const char *memName)
 {
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* byteObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* byteObject::getIndex(int i)
 {
-	return nullptr;
+	return NULL;
 }
 
 stringObject* byteObject::toString()

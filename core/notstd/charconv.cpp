@@ -20,9 +20,9 @@ std::wstring ICONVext::utf8ToUnicode(const std::string &str)
 	if (cd == (iconv_t)-1)
 		return r;
 	std::size_t iIn = str.size();
+	const char *sIn = str.c_str();
 	std::size_t iOut = iIn * 2;
 	std::size_t iOutOrig = iOut;
-	const char *sIn = str.c_str();
 	r.resize(iOut);
 	char *buf = reinterpret_cast<char*>(&r[0]);
 	std::size_t ret = iconv(cd, &sIn, &iIn, &buf, &iOut);
@@ -45,9 +45,9 @@ std::string ICONVext::unicodeToUtf8(const std::wstring &str)
 		return r;
 
 	std::size_t iIn = str.size() * 2;
+	const char *sIn = reinterpret_cast<const char*>(str.c_str());
 	std::size_t iOut = iIn * 2;
 	std::size_t iCoutOrig = iOut;
-	const char *sIn = reinterpret_cast<const char*>(str.c_str());
 	r.resize(iOut);
 	char *buf = reinterpret_cast<char*>(&r[0]);
 	std::size_t ret = iconv(cd, &sIn, &iIn, &buf, &iOut);

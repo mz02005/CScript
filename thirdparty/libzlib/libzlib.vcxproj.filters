@@ -103,5 +103,6 @@
     <None Include="libzlib.def">
       <Filter>源文件</Filter>
     </None>
+    <None Include="zlib-1.2.8\Makefile" />
   </ItemGroup>
 </Project>

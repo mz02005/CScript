@@ -3,98 +3,88 @@
 #include "CScriptEng/vm.h"
 #include <iostream>
 
-int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile = false);
+int ExecuteCode(const std::string &filePathName, bool saveCodeToFile = false);
 
-void RunTestCase();
+int RunTestCase();
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
+	int r;
 	scriptAPI::SimpleCScriptEng::Init();
 	if (argc == 1)
 	{
-		RunTestCase();
+		r = RunTestCase();
 	}
 	else
 	{
-		ExecuteCode(argv[1], true);
+		r = ExecuteCode(argv[1], true);
 	}
 	scriptAPI::SimpleCScriptEng::Term();
 	return 0;
 }
 
-void RunTestCase()
+int RunTestCase()
 {
-	std::wstring appDir;
+	std::string appDir;
+
+#if defined(PLATFORM_WINDOWS)
 	appDir.resize(MAX_PATH);
-	appDir.resize(::GetModuleFileNameW(nullptr, &appDir[0], MAX_PATH));
-	appDir.resize(appDir.rfind(L'\\') + 1);
+	appDir.resize(::GetModuleFileNameA(NULL, &appDir[0], MAX_PATH));
+	appDir.resize(appDir.rfind('\\') + 1);
 
-	appDir += L"..\\test\\script\\";
+	appDir += "..\\test\\script\\";
+#else
+	appDir = "/mnt/CScript/test/script/";
+#endif
 
-	std::list<std::wstring> fileDirList;
-	fileDirList.push_back(appDir);
-
-	while (!fileDirList.empty())
+	notstd::CFindIterator fi(appDir);
+	for (notstd::CFindResult fr = fi.begin(); fr != fi.end(); fr = fi.next())
 	{
-		std::wstring curDir = fileDirList.front();
-		fileDirList.pop_front();
-		std::wstring toFind = curDir + L"*.c";
-
-		HANDLE f;
-		WIN32_FIND_DATAW fd;
-		if ((f = ::FindFirstFile(toFind.c_str(), &fd)) != INVALID_HANDLE_VALUE)
+		if (!fr.IsDirectory() && fr.GetSuffix() == "c")
 		{
-			do {
-				if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				{
-					if (fd.cFileName[0] != L'.' && wcscmp(fd.cFileName, L".."))
-						fileDirList.push_back(curDir + fd.cFileName + L"\\");
-				}
-				else
-				{
-					ExecuteCode(curDir + fd.cFileName);
-				}
-			} while (::FindNextFileW(f, &fd));
-			::FindClose(f);
+			std::cout << "Find file " << fr.GetPath() << std::endl;
+			ExecuteCode(fr.GetPath());
 		}
 	}
+
+	return 0;
 }
 
-int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile)
+int ExecuteCode(const std::string &filePathName, bool saveCodeToFile)
 {
-	std::wcout << L"Source file: " << filePathName << std::endl;
+	std::cout << "Source file: " << filePathName << std::endl;
 
-	std::string fName = notstd::ICONVext::unicodeToMbcs(filePathName);
+	std::string fName = filePathName;
 	scriptAPI::FileStream fs(fName.c_str());
 	scriptAPI::ScriptCompiler compiler;
 
-	std::wcout << L"Compile file " << filePathName << std::endl;
+	std::cout << "Compile file " << filePathName << std::endl;
 	HANDLE h = compiler.Compile(&fs, true);
 	if (h)
 	{
 		if (saveCodeToFile)
 		{
 			// 保存到和被执行的代码相同的路径中，扩展名为.txt
-			std::wstring codePath = filePathName + L".txt";
-			FILE *file = nullptr;
-			errno_t ret = ::_wfopen_s(&file, codePath.c_str(), L"wb");
+			std::string codePath = filePathName + ".txt";
+			FILE *file = NULL;
+			file = fopen(codePath.c_str(), "wb");
 			do {
-				if (ret || !file)
+				if (!file)
 				{
-					printf("Open code file file.\n");
+					std::cout << "Open code file file.\n";
 					break;
 				}
 				if (
 					compiler.SaveCodeToFile(h, file) < 0
 					|| compiler.SaveConstStringTableInResultToFile(h, file) < 0)
 				{
-					printf("Save code fail.\n");
+					std::cout << "Save code fail.\n";
 				}
 				::fclose(file);
 			} while (0);
 		}
 
-		std::wcout << L"Compile file success. Start to execute. " << std::endl;
+		std::cout << "Compile file success. Start to execute. " << std::endl;
 		scriptAPI::ScriptRuntimeContext *runtimeContext
 			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
 		runtimeContext->Execute(h);
@@ -103,7 +93,7 @@ int ExecuteCode(const std::wstring &filePathName, bool saveCodeToFile)
 		return 0;
 	}
 	else
-		std::wcout << L"Compile file " << filePathName << L" fail. \n\n" << std::endl;
+		std::cout << "Compile file " << filePathName << " fail. \n\n" << std::endl;
 
 	return -1;
 }

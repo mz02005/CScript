@@ -7,7 +7,7 @@ IMPLEMENT_OBJINFO(ReturnStatement,Statement)
 
 int ReturnStatement::Compile(Statement *parent, SimpleCScriptEngContext *context)
 {
-	if (parent == nullptr)
+	if (parent == NULL)
 		return -1;
 
 	Statement *p = parent;

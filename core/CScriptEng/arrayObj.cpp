@@ -16,8 +16,12 @@ arrayObject::~arrayObject()
 
 void arrayObject::Clear()
 {
-	std::for_each(mData->begin(), mData->end(),
-		[](ArrayTypeInner::reference v) { if (v) v->Release(); });
+	for (ArrayTypeInner::iterator iter = mData->begin();
+		iter != mData->end(); iter++)
+	{
+		if (*iter)
+			(*iter)->Release();
+	}
 	mData->clear();
 }
 
@@ -28,36 +32,36 @@ uint32_t arrayObject::GetObjectTypeId() const
 
 runtimeObjectBase* arrayObject::Add(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* arrayObject::Sub(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* arrayObject::Mul(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* arrayObject::Div(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* arrayObject::SetValue(runtimeObjectBase *obj)
 {
 	Clear();
 	if (obj->GetObjectTypeId() != DT_array)
-		return nullptr;
+		return NULL;
 	const arrayObject *orig = static_cast<const arrayObject*>(obj);
-	std::for_each(orig->mData->begin(), orig->mData->end(),
-		[this](ArrayTypeInner::reference v)
+	for (ArrayTypeInner::iterator iter = orig->mData->begin();
+		iter != orig->mData->end(); iter++)
 	{
-		mData->push_back(v);
-		v->AddRef();
-	});
+		mData->push_back(*iter);
+		(*iter)->AddRef();
+	}
 	return this;
 }
 
@@ -87,12 +91,12 @@ runtimeObjectBase* arrayObject::GetMember(const char *memName)
 		a->mArrayObject = this;
 		return a;
 	}
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* arrayObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* arrayObject::getIndex(int i)
@@ -101,7 +105,7 @@ runtimeObjectBase* arrayObject::getIndex(int i)
 	{
 		return (*mData)[i];
 	}
-	return nullptr;
+	return NULL;
 }
 
 bool arrayObject::isGreaterThan(const runtimeObjectBase *obj)
@@ -131,9 +135,10 @@ bool arrayObject::isEqual(const runtimeObjectBase *obj)
 stringObject* arrayObject::toString()
 {
 	stringObject *s = new ObjectModule<stringObject>;
-	std::for_each(mData->begin(), mData->end(),
-		[s](ArrayTypeInner::reference v)
+	for (ArrayTypeInner::iterator iter = mData->begin();
+		iter != mData->end(); iter++)
 	{
+		runtimeObjectBase *v = *iter;
 		stringObject *temp = v->toString();
 
 		(*s->mVal) += temp ? *temp->mVal : "";
@@ -144,7 +149,7 @@ stringObject* arrayObject::toString()
 			temp->AddRef();
 			temp->Release();
 		}
-	});
+	}
 	return s;
 }
 
@@ -174,7 +179,7 @@ runtimeObjectBase* CreateArrayObj::doCall(runtime::doCallContext *context)
 ///////////////////////////////////////////////////////////////////////////////
 
 Array_addObj::Array_addObj()
-	: mArrayObject(nullptr)
+	: mArrayObject(NULL)
 {
 }
 
@@ -183,7 +188,7 @@ runtimeObjectBase* Array_addObj::doCall(runtime::doCallContext *context)
 	if (context->GetParamCount() != 2)
 	{
 		SCRIPT_TRACE("array.add(int,obj)\n");
-		return nullptr;
+		return NULL;
 	}
 	int32_t i = context->GetInt32Param(0);
 	runtimeObjectBase *o = context->GetParam(1);
@@ -191,7 +196,7 @@ runtimeObjectBase* Array_addObj::doCall(runtime::doCallContext *context)
 	if (i > static_cast<int32_t>(mArrayObject->mData->size()))
 	{
 		SCRIPT_TRACE("array.add: index out of range.\n");
-		return nullptr;
+		return NULL;
 	}
 
 	if (i < 0)
@@ -205,7 +210,7 @@ runtimeObjectBase* Array_addObj::doCall(runtime::doCallContext *context)
 ///////////////////////////////////////////////////////////////////////////////
 
 Array_deleteObj::Array_deleteObj()
-	: mArrayObject(nullptr)
+	: mArrayObject(NULL)
 {
 }
 
@@ -214,7 +219,7 @@ runtimeObjectBase* Array_deleteObj::doCall(runtime::doCallContext *context)
 	if (context->GetParamCount() != 1)
 	{
 		SCRIPT_TRACE("array.del(int)\n");
-		return nullptr;
+		return NULL;
 	}
 	int32_t i = context->GetInt32Param(0);
 
@@ -222,7 +227,7 @@ runtimeObjectBase* Array_deleteObj::doCall(runtime::doCallContext *context)
 		|| i < 0)
 	{
 		SCRIPT_TRACE("array.delete: index out of range.\n");
-		return nullptr;
+		return NULL;
 	}
 
 	runtimeObjectBase *o = (*mArrayObject->mData)[i];
@@ -234,7 +239,7 @@ runtimeObjectBase* Array_deleteObj::doCall(runtime::doCallContext *context)
 ///////////////////////////////////////////////////////////////////////////////
 
 Array_clearObj::Array_clearObj()
-	: mArrayObject(nullptr)
+	: mArrayObject(NULL)
 {
 }
 
@@ -243,7 +248,7 @@ runtimeObjectBase* Array_clearObj::doCall(runtime::doCallContext *context)
 	if (context->GetParamCount() != 0)
 	{
 		SCRIPT_TRACE("array.clear()\n");
-		return nullptr;
+		return NULL;
 	}
 
 	for (auto iter = mArrayObject->mData->begin(); iter != mArrayObject->mData->end(); iter++)

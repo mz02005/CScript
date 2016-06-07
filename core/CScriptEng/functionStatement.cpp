@@ -24,7 +24,7 @@ FunctionStatement* FunctionStatement::GetParentFunction()
 	Statement *p = GetParent();
 	while (p && !p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
 		p = p->GetParent();
-	return p ? static_cast<FunctionStatement*>(p) : nullptr;
+	return p ? static_cast<FunctionStatement*>(p) : NULL;
 }
 
 int FunctionStatement::ParseParamList(SimpleCScriptEngContext *context)

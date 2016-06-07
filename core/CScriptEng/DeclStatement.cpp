@@ -50,7 +50,7 @@ int DeclareStatement::Compile(Statement *parent, SimpleCScriptEngContext *contex
 		if (symbol.symbolOrig == ";")
 		{
 			DeclareStatement::DeclareInfo di;
-			di.mSetValueExpression = nullptr;
+			di.mSetValueExpression = NULL;
 			di.mVarName = name;
 			mInfoList.push_back(std::move(di));
 			break;
@@ -58,7 +58,7 @@ int DeclareStatement::Compile(Statement *parent, SimpleCScriptEngContext *contex
 		else if (symbol.symbolOrig == ",")
 		{
 			DeclareStatement::DeclareInfo di;
-			di.mSetValueExpression = nullptr;
+			di.mSetValueExpression = NULL;
 			di.mVarName = name;
 			mInfoList.push_back(std::move(di));
 		}

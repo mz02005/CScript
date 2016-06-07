@@ -15,7 +15,7 @@
 #include <iostream>
 #include <assert.h>
 
-typedef unsigned int uint32;
+typedef unsigned int uint32_t;
 
 #pragma pack(push, 4)
 
@@ -27,9 +27,9 @@ struct NOTSTD_API CPlexInfo
 
 	// 当对齐方式大于8时，数据部分会挤占CPlexInfo结构
 	// 所以，预先分配4字节数据，填充至8字节大小
-	uint32 m_nReserved;
+	uint32_t m_nReserved;
 
-	static CPlexInfo* CreatePlex(CPlexInfo *&pHead, uint32 nElemCount, uint32 cbElemSize);
+	static CPlexInfo* CreatePlex(CPlexInfo *&pHead, uint32_t nElemCount, uint32_t cbElemSize);
 	void FreePlexChain();
 	void* GetData();
 };
@@ -45,14 +45,14 @@ protected:
 private:
 	CPlexInfo *m_pPlex;
 	CNode *m_pFreeNodeHead;
-	uint32 m_nUnitSize;
-	uint32 m_nUnitPerBlock;
+	uint32_t m_nUnitSize;
+	uint32_t m_nUnitPerBlock;
 
 public:
 	// nUnitSize是每个用户分配单元的大小
 	// 即FixedSizeAllocator::malloc函数返回的内存区域大小
 	// nUnitPerBlock是每次分配器分配的内存块大小
-	FixedSizeAllocator(uint32 nUnitSize, uint32 nUnitPerBlock);
+	FixedSizeAllocator(uint32_t nUnitSize, uint32_t nUnitPerBlock);
 	~FixedSizeAllocator();
 
 	void freeall();
@@ -77,7 +77,7 @@ protected:
 private:
 	CListNode *m_pHead;
 	CListNode *m_pTail;
-	uint32 m_count;
+	uint32_t m_count;
 	FixedSizeAllocator *m_pAlloc;
 
 	CListNode* NewNode();
@@ -127,10 +127,10 @@ public:
 	POSITION InsertBefore(POSITION pos, const T& t);
 
 	POSITION Find(const T &t, POSITION startafter = NULL) const;
-	POSITION FindIndex(uint32 index) const;
+	POSITION FindIndex(uint32_t index) const;
 
-	uint32 GetCount() const;
-	BOOL IsEmpty() const;
+	uint32_t GetCount() const;
+	bool IsEmpty() const;
 };
 
 template <class T, int PreAllocCount>
@@ -496,7 +496,7 @@ POSITION List<T,PreAllocCount>::Find(const T &t, POSITION startafter) const
 }
 
 template <class T, int PreAllocCount>
-POSITION List<T,PreAllocCount>::FindIndex(uint32 index) const
+POSITION List<T,PreAllocCount>::FindIndex(uint32_t index) const
 {
 	if(index >= m_count || index < 0)
 		return NULL;
@@ -510,13 +510,13 @@ POSITION List<T,PreAllocCount>::FindIndex(uint32 index) const
 }
 
 template <class T, int PreAllocCount>
-uint32 List<T,PreAllocCount>::GetCount() const
+uint32_t List<T,PreAllocCount>::GetCount() const
 {
 	return m_count;
 }
 
 template <class T, int PreAllocCount>
-BOOL List<T,PreAllocCount>::IsEmpty() const
+bool List<T,PreAllocCount>::IsEmpty() const
 {
 	return(GetCount() <= 0);
 }

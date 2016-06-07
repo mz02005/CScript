@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "vm.h"
+#include <math.h>
 
 using namespace runtime;
 
@@ -20,11 +21,11 @@ runtimeObjectBase* doubleObject::Add(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Add on const variable");
-		return nullptr;
+		return NULL;
 	}
 			
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	doubleObject *val = new ObjectModule<doubleObject>;
 	val->mVal = mVal + getObjectDataOrig<double>(obj);
@@ -37,11 +38,11 @@ runtimeObjectBase* doubleObject::Sub(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Sub on const variable");
-		return nullptr;
+		return NULL;
 	}
 				
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	doubleObject *val = new ObjectModule<doubleObject>;
 	val->mVal = mVal - getObjectDataOrig<double>(obj);
@@ -54,11 +55,11 @@ runtimeObjectBase* doubleObject::Mul(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Mul on const variable");
-		return nullptr;
+		return NULL;
 	}
 	
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	doubleObject *val = new ObjectModule<doubleObject>;
 	val->mVal = mVal * getObjectDataOrig<double>(obj);
@@ -71,18 +72,18 @@ runtimeObjectBase* doubleObject::Div(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Div on const variable");
-		return nullptr;
+		return NULL;
 	}
 	
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	doubleObject *val = new ObjectModule<doubleObject>;
 	double divisor = getObjectDataOrig<double>(obj);
 	if (fabs(divisor) < 0.000000001)
 	{
 		SCRIPT_TRACE("Divided by zero\n");
-		return nullptr;
+		return NULL;
 	}
 	val->mVal = mVal / divisor;
 	return val;
@@ -91,24 +92,24 @@ runtimeObjectBase* doubleObject::Div(const runtimeObjectBase *obj)
 runtimeObjectBase* doubleObject::SetValue(runtimeObjectBase *obj)
 {
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 	mVal = getObjectDataOrig<double>(obj);
 	return this;
 }
 
 runtimeObjectBase* doubleObject::GetMember(const char *memName)
 {
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* doubleObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* doubleObject::getIndex(int i)
 {
-	return nullptr;
+	return NULL;
 }
 
 stringObject* doubleObject::toString()

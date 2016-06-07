@@ -23,13 +23,13 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 struct NOTSTD_API ApplicationData {
-	Handle<> readOnlyHandle;
+	Handle<NormalHandleType> readOnlyHandle;
 	int readOnlySize;
 
-	Handle<> readWriteHandle;
+	Handle<NormalHandleType> readWriteHandle;
 	int readWriteSize;
 
-	Handle<> stringHandle;
+	Handle<NormalHandleType> stringHandle;
 	int stringSize;
 
 	std::string *namedPipeName;

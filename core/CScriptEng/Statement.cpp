@@ -7,7 +7,7 @@ using namespace compiler;
 IMPLEMENT_OBJINFO(Statement,objBase)
 
 Statement::Statement()
-	: mParentBlock(nullptr)
+	: mParentBlock(NULL)
 {
 }
 
@@ -20,7 +20,7 @@ FunctionStatement* Statement::GetFunctionParent()
 	Statement *p = this;
 	while (p && !p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
 		p = p->GetParent();
-	return p ? static_cast<FunctionStatement*>(p) : nullptr;
+	return p ? static_cast<FunctionStatement*>(p) : NULL;
 }
 
 const FunctionStatement* Statement::GetFunctionParent() const
@@ -28,7 +28,7 @@ const FunctionStatement* Statement::GetFunctionParent() const
 	const Statement *p = this;
 	while (p && !p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
 		p = p->GetParent();
-	return p ? static_cast<const FunctionStatement*>(p) : nullptr;
+	return p ? static_cast<const FunctionStatement*>(p) : NULL;
 }
 
 Statement* Statement::isInLoopStatementBlock(uint32_t breakOrContinue)
@@ -41,7 +41,7 @@ Statement* Statement::isInLoopStatementBlock(uint32_t breakOrContinue)
 		{
 			if (loopFlags & breakOrContinue)
 				return p;
-			return nullptr;
+			return NULL;
 		}
 
 		if (p->isInheritFrom(OBJECT_INFO(FunctionStatement)))
@@ -52,7 +52,7 @@ Statement* Statement::isInLoopStatementBlock(uint32_t breakOrContinue)
 		}
 		p = p->GetParent();
 	}
-	return nullptr;
+	return NULL;
 }
 
 bool Statement::RegistName(const char *name, uint32_t type)

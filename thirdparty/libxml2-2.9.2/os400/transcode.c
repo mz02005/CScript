@@ -10,7 +10,7 @@
 #include "libxml.h"
 
 #include <sys/types.h>
-#include <iconv.h>
+#include <libiconv/iconv/iconv.h>
 #include "libxml/xmlmemory.h"
 #include "libxml/dict.h"
 #include "transcode.h"

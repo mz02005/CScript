@@ -20,11 +20,11 @@ runtimeObjectBase* uintObject::Add(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("add on const variable");
-		return nullptr;
+		return NULL;
 	}
 
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	uintObject *val = new ObjectModule<uintObject>;
 	val->mVal = mVal + getObjectDataOrig<uint32_t>(obj);
@@ -36,11 +36,11 @@ runtimeObjectBase* uintObject::Sub(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("sub on const variable");
-		return nullptr;
+		return NULL;
 	}
 	
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	uintObject *val = new ObjectModule<uintObject>;
 	val->mVal = mVal - getObjectDataOrig<uint32_t>(obj);
@@ -52,11 +52,11 @@ runtimeObjectBase* uintObject::Mul(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Mul on const variable");
-		return nullptr;
+		return NULL;
 	}
 		
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	uintObject *val = new ObjectModule<uintObject>;
 	val->mVal = mVal * getObjectDataOrig<uint32_t>(obj);
@@ -68,18 +68,18 @@ runtimeObjectBase* uintObject::Div(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Div on const variable");
-		return nullptr;
+		return NULL;
 	}
 		
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	uintObject *val = new ObjectModule<uintObject>;
 	int divisor = getObjectDataOrig<uint32_t>(obj);
 	if (!divisor)
 	{
 		SCRIPT_TRACE("Divided by zero\n");
-		return nullptr;
+		return NULL;
 	}
 	val->mVal = mVal / divisor;
 	return val;
@@ -87,22 +87,22 @@ runtimeObjectBase* uintObject::Div(const runtimeObjectBase *obj)
 
 runtimeObjectBase* uintObject::SetValue(runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* uintObject::GetMember(const char *memName)
 {
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* uintObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* uintObject::getIndex(int i)
 {
-	return nullptr;
+	return NULL;
 }
 
 stringObject* uintObject::toString()

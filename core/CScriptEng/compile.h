@@ -349,6 +349,8 @@ namespace compiler
 		bool CalcNode(ExpressionNode *n, int &val);
 		void OnRemoveSingleGrammaTreeNode(ExpressionNode *n, std::list<ExpressionNode*> &l);
 
+		void ThrowBadcast(const char *s);
+
 	public:
 		PostfixExpression();
 		~PostfixExpression();
@@ -390,25 +392,7 @@ namespace compiler
 		virtual ~Statement();
 
 		template <typename StatementType>
-		static bool BlockDistance(StatementType *parent, Statement *sun, uint32_t &dist)
-		{
-			dist = 0;
-			Statement *s = sun->GetParent();
-			while (s)
-			{
-				if (s->isInheritFrom(OBJECT_INFO(StatementType)) && static_cast<StatementType*>(s) == parent)
-					break;
-
-				if (s->isInheritFrom(OBJECT_INFO(FunctionStatement)))
-					return false;
-
-				if (s->isInheritFrom(OBJECT_INFO(StatementBlock)))
-					dist++;
-
-				s = s->GetParent();
-			}
-			return true;
-		}
+		static bool BlockDistance(StatementType *parent, Statement *sun, uint32_t &dist);
 
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context) { return -1; }
 		virtual int GenerateInstruction(CompileResult *compileResult) {
@@ -813,4 +797,25 @@ namespace compiler
 		SimpleCScriptEngContext();
 		~SimpleCScriptEngContext();
 	};
+
+	template <typename StatementType>
+	bool Statement::BlockDistance(StatementType *parent, Statement *sun, uint32_t &dist)
+	{
+		dist = 0;
+		Statement *s = sun->GetParent();
+		while (s)
+		{
+			if (s->isInheritFrom(OBJECT_INFO(StatementType)) && static_cast<StatementType*>(s) == parent)
+				break;
+
+			if (s->isInheritFrom(OBJECT_INFO(FunctionStatement)))
+				return false;
+
+			if (s->isInheritFrom(OBJECT_INFO(StatementBlock)))
+				dist++;
+
+			s = s->GetParent();
+		}
+		return true;
+	}
 }

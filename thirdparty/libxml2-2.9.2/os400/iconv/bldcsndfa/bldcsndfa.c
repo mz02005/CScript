@@ -16,8 +16,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#include <iconv.h>
-
+#include <libiconv/iconv/iconv.h>
 
 #ifdef OLDXML
 #include "xml.h"

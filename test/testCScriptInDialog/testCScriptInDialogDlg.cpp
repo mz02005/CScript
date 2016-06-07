@@ -17,7 +17,7 @@ public:
 	
 public:
 	println2()
-		: mDlg(nullptr)
+		: mDlg(NULL)
 	{
 	}
 
@@ -26,16 +26,16 @@ public:
 		return runtime::DT_UserTypeBegin;
 	}
 
-	virtual runtimeObjectBase* Add(const runtimeObjectBase *obj){ return nullptr; }
-	virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj){ return nullptr; }
-	virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj){ return nullptr; }
-	virtual runtimeObjectBase* Div(const runtimeObjectBase *obj){ return nullptr; }
+	virtual runtimeObjectBase* Add(const runtimeObjectBase *obj){ return NULL; }
+	virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj){ return NULL; }
+	virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj){ return NULL; }
+	virtual runtimeObjectBase* Div(const runtimeObjectBase *obj){ return NULL; }
 
 	// =二元运算
-	virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) { return nullptr; }
+	virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) { return NULL; }
 
 	// 处理.操作符（一元的）
-	virtual runtimeObjectBase* GetMember(const char *memName) { return nullptr; }
+	virtual runtimeObjectBase* GetMember(const char *memName) { return NULL; }
 
 	// docall（函数调用一元运算）
 	virtual runtimeObjectBase* doCall(runtime::doCallContext *context)
@@ -62,9 +62,9 @@ public:
 	}
 
 	// getindex（索引访问一元运算）
-	virtual runtimeObjectBase* getIndex(int i) { return nullptr; }
+	virtual runtimeObjectBase* getIndex(int i) { return NULL; }
 	// 对象转化为字符串
-	virtual runtime::stringObject* toString() { return nullptr; }
+	virtual runtime::stringObject* toString() { return NULL; }
 
 	// 比较
 	virtual bool isGreaterThan(const runtimeObjectBase *obj) { return false; }
@@ -147,12 +147,12 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 	//}
 	//scriptAPI::SimpleCScriptEng::Term();
 
-	CompilerHandle cHandle = nullptr;
-	CompileResultHandle crHandle = nullptr;
-	VirtualMachineHandle virtualMachine = nullptr;
+	CompilerHandle cHandle = NULL;
+	CompileResultHandle crHandle = NULL;
+	VirtualMachineHandle virtualMachine = NULL;
 
-	FILE *file = nullptr;
-	println2 *println = nullptr;
+	FILE *file = NULL;
+	println2 *println = NULL;
 
 	do {
 
@@ -164,7 +164,7 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 
 		PushCompileTimeName(cHandle, "println2");
 
-		if ((crHandle = CompileCode(CW2A(mSourcePath).m_psz, cHandle, 1)) == nullptr)
+		if ((crHandle = CompileCode(CW2A(mSourcePath).m_psz, cHandle, 1)) == NULL)
 		{
 			MessageBox(L"编译错误");
 			break;
@@ -187,7 +187,7 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 		if (file)
 		{
 			fclose(file);
-			file = nullptr;
+			file = NULL;
 		}
 
 		if (CreateVirtualMachine(&virtualMachine, 512, 512) < 0)

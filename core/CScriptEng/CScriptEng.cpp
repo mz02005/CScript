@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "compile.h"
 #include "vm.h"
+#if defined(PLATFORM_WINDOWS)
 #include <io.h>
+#endif
 #include <algorithm>
 #include "cscript.h"
 
@@ -66,13 +68,13 @@ int StringStream::Write(const uint8_t *data, int offset, int count)
 ///////////////////////////////////////////////////////////////////////////////
 
 FileStream::FileStream(const char *filePathName)
-	: mFile(nullptr)
+	: mFile(NULL)
 {
 	Open(filePathName);
 }
 
 FileStream::FileStream()
-	: mFile(nullptr)
+	: mFile(NULL)
 {
 }
 
@@ -84,7 +86,12 @@ FileStream::~FileStream()
 int FileStream::Open(const char *filePathName)
 {
 	Close();
+#if defined(PLATFORM_WINDOWS)
 	return ::fopen_s(&mFile, filePathName, "rb");
+#else
+	mFile = fopen(filePathName, "rb");
+	return mFile ? 0 : -1;
+#endif
 }
 
 void FileStream::Close()
@@ -92,7 +99,7 @@ void FileStream::Close()
 	if (mFile)
 	{
 		::fclose(mFile);
-		mFile = nullptr;
+		mFile = NULL;
 	}
 }
 
@@ -116,15 +123,25 @@ int64_t FileStream::Seek(int64_t offset, int origPosition)
 {
 	if (mFile)
 	{
+#if defined(PLATFORM_WINDOWS)
 		if (::_fseeki64(mFile, offset, origPosition))
+#else
+		if (::fseek(mFile, offset, origPosition))
+#endif
 			return 0;
+
+#if defined(PLATFORM_WINDOWS)
 		return _ftelli64(mFile);
+#else
+		return ftell(mFile);
+#endif
 	}
 	return 0;
 }
 
 int FileStream::SetLength(int64_t length)
 {
+#if defined(PLATFORM_WINDOWS)
 	if (mFile)
 	{
 		HANDLE h = reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(mFile)));
@@ -132,6 +149,7 @@ int FileStream::SetLength(int64_t length)
 			return -1;
 		return 0;
 	}
+#endif
 	return -1;
 }
 
@@ -234,7 +252,7 @@ void ScriptCompiler::ReleaseCompileCode(HANDLE code)
 ///////////////////////////////////////////////////////////////////////////////
 
 ScriptRuntimeContext::ScriptRuntimeContext(uint32_t stackSize, uint32_t stackFrameSize)
-	: mContextInner(nullptr)
+	: mContextInner(NULL)
 {
 	VMConfig conf;
 	conf.stackFrameSize = stackFrameSize;

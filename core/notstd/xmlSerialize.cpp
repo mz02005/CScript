@@ -13,12 +13,11 @@ static xmlSavingTreeNode make_tree_node(bool e, XmlElemSerializerBase *node)
 
 IMPLEMENT_BASETYPE_XMLPROP(bool)
 IMPLEMENT_BASETYPE_XMLPROP(int)
-IMPLEMENT_BASETYPE_XMLPROP(ULONG)
+//IMPLEMENT_BASETYPE_XMLPROP(uint64_t)
 IMPLEMENT_BASETYPE_XMLPROP(string)
 IMPLEMENT_BASETYPE_XMLPROP(uint16_t)
 IMPLEMENT_BASETYPE_XMLPROP(uint8_t)
 IMPLEMENT_BASETYPE_XMLPROP(uint32_t)
-IMPLEMENT_BASETYPE_XMLPROP(uint64_t)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -205,155 +204,165 @@ bool XmlElemSerializer::Store(XmlElemSerializerBase *root)
 	return true;
 }
 
-void XmlElemSerializer::Load(XmlElemSerializerBase *root) throw()
+class XmlReader : public xmlSAXParser
 {
-	class XmlReader : public xmlSAXParser
+private:
+	struct LevelInfo
 	{
-	private:
-		struct LevelInfo
+		bool isList;
+		XmlElemSerializerBase *base;
+
+		LevelInfo(bool b, XmlElemSerializerBase *s)
+			: isList(b)
+			, base(s)
 		{
-			bool isList;
-			XmlElemSerializerBase *base;
-
-			LevelInfo(bool b, XmlElemSerializerBase *s)
-				: isList(b)
-				, base(s)
-			{
-			}
-		};
-		bool mHasStartRoot;
-		std::list<LevelInfo> mParseQueue;
-
-	protected:
-		virtual void OnStartElement(const char *name, const char **atts)
-		{
-			List<const XmlFlagItem*> flags;
-
-			if (!mHasStartRoot)
-			{
-				if (mParseQueue.front().base->GetTagName() != name)
-					throw std::exception("Invalid root element");
-				mHasStartRoot = true;
-			}
-			else
-			{
-				mParseQueue.front().base->GetXmlFlagItemList(XmlFlagItem::NullType, flags);
-				auto iter = flags.GetHeadPosition();
-				while (iter)
-				//for (; iter != flags.end(); iter++)
-				{
-					auto &theBase = flags.GetNext(iter);
-
-					if (theBase->itemType == XmlFlagItem::SubElementItem)
-					{
-						if (strcmp(theBase->name, name))
-							continue;
-						XmlElemSerializerBase *base = reinterpret_cast<XmlElemSerializerBase*>(reinterpret_cast<char*>(mParseQueue.front().base) + theBase->dataOff);
-						base->mCharacters.clear();
-						mParseQueue.push_front(LevelInfo(false, base));
-						break;
-					}
-					else if (theBase->itemType == XmlFlagItem::SubListItem)
-					{
-						if (strcmp(theBase->listTagName ? theBase->listTagName : theBase->name, name))
-							continue;
-						SubElementList *elemList = reinterpret_cast<SubElementList*>(reinterpret_cast<char*>(mParseQueue.front().base) + theBase->dataOff);
-						objBase *obj = objBase::CreateObject(theBase->name);
-						if (!obj->isInheritFrom(OBJECT_INFO(XmlElemSerializerBase)))
-							throw std::bad_cast();
-						elemList->GetList().AddTail(static_cast<XmlElemSerializerBase*>(obj));
-						mParseQueue.push_front(LevelInfo(true, static_cast<XmlElemSerializerBase*>(obj)));
-						break;
-					}
-				}
-			}
-
-			if (atts)
-			{
-				flags.RemoveAll();
-				XmlElemSerializerBase *elemBase = mParseQueue.front().base;
-				elemBase->GetXmlFlagItemList(XmlFlagItem::PropertyItem, flags);
-				for (const char **v = atts; *v != '\0'; v += 2)
-				{
-					auto iter = flags.GetHeadPosition();
-					while (iter)
-					//for (; iter != flags.end(); iter++)
-					{
-						auto &theBase = flags.GetNext(iter);
-						if (strcmp(theBase->name, *v) == 0)
-						{
-							XmlPropSerializerBase *propBase = reinterpret_cast<XmlPropSerializerBase*>(reinterpret_cast<char*>(mParseQueue.front().base) + theBase->dataOff);
-							propBase->FromString(v[1]);
-							propBase->Normalize(elemBase);
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		virtual void OnEndElement(const char *name)
-		{
-			XmlElemSerializerBase *base = mParseQueue.front().base;
-			if (base->GetTagName() == name)
-			{
-				mParseQueue.pop_front();
-				base->Normalize(mParseQueue.size() ? mParseQueue.front().base : NULL);
-			}
-		}
-
-		virtual void OnCharacters(const char *ch, int len)
-		{
-			XmlElemSerializerBase *base = mParseQueue.front().base;
-			if (base->GetTagName() == mNameQueue->back())
-			{
-				std::string s(ch, len);
-				base->mCharacters += s;
-			}
-		}
-
-	public:
-		XmlReader(XmlElemSerializerBase *root)
-			: mHasStartRoot(false)
-		{
-			mParseQueue.push_front(LevelInfo(false, root));
 		}
 	};
+	bool mHasStartRoot;
+	std::list<LevelInfo> mParseQueue;
 
+	void ThrowExeception(const char *err)
+	{
+#if defined(PLATFORM_WINDOWS)
+		throw std::exception("Invalid root element.");
+#else
+		throw std::exception();
+#endif
+	}
+
+protected:
+	virtual void OnStartElement(const char *name, const char **atts)
+	{
+		List<const XmlFlagItem*> flags;
+
+		if (!mHasStartRoot)
+		{
+			if (mParseQueue.front().base->GetTagName() != name)
+				ThrowExeception("Invalid root element");
+			mHasStartRoot = true;
+		}
+		else
+		{
+			mParseQueue.front().base->GetXmlFlagItemList(XmlFlagItem::NullType, flags);
+			auto iter = flags.GetHeadPosition();
+			while (iter)
+				//for (; iter != flags.end(); iter++)
+			{
+				auto &theBase = flags.GetNext(iter);
+
+				if (theBase->itemType == XmlFlagItem::SubElementItem)
+				{
+					if (strcmp(theBase->name, name))
+						continue;
+					XmlElemSerializerBase *base = reinterpret_cast<XmlElemSerializerBase*>(reinterpret_cast<char*>(mParseQueue.front().base) + theBase->dataOff);
+					base->mCharacters.clear();
+					mParseQueue.push_front(LevelInfo(false, base));
+					break;
+				}
+				else if (theBase->itemType == XmlFlagItem::SubListItem)
+				{
+					if (strcmp(theBase->listTagName ? theBase->listTagName : theBase->name, name))
+						continue;
+					SubElementList *elemList = reinterpret_cast<SubElementList*>(reinterpret_cast<char*>(mParseQueue.front().base) + theBase->dataOff);
+					objBase *obj = objBase::CreateObject(theBase->name);
+					if (!obj->isInheritFrom(OBJECT_INFO(XmlElemSerializerBase)))
+						throw std::bad_cast();
+					elemList->GetList().AddTail(static_cast<XmlElemSerializerBase*>(obj));
+					mParseQueue.push_front(LevelInfo(true, static_cast<XmlElemSerializerBase*>(obj)));
+					break;
+				}
+			}
+		}
+
+		if (atts)
+		{
+			flags.RemoveAll();
+			XmlElemSerializerBase *elemBase = mParseQueue.front().base;
+			elemBase->GetXmlFlagItemList(XmlFlagItem::PropertyItem, flags);
+			for (const char **v = atts; *v != '\0'; v += 2)
+			{
+				auto iter = flags.GetHeadPosition();
+				while (iter)
+					//for (; iter != flags.end(); iter++)
+				{
+					auto &theBase = flags.GetNext(iter);
+					if (strcmp(theBase->name, *v) == 0)
+					{
+						XmlPropSerializerBase *propBase = reinterpret_cast<XmlPropSerializerBase*>(reinterpret_cast<char*>(mParseQueue.front().base) + theBase->dataOff);
+						propBase->FromString(v[1]);
+						propBase->Normalize(elemBase);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	virtual void OnEndElement(const char *name)
+	{
+		XmlElemSerializerBase *base = mParseQueue.front().base;
+		if (base->GetTagName() == name)
+		{
+			mParseQueue.pop_front();
+			base->Normalize(mParseQueue.size() ? mParseQueue.front().base : NULL);
+		}
+	}
+
+	virtual void OnCharacters(const char *ch, int len)
+	{
+		XmlElemSerializerBase *base = mParseQueue.front().base;
+		if (base->GetTagName() == mNameQueue->back())
+		{
+			std::string s(ch, len);
+			base->mCharacters += s;
+		}
+	}
+
+public:
+	XmlReader(XmlElemSerializerBase *root)
+		: mHasStartRoot(false)
+	{
+		mParseQueue.push_front(LevelInfo(false, root));
+	}
+};
+
+void XmlElemSerializer::Load(XmlElemSerializerBase *root) throw()
+{
 	InitializeDOMTree(root);
 	XmlReader reader(root);
 	xmlKeepBlanksDefault(0);
 	reader.ParseFile(mPath);
 }
 
+struct TravRecord
+{
+	// 已经将众儿子加进列表了
+	int hasTrav : 1;
+	int isList : 1;
+
+	XmlElemSerializerBase *base;
+	SubElementList *subList;
+
+	TravRecord(XmlElemSerializerBase *b)
+		: hasTrav(0)
+		, isList(0)
+		, base(b)
+	{
+	}
+
+	TravRecord(SubElementList *l)
+		: hasTrav(0)
+		, isList(1)
+		, subList(l)
+	{
+	}
+};
+
 void XmlElemSerializer::DFSTheElemTree(XmlElemSerializerBase *root,
 	std::function<void(notstd::SubElementList*)> funcSubList,
 	std::function<bool(XmlElemSerializerBase*)> func,
 	std::function<void(XmlPropSerializerBase*, const XmlFlagItem *)> funcProp)
 {
-	struct TravRecord
-	{
-		// 已经将众儿子加进列表了
-		int hasTrav : 1;
-		int isList : 1;
-
-		XmlElemSerializerBase *base;
-		SubElementList *subList;
-
-		TravRecord(XmlElemSerializerBase *b)
-			: hasTrav(0)
-			, isList(0)
-			, base(b)
-		{
-		}
-
-		TravRecord(SubElementList *l)
-			: hasTrav(0)
-			, isList(1)
-			, subList(l)
-		{
-		}
-	};
 	std::list<TravRecord> elemList;
 	elemList.push_back(TravRecord(root));
 
@@ -482,6 +491,7 @@ void XmlElemSerializer::TravElemTreeByLevel(XmlElemSerializerBase *root,
 
 void XmlElemSerializer::ReleaseXmlDomTree(XmlElemSerializerBase *root)
 {
+#if defined(PLATFORM_WINDOWS)
 	DFSTheElemTree(root, [](notstd::SubElementList *sl)
 	{
 		POSITION pos = sl->GetList().GetHeadPosition();
@@ -493,10 +503,14 @@ void XmlElemSerializer::ReleaseXmlDomTree(XmlElemSerializerBase *root)
 		sl->GetList().RemoveAll();
 	}, [](notstd::XmlElemSerializerBase *elem)->bool
 	{ return true; }, [](notstd::XmlPropSerializerBase *prop, const XmlFlagItem *flag){});
+#else
+	assert(0);
+#endif
 }
 
 void XmlElemSerializer::InitializeDOMTree(XmlElemSerializerBase *base)
 {
+#if defined(PLATFORM_WINDOWS)
 	DFSTheElemTree(base,
 		[](notstd::SubElementList *sl)
 		{
@@ -516,4 +530,7 @@ void XmlElemSerializer::InitializeDOMTree(XmlElemSerializerBase *base)
 				prop->FromString(flag->defValue);
 		}
 	);
+#else
+	assert(0);
+#endif
 }

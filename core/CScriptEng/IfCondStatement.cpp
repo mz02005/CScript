@@ -7,18 +7,18 @@ using namespace compiler;
 IMPLEMENT_OBJINFO(IfConditionStatement,Statement)
 
 IfConditionStatement::IfConditionStatement()
-	: mElseStatement(nullptr)
+	: mElseStatement(NULL)
 {
 }
 
 IfConditionStatement::~IfConditionStatement()
 {
-	std::for_each(mElseIfStatementList.begin(), mElseIfStatementList.end(), 
-		[](ElseIfBlock &bl)
+	for (std::list<ElseIfBlock>::iterator iter = mElseIfStatementList.begin();
+		iter != mElseIfStatementList.end(); iter++)
 	{
-		delete bl.judg;
-		delete bl.sb;
-	});
+		delete (*iter).judg;
+		delete (*iter).sb;
+	}
 	mElseIfStatementList.clear();
 
 	if (mElseStatement)
@@ -110,7 +110,7 @@ int IfConditionStatement::Compile(Statement *parent, SimpleCScriptEngContext *co
 				if (result != 0)
 				{
 					delete mElseStatement;
-					mElseStatement = nullptr;
+					mElseStatement = NULL;
 					return -1;
 				}
 				break;
@@ -126,16 +126,17 @@ int IfConditionStatement::Compile(Statement *parent, SimpleCScriptEngContext *co
 	return 0;
 }
 
+struct ElseIfPos
+{
+	//uint32_t toElse; // 这个位置要填写else语句开始的地方
+	uint32_t toEndif;// 这个位置记录要填写if语句结束位置的地方
+};
+
 int IfConditionStatement::GenerateInstruction(CompileResult *compileResult)
 {
 	int r;
 
 	// 记录ElseIf子句需要处理的跳转位置
-	struct ElseIfPos
-	{
-		//uint32_t toElse; // 这个位置要填写else语句开始的地方
-		uint32_t toEndif;// 这个位置记录要填写if语句结束位置的地方
-	};
 	std::list<ElseIfPos> elseIfPosList;
 
 	GenerateInstructionHelper gih(compileResult);
@@ -154,7 +155,8 @@ int IfConditionStatement::GenerateInstruction(CompileResult *compileResult)
 
 	uint32_t jumpIfTailPos = gih.Insert_jump_Instruction(0);
 
-	for (auto iter = mElseIfStatementList.begin(); iter != mElseIfStatementList.end(); iter++)
+	for (std::list<ElseIfBlock>::iterator iter = mElseIfStatementList.begin(); 
+		iter != mElseIfStatementList.end(); iter++)
 	{
 		ElseIfPos pos;
 

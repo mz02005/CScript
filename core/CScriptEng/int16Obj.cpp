@@ -17,42 +17,42 @@ uint32_t shortObject::GetObjectTypeId() const
 
 runtimeObjectBase* shortObject::Add(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* shortObject::Sub(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* shortObject::Mul(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* shortObject::Div(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* shortObject::SetValue(runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* shortObject::GetMember(const char *memName)
 {
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* shortObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* shortObject::getIndex(int i)
 {
-	return nullptr;
+	return NULL;
 }
 
 stringObject* shortObject::toString()

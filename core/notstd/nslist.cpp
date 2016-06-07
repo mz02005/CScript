@@ -4,7 +4,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-CPlexInfo* CPlexInfo::CreatePlex(CPlexInfo *&pHead, UINT nElemCount, UINT cbElemSize)
+CPlexInfo* CPlexInfo::CreatePlex(CPlexInfo *&pHead, uint32_t nElemCount, uint32_t cbElemSize)
 {
 	assert(nElemCount > 0 && cbElemSize > 0);
 	int allocsize = sizeof(CPlexInfo) + nElemCount * cbElemSize;
@@ -21,7 +21,7 @@ void CPlexInfo::FreePlexChain()
 	while (pPlex != NULL)
 	{
 		assert(pPlex->m_nReserved == 0);
-		BYTE *pData = (BYTE*)pPlex;
+		uint8_t *pData = (uint8_t*)pPlex;
 		CPlexInfo *pNext = pPlex->m_pNext;
 		free(pData);
 		pPlex = pNext;
@@ -35,7 +35,7 @@ void* CPlexInfo::GetData()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-FixedSizeAllocator::FixedSizeAllocator(UINT nUnitSize, UINT nUnitPerBlock)
+FixedSizeAllocator::FixedSizeAllocator(uint32_t nUnitSize, uint32_t nUnitPerBlock)
 	: m_pPlex(NULL)
 	, m_pFreeNodeHead(NULL)
 	, m_nUnitSize(nUnitSize)
@@ -66,8 +66,8 @@ void* FixedSizeAllocator::malloc()
 			m_nUnitPerBlock, m_nUnitSize + sizeof(CNode));
 
 		// ³õÊ¼»¯¿ÕÏÐÁ´±í
-		BYTE *p = (BYTE*)pNewPlex->GetData();
-		for (UINT i = 0; i < m_nUnitPerBlock; i ++)
+		uint8_t *p = (uint8_t*)pNewPlex->GetData();
+		for (uint32_t i = 0; i < m_nUnitPerBlock; i ++)
 		{
 			CNode *pNode = (CNode*)(p + (m_nUnitSize + sizeof(CNode)) * i);
 			pNode->m_pNext = m_pFreeNodeHead;

@@ -25,10 +25,10 @@ runtimeObjectBase* stringObject::Add(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("add on const variable");
-		return nullptr;
+		return NULL;
 	}
 
-	runtimeObjectBase *r = nullptr;
+	runtimeObjectBase *r = NULL;
 	uint32_t typeId = obj->GetObjectTypeId();
 	if (typeId == DT_string)
 	{
@@ -37,14 +37,14 @@ runtimeObjectBase* stringObject::Add(const runtimeObjectBase *obj)
 		r = val;
 	}
 	else
-		return nullptr;
+		return NULL;
 
 	return r;
 }
 
 runtimeObjectBase* stringObject::Sub(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* stringObject::Mul(const runtimeObjectBase *obj)
@@ -52,10 +52,10 @@ runtimeObjectBase* stringObject::Mul(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("add on const variable");
-		return nullptr;
+		return NULL;
 	}
 
-	runtimeObjectBase *r = nullptr;
+	runtimeObjectBase *r = NULL;
 	uint32_t typeId = obj->GetObjectTypeId();
 	if (typeId == DT_int32)
 	{
@@ -67,14 +67,14 @@ runtimeObjectBase* stringObject::Mul(const runtimeObjectBase *obj)
 		r = val;
 	}
 	else
-		return nullptr;
+		return NULL;
 
 	return r;
 }
 
 runtimeObjectBase* stringObject::Div(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* stringObject::SetValue(runtimeObjectBase *obj)
@@ -82,7 +82,7 @@ runtimeObjectBase* stringObject::SetValue(runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("add on const variable");
-		return nullptr;
+		return NULL;
 	}
 	uint32_t typeId = obj->GetObjectTypeId();
 
@@ -92,7 +92,7 @@ runtimeObjectBase* stringObject::SetValue(runtimeObjectBase *obj)
 		return this;
 	}
 	
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* stringObject::GetMember(const char *memName)
@@ -103,19 +103,19 @@ runtimeObjectBase* stringObject::GetMember(const char *memName)
 		obj->mVal = mVal->size();
 		return obj;
 	}
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* stringObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* stringObject::getIndex(int i)
 {
 	std::string::size_type l = mVal->size();
 	if (i < 0 || i >= l)
-		return nullptr;
+		return NULL;
 	intObject *r = new runtime::ObjectModule<intObject>;
 	r->mVal = (int)mVal->operator[](i);
 	return r;

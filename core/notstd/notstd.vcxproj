@@ -157,6 +157,7 @@
     <ClInclude Include="cmdline.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="crc.h" />
+    <ClInclude Include="filesystem.h" />
     <ClInclude Include="ioCompletionManager.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="notstd.h" />
@@ -196,6 +197,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="filesystem.cpp" />
     <ClCompile Include="ioCompletionManager.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="notstd.cpp" />
@@ -218,6 +220,9 @@
     <ClCompile Include="vcverport.cpp" />
     <ClCompile Include="xmlparserHelper.cpp" />
     <ClCompile Include="xmlSerialize.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

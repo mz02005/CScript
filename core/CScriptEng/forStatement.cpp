@@ -7,9 +7,9 @@ using namespace compiler;
 IMPLEMENT_OBJINFO(ForStatement,Statement)
 
 ForStatement::ForStatement()
-	: mDeclExpression(nullptr)
-	, mJudgementExpression(nullptr)
-	, mIteratorExpression(nullptr)
+	: mDeclExpression(NULL)
+	, mJudgementExpression(NULL)
+	, mIteratorExpression(NULL)
 {
 }
 

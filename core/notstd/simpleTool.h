@@ -16,11 +16,6 @@ public:
 	}
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// Windows only
-
-#ifdef PLATFORM_WINDOWS
-
 class NOTSTD_API STDCFILEHandle
 {
 public:
@@ -52,6 +47,8 @@ public:
 	static void CloseHandleProc(HandleType h);
 	static void SetHandleNull(HandleType &h);
 };
+
+#ifdef PLATFORM_WINDOWS
 
 class NOTSTD_API FileHandleType
 {
@@ -93,7 +90,9 @@ public:
 	static void SetHandleNull(HandleType &h);
 };
 
-template <class T = NormalHandleType>
+#endif
+
+template <class T>
 class Handle
 {
 public:
@@ -161,6 +160,7 @@ public:
 	}
 };
 
+#if defined(PLATFORM_WINDOWS)
 template class NOTSTD_API Handle < NormalHandleType > ;
 template class NOTSTD_API Handle < FileHandleType > ;
 template class NOTSTD_API Handle < ModuleType > ;
@@ -168,10 +168,17 @@ template class NOTSTD_API Handle < ZipFileHandle > ;
 template class NOTSTD_API Handle < STDCFILEHandle > ;
 template class NOTSTD_API Handle < FindFileHandle > ;
 template class NOTSTD_API Handle < UnzipFileHandle > ;
+#endif
 
 class NOTSTD_API Path
 {
 public:
+#if defined(PLATFORM_WINDOWS)
+	static const int mMaxPath = MAX_PATH;
+#else
+	static const int mMaxPath = 260;
+#endif
+
 	static bool CreateDirectoryRecursion(const std::string &path);
 
 	typedef void (*OnPathName)(void *userData, const std::string &pathName, bool isDir);
@@ -188,12 +195,19 @@ public:
 class NOTSTD_API Time
 {
 public:
-	__time64_t mTime;
+#if defined(PLATFORM_WINDOWS)
+	typedef __time64_t TimeType;
+#else
+	typedef int64_t TimeType;
+#endif
+	TimeType mTime;
 
 public:
 	Time();
-	Time(__time64_t t);
+	Time(TimeType t);
+#if defined(PLATFORM_WINDOWS)
 	Time(FILETIME *filetime);
+#endif
 	Time(int year, int month, int day, int hour, int minute, int second);
 
 	std::string GetString() const;
@@ -215,5 +229,3 @@ class NOTSTD_API File
 public:
 	static int GetFileAttribute(const std::wstring &filePathName, FileAttribute *fileAttributes);
 };
-
-#endif

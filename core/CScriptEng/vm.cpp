@@ -5,6 +5,7 @@
 #include "arrayType.h"
 #include "objType.h"
 #include "rtlib.h"
+#include <math.h>
 
 using namespace runtime;
 
@@ -33,47 +34,47 @@ uint32_t baseObjDefault::GetObjectTypeId() const
 
 runtimeObjectBase* baseObjDefault::Add(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* baseObjDefault::Sub(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* baseObjDefault::Mul(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* baseObjDefault::Div(const runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* baseObjDefault::SetValue(runtimeObjectBase *obj)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* baseObjDefault::GetMember(const char *memName)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* baseObjDefault::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* baseObjDefault::getIndex(int i)
 {
-	return nullptr;
+	return NULL;
 }
 
 stringObject* baseObjDefault::toString()
 {
-	return nullptr;
+	return NULL;
 }
 
 bool baseObjDefault::isGreaterThan(const runtimeObjectBase *obj)
@@ -97,7 +98,7 @@ namespace runtime
 
 	public:
 		toStringObject()
-			: mBaseObj(nullptr)
+			: mBaseObj(NULL)
 		{
 		}
 
@@ -108,7 +109,7 @@ namespace runtime
 
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context)
 		{
-			return mBaseObj ? mBaseObj->toString() : nullptr;
+			return mBaseObj ? mBaseObj->toString() : NULL;
 		}
 	};
 }
@@ -130,14 +131,14 @@ runtimeObjectBase* baseTypeObject::GetMember(const char *memName)
 		s->mBaseObj = this;
 		return s;
 	}
-	return __super::GetMember(memName);
+	return baseObjDefault::GetMember(memName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 runtimeContext::runtimeContext(VMConfig *config)
-	: mPC(nullptr)
-	, mPCEnd(nullptr)
+	: mPC(NULL)
+	, mPCEnd(NULL)
 	, mCurrentStack(0)
 	, mParamCount(0)
 	, mCallStackLayer(0)
@@ -148,14 +149,14 @@ runtimeContext::runtimeContext(VMConfig *config)
 		mConfig.Normalize();
 	}
 
-	mRuntimeStack.resize(mConfig.stackSize, nullptr);
+	mRuntimeStack.resize(mConfig.stackSize, NULL);
 
 	mStackFrame.resize(mConfig.stackFrameSize);
 	mStackFrame[0] = 0;
 	mStackFrameSize = 1;
 	// 第一个是废弃的
 	mPCFrame.resize(mConfig.stackFrameSize);
-	mPCFrame[0] = std::make_pair(nullptr, nullptr);
+	mPCFrame[0] = std::make_pair((uint32_t*)NULL, (uint32_t*)NULL);
 
 	PushObject(new runtime::ObjectModule<runtime::CreateArrayObj>);
 	rtLibHelper::RegistRuntimeObjs(this);
@@ -371,8 +372,9 @@ template <typename T>
 inline runtimeObjectBase* doMod(runtimeObjectBase *o, runtimeObjectBase *p)
 {
 	typedef runtime::ObjectModule<T> TypeToCreate;
+	typedef typename T::InnerDataType InnerDataType;
 	runtimeObjectBase *r = new TypeToCreate;
-	static_cast<T*>(r)->mVal = getObjectDataOrig<T::InnerDataType>(o) % getObjectDataOrig<T::InnerDataType>(p);
+	static_cast<T*>(r)->mVal = getObjectDataOrig<InnerDataType>(o) % getObjectDataOrig<InnerDataType>(p);
 	return r;
 }
 
@@ -989,8 +991,8 @@ namespace runtime {
 
 	public:
 		FunctionObject()
-			: mInstHead(nullptr)
-			, mInstTail(nullptr)
+			: mInstHead(NULL)
+			, mInstTail(NULL)
 		{
 			memset(&mFuncDesc, 0, sizeof(mFuncDesc));
 		}
@@ -1034,26 +1036,26 @@ namespace runtime {
 
 		virtual runtimeObjectBase* Add(const runtimeObjectBase *obj)
 		{
-			return nullptr;
+			return NULL;
 		}
 		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj)
 		{
-			return nullptr;
+			return NULL;
 		}
 		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj)
 		{
-			return nullptr;
+			return NULL;
 		}
 		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj)
 		{
-			return nullptr;
+			return NULL;
 		}
 
 		// =二元运算
 		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj)
 		{
 			if (obj->GetObjectTypeId() != DT_function)
-				return nullptr;
+				return NULL;
 
 			const FunctionObject *fo = static_cast<const FunctionObject*>(obj);
 			mFuncDesc = fo->mFuncDesc;
@@ -1068,7 +1070,7 @@ namespace runtime {
 		// 处理.操作符（一元的）
 		virtual runtimeObjectBase* GetMember(const char *memName)
 		{
-			return __super::GetMember(memName);
+			return baseTypeObject::GetMember(memName);
 		}
 
 		// docall（函数调用一元运算）
@@ -1080,7 +1082,7 @@ namespace runtime {
 			{
 				SCRIPT_TRACE("FunctionObject::doCall: "
 					"param count of function [%s] does not match.\n", mFuncName.c_str());
-				return nullptr;
+				return NULL;
 			}
 
 			// 保存执行环境
@@ -1090,7 +1092,7 @@ namespace runtime {
 			uint32_t paramCountSaved = mContext->mParamCount;
 			uint32_t callLayerSaved = mContext->mCallStackLayer;
 
-			mContext->OnInst_pushStackFrame(nullptr, nullptr, 0);
+			mContext->OnInst_pushStackFrame(NULL, NULL, 0);
 			scriptAPI::ScriptCompiler::CompileCode cc;
 			cc.code = mInstHead;
 			cc.sizeInUint32 = mInstTail - mInstHead;
@@ -1102,11 +1104,11 @@ namespace runtime {
 			mContext->mCallStackLayer++;
 			if ((calRet = mContext->Execute(&cc, mContext->GetCompileResult())) != -100)
 			{
-				return nullptr;
+				return NULL;
 			}
 			// 当前栈顶元素就是返回值，保存它
 			runtimeObjectBase *o = mContext->mA;
-			mContext->OnInst_popStackFrame(nullptr, nullptr, 0);
+			mContext->OnInst_popStackFrame(NULL, NULL, 0);
 
 			// 恢复当前级别的执行环境
 			mContext->mPC = pcSaved;
@@ -1121,7 +1123,7 @@ namespace runtime {
 		// getindex（索引访问一元运算）
 		virtual runtimeObjectBase* getIndex(int i)
 		{
-			return nullptr;
+			return NULL;
 		}
 
 		// 对象转化为字符串
@@ -1267,7 +1269,7 @@ int runtimeContext::OnInst_bitwiseNot(Instruction *inst, uint8_t *moreData, uint
 		break;
 
 	case DT_uint32:
-		OneOperatorBitwiseOperation<uintObject,OperatorBitwiseNot<uint32> >(o);
+		OneOperatorBitwiseOperation<uintObject,OperatorBitwiseNot<uint32_t> >(o);
 		break;
 
 	default:

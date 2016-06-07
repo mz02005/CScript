@@ -16,21 +16,19 @@ SwitchStatement::SwitchStatement()
 
 SwitchStatement::~SwitchStatement()
 {
-	std::for_each(mCaseList.begin(), mCaseList.end(), 
-		[this](SwitchCaseEntry *e)
+	for (std::list<SwitchCaseEntry*>::iterator iter = mCaseList.begin();
+		iter != mCaseList.end(); iter++)
 	{
-		ClearSwitchCaseEntry(e);
-		delete e;
-	});
+		ClearSwitchCaseEntry(*iter);
+		delete *iter;
+	}
 }
 
 void SwitchStatement::ClearSwitchCaseEntry(SwitchCaseEntry *entry)
 {
-	std::for_each(entry->mStatementBlocks.begin(), entry->mStatementBlocks.end(),
-		[](StatementBlock *sb)
-	{
-		delete sb;
-	});
+	for (std::list<StatementBlock*>::iterator iter = entry->mStatementBlocks.begin();
+		iter != entry->mStatementBlocks.end(); iter++)
+		delete *iter;
 }
 
 int SwitchStatement::OnCaseOrDefault(SimpleCScriptEngContext *context, bool isDefault)
@@ -206,7 +204,7 @@ int SwitchStatement::GenerateInstruction(CompileResult *compileResult)
 {
 	int result;
 	std::list<int> lastPosToFillList;
-	SwitchCaseEntry *entryDefault = nullptr;
+	SwitchCaseEntry *entryDefault = NULL;
 
 	GenerateInstructionHelper gih(compileResult);
 	

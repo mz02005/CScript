@@ -56,7 +56,7 @@
 
 /* Typedef a 32 bit type */
 #ifndef UINT4
-typedef UINT UINT4;
+typedef uint32_t UINT4;
 #endif
 
 /* Data structure for MD5 (Message Digest) computation */

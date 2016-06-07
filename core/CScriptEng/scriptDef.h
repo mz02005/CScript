@@ -246,7 +246,7 @@ namespace compiler
 
 		// 直接在代码中插入字符串，返回first是插入的位置，second是基于uint32_t的长度
 		// 这些可见的字符便于查看代码时，较易定位
-		std::pair<uint32_t,uint32> InsertStringDataToCode(const char *str)
+		std::pair<uint32_t,uint32_t> InsertStringDataToCode(const char *str)
 		{
 			uint32_t l = (uint32_t)strlen(str);
 			uint32_t actInsertLen = (l + 3) / 4;

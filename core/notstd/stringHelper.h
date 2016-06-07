@@ -4,11 +4,12 @@
 #define NOTSTD_STRINGHELPER_H
 
 #include "Config.h"
-#include <d2d1.h>
 #include <assert.h>
 #if !defined(PLATFORM_WINDOWS)
 #include <stdarg.h>
 #include <wchar.h>
+#else
+#include <d2d1.h>
 #endif
 
 class StringHelper
@@ -96,7 +97,7 @@ public:
 		return s.substr(start, theSize);
 	}
 	
-	static StringArray StringHelper::SplitString(const std::string &str, const std::string &splitChars)
+	static StringArray SplitString(const std::string &str, const std::string &splitChars)
 	{
 		StringArray r;
 	
@@ -124,19 +125,19 @@ public:
 		return r;
 	}
 
-	static void StringHelper::Trim(std::string &str, const std::string::value_type c)
+	static void Trim(std::string &str, const std::string::value_type c)
 	{
 		str.erase(0, str.find_first_not_of(c));
 		str.erase(str.find_last_not_of(c) + 1);
 	}
 
-	static void StringHelper::Trim(std::string &str, const std::string &splitChars)
+	static void Trim(std::string &str, const std::string &splitChars)
 	{
 		str.erase(0, str.find_first_not_of(splitChars));
 		str.erase(str.find_last_not_of(splitChars) + 1);
 	}
 
-	static std::string& StringHelper::FormatV(std::string &str, const char *szFormat, va_list valist)
+	static std::string& FormatV(std::string &str, const char *szFormat, va_list valist)
 	{
 		str.clear();
 
@@ -170,7 +171,9 @@ public:
 		return str;
 	}
 
-	static std::wstring& StringHelper::Format(std::wstring &str, const wchar_t *szFormat, ...)
+// 目前由于vsnwprintf这样的函数在linux上没有，所以暂时不在linux上支持本函数了
+#if defined(PLATFORM_WINDOWS)
+	static std::wstring& Format(std::wstring &str, const wchar_t *szFormat, ...)
 	{
 		va_list argList;
 		va_start(argList, szFormat);
@@ -182,9 +185,10 @@ public:
 		if (!buffer)
 			return str;
 
-		int n = _vsnwprintf(buffer, size - 1, szFormat, argList);
+		int n;
 		do {
 #if defined(PLATFORM_WINDOWS)
+			n = _vsnwprintf(buffer, size - 1, szFormat, argList);
 			while (n == -1)
 			{
 				if (size > 1024)
@@ -197,6 +201,7 @@ public:
 				n = _vsnwprintf(buffer, size - 1, szFormat, argList);
 			}
 #else
+			n = vsnwprintf(buffer, size - 1, szFormat, argList);
 			if (n < 0)
 				return str;
 			if (n >= size)
@@ -216,6 +221,7 @@ public:
 		}
 		return str;
 	}
+#endif
 
 	static std::string& Format(std::string &str, const char *szFormat, ...)
 	{
@@ -252,8 +258,8 @@ public:
 			if (n >= size)
 			{
 				size = n * 2;
-				buffer = reinterpret_cast<char*>(realloc(buffer, size));
-				n = vsnprintf(buffer, size - 1, szFormat, argList);
+				str.resize(size);
+				n = vsnprintf(&str[0], size - 1, szFormat, argList);
 			}
 #endif
 		} while (0);
@@ -269,7 +275,7 @@ public:
 		return str;
 	}
 
-	static std::string& StringHelper::AppendFormat(std::string &str, const char *szFormat, ...)
+	static std::string& AppendFormat(std::string &str, const char *szFormat, ...)
 	{
 		std::string r;
 		va_list argList;
@@ -373,6 +379,7 @@ public:
 		return r;
 	}
 
+#if defined(PLATFORM_WINDOWS)
 	static std::string ToString(const D2D1_POINT_2F &v)
 	{
 		std::string r;
@@ -391,21 +398,22 @@ public:
 		return StringHelper::Format(s, "%f,%f,%f,%f", v.left, v.top, v.right, v.bottom);
 	}
 
+	static std::string ToString(const POINT &v)
+	{
+		std::string r;
+		return StringHelper::Format(r, "%d,%d", v.x, v.y);
+	}
+#endif
+
 	static std::string ToString(const std::string &v)
 	{
 		return v;
 	}
 
-	static std::string ToString(const DWORD &v)
+	static std::string ToString(const unsigned long &v)
 	{
 		std::string r;
 		return StringHelper::Format(r, "%lu", v);
-	}
-
-	static std::string ToString(const POINT &v)
-	{
-		std::string r;
-		return StringHelper::Format(r, "%d,%d", v.x, v.y);
 	}
 };
 

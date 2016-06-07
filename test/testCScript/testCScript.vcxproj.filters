@@ -50,5 +50,29 @@
     <ClCompile Include="..\script\switchstatement.c">
       <Filter>测试用例</Filter>
     </ClCompile>
+    <ClCompile Include="..\script\simplealgo.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\showheartshape.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\testframework_temp.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\floattest.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\testondoc.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\parsenumber.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+    <ClCompile Include="..\script\calcpi.c">
+      <Filter>测试用例</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
   </ItemGroup>
 </Project>

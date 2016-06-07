@@ -20,11 +20,11 @@ runtimeObjectBase* intObject::Add(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("add on const variable");
-		return nullptr;
+		return NULL;
 	}
 
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	intObject *val = new ObjectModule<intObject>;
 	val->mVal = mVal + getObjectDataOrig<int>(obj);
@@ -36,11 +36,11 @@ runtimeObjectBase* intObject::Sub(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("sub on const variable");
-		return nullptr;
+		return NULL;
 	}
 	
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	intObject *val = new ObjectModule<intObject>;
 	val->mVal = mVal - getObjectDataOrig<int>(obj);
@@ -52,11 +52,11 @@ runtimeObjectBase* intObject::Mul(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Mul on const variable");
-		return nullptr;
+		return NULL;
 	}
 		
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	intObject *val = new ObjectModule<intObject>;
 	val->mVal = mVal * getObjectDataOrig<int>(obj);
@@ -68,18 +68,18 @@ runtimeObjectBase* intObject::Div(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Div on const variable");
-		return nullptr;
+		return NULL;
 	}
 		
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	intObject *val = new ObjectModule<intObject>;
 	int divisor = getObjectDataOrig<int>(obj);
 	if (!divisor)
 	{
 		SCRIPT_TRACE("Divided by zero\n");
-		return nullptr;
+		return NULL;
 	}
 	val->mVal = mVal / divisor;
 	return val;
@@ -88,24 +88,24 @@ runtimeObjectBase* intObject::Div(const runtimeObjectBase *obj)
 runtimeObjectBase* intObject::SetValue(runtimeObjectBase *obj)
 {
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 	mVal = getObjectDataOrig<int>(obj);
 	return this;
 }
 
 runtimeObjectBase* intObject::GetMember(const char *memName)
 {
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* intObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* intObject::getIndex(int i)
 {
-	return nullptr;
+	return NULL;
 }
 
 stringObject* intObject::toString()

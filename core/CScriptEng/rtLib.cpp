@@ -2,6 +2,8 @@
 #include "rtlib.h"
 #include "vm.h"
 #include "arrayType.h"
+#include <math.h>
+#include <time.h>
 
 using namespace runtime;
 
@@ -19,9 +21,19 @@ uint32_t sleepObj::GetObjectTypeId() const
 runtimeObjectBase* sleepObj::doCall(runtime::doCallContext *context)
 {
 	if (context->GetParamCount() != 1)
-		return nullptr;
+		return NULL;
 
+#if defined(PLATFORM_WINDOWS)
 	::Sleep(context->GetUint32Param(0));
+#else
+	uint32_t milisecond = context->GetUint32Param(0);
+	timespec ts =
+	{
+		(time_t)(milisecond / 1000),
+		(milisecond % 1000) * 1000000,
+	};
+	nanosleep(&ts, NULL);
+#endif
 
 	return new ObjectModule<runtime::baseObjDefault>();
 }
@@ -80,7 +92,7 @@ void printObj::SetIsPrintLine(bool isPrintLine)
 runtimeObjectBase* printObj::doCall(runtime::doCallContext *context)
 {
 	if (context->GetParamCount() != 1)
-		return nullptr;
+		return NULL;
 	runtime::stringObject *s = context->GetParam(0)->toString();
 	if (s)
 	{
@@ -120,7 +132,7 @@ runtimeObjectBase* srandObj::doCall(runtime::doCallContext *context)
 
 	default:
 		printf("srand fail\n");
-		return nullptr;
+		return NULL;
 	}
 	return this;
 }
@@ -130,7 +142,7 @@ runtimeObjectBase* srandObj::doCall(runtime::doCallContext *context)
 runtimeObjectBase* sinObj::doCall(runtime::doCallContext *context)
 {
 	if (context->GetParamCount() != 1)
-		return nullptr;
+		return NULL;
 
 	runtime::floatObject *f = new runtime::ObjectModule<runtime::floatObject>;
 
@@ -159,13 +171,20 @@ runtimeObjectBase* timeObj::doCall(runtime::doCallContext *context)
 	if (context->GetParamCount() != 0)
 	{
 		SCRIPT_TRACE("timeObj::doCall: Invalid param count.\n");
-		return nullptr;
+		return NULL;
 	}
 
-	time_t t = ::time(nullptr);
+	time_t t = ::time(NULL);
 	struct tm r;
+#if defined(PLATFORM_WINDOWS)
 	if (localtime_s(&r, &t))
-		return nullptr;
+		return NULL;
+#else
+	struct tm *x = localtime(&t);
+	if (!x)
+		return NULL;
+	r = *x;
+#endif
 
 	runtime::arrayObject *a = new runtime::ObjectModule<runtime::arrayObject>;
 	a->AddSub(runtime::intObject::CreateIntObject(r.tm_year + 1900));

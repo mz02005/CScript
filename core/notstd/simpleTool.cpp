@@ -53,6 +53,8 @@ void UnzipFileHandle::SetHandleNull(HandleType &h)
 	h = NULL;
 }
 
+#ifdef PLATFORM_WINDOWS
+
 bool FileHandleType::IsNullHandle(HandleType h)
 {
 	return (h == INVALID_HANDLE_VALUE);
@@ -112,6 +114,7 @@ void FindFileHandle::SetHandleNull(HandleType &h)
 {
 	h = NULL;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -140,6 +143,7 @@ static bool AddFile2Zip(const char *strFilePath, const char *strRelPath, zipFile
 	return true;
 }
 
+#if defined(PLATFORM_WINDOWS)
 bool Path::CreateDirectoryRecursion(const std::string &path)
 {
 	const std::wstring thePath = notstd::ICONVext::mbcsToUnicode(path);
@@ -199,11 +203,20 @@ void Path::TraverseDirectory(const std::string &dirName, void *userData, OnPathN
 		}
 	}
 }
+#else
+bool Path::CreateDirectoryRecursion(const std::string &path)
+{
+	return false;
+}
+void Path::TraverseDirectory(const std::string &dirName, void *userData, OnPathName onPathName)
+{
+}
+#endif
 
 int zlibHelper::UncompressDirectory(const std::wstring &zipFilePath, const std::wstring &destDirName)
 {
 	int n;
-	char strFileName[MAX_PATH];
+	char strFileName[Path::mMaxPath];
 	int r = -2;
 
 	if (destDirName.empty())
@@ -230,7 +243,7 @@ int zlibHelper::UncompressDirectory(const std::wstring &zipFilePath, const std::
 		}
 
 		std::string path = theDestDir;
-		if (path.back() != splash)
+		if (path[path.size() - 1] != splash)
 			path += splash;
 		path += strFileName;
 
@@ -281,6 +294,7 @@ int zlibHelper::UncompressDirectory(const std::wstring &zipFilePath, const std::
 	return r;
 }
 
+#if defined(PLATFORM_WINDOWS)
 int zlibHelper::CompressDirectory(const std::wstring &src, const std::wstring &dest)
 {
 	std::string theSource, theDest;
@@ -293,7 +307,7 @@ int zlibHelper::CompressDirectory(const std::wstring &src, const std::wstring &d
 
 	if (theSource.empty())
 		return -11;
-	if (theSource.back() != splash)
+	if (theSource[theSource.size() - 1] != splash)
 		theSource += splash;
 
 	typedef std::list<std::string> ToDoDirList;
@@ -346,6 +360,12 @@ int zlibHelper::CompressDirectory(const std::wstring &src, const std::wstring &d
 
 	return true;
 }
+#else
+int zlibHelper::CompressDirectory(const std::wstring &src, const std::wstring &dest)
+{
+	return false;
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -354,11 +374,12 @@ Time::Time()
 {
 }
 
-Time::Time(__time64_t t)
+Time::Time(Time::TimeType t)
 	: mTime(t)
 {
 }
 
+#if defined(PLATFORM_WINDOWS)
 Time::Time(FILETIME *filetime)
 {
 	SYSTEMTIME st;
@@ -373,6 +394,7 @@ Time::Time(FILETIME *filetime)
 		assert(0);
 	}
 }
+#endif
 
 Time::Time(int year, int month, int day, int hour, int minute, int second)
 {
@@ -383,9 +405,14 @@ Time::Time(int year, int month, int day, int hour, int minute, int second)
 	t.tm_hour = hour;
 	t.tm_min = minute;
 	t.tm_sec = second;
+#if defined(PLATFORM_WINDOWS)
 	mTime = _mktime64(&t);
+#else
+	assert(0);
+	mTime = mktime(&t);
+#endif
 
-	assert(mTime != (__time64_t)-1);
+	assert(mTime != (TimeType)-1);
 }
 
 std::string Time::GetString() const
@@ -401,13 +428,18 @@ std::string Time::GetString() const
 
 Time Time::GetCurrentTime()
 {
+#if defined(PLATFORM_WINDOWS)
 	return Time(_time64(NULL));
+#else
+	return Time(time(NULL));
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 int File::GetFileAttribute(const std::wstring &filePathName, FileAttribute *fileAttributes)
 {
+#if defined(PLATFORM_WINDOWS)
 	WIN32_FILE_ATTRIBUTE_DATA win32FileAttributeData;
 	if (!::GetFileAttributesExW(filePathName.c_str(), GetFileExInfoStandard, &win32FileAttributeData))
 		return -1;
@@ -418,4 +450,7 @@ int File::GetFileAttribute(const std::wstring &filePathName, FileAttribute *file
 	fileAttributes->fileSize = (static_cast<uint64_t>(win32FileAttributeData.nFileSizeHigh) << 32)
 		+ win32FileAttributeData.nFileSizeLow;
 	return 0;
+#else
+	return -1;
+#endif
 }

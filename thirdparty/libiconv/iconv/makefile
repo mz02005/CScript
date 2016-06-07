@@ -1,6 +1,6 @@
 INCLUDE_OPTIONS = -I./
 
-TARGET=libiconv.a
+TARGET=libiconv.so
 
 CS= \
 	iconv.c \
@@ -14,24 +14,22 @@ ifeq ($(ARM),y)
 endif
 
 ifeq ($(DEBUG),y)
-	CFLAGS += -D_DEBUG -DDEBUG -g
+	CFLAGS += -D_DEBUG -DDEBUG -g -fPIC
 else
-	CFLAGS += -O2
+	CFLAGS += -O3 -fPIC
 endif
 
 COMPILE_CC=$(CROSS_COMPILE)cc
 COMPILE_CXX=$(CROSS_COMPILE)g++
-COMPILE_AR=$(CROSS_COMPILE)ar
 
 %.o: %.c
-	@echo Compiling $< ...
 	$(COMPILE_CC) $(INCLUDE_OPTIONS) $(CFLAGS) -o $@ $*.c
-
+	
 all: $(OBJS)
 	@echo Generating archive ...
-	$(COMPILE_AR) -crv $(TARGET) $(OBJS)
+	$(COMPILE_CC) -fPIC -shared -o $(TARGET) $(OBJS)
 
 clean:
 	@echo $(ProjectName): Do cleaning...
 	rm *.o -f
-	rm *.a -rf
+	rm *.so -rf

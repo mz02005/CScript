@@ -173,7 +173,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="iconv\makefile" />
+    <None Include="iconv\Makefile" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

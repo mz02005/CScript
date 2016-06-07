@@ -118,7 +118,7 @@ void KeywordsTransTable::Reset()
 IMPLEMENT_OBJINFO(ExpressionNode,objBase)
 
 ExpressionNode::ExpressionNode()
-	: mParent(nullptr)
+	: mParent(NULL)
 {
 }
 
@@ -220,10 +220,9 @@ SubProcCallExpression::SubProcCallExpression(const OperatorHelper::OperatorTable
 
 SubProcCallExpression::~SubProcCallExpression()
 {
-	std::for_each(mRealParams.begin(), mRealParams.end(), [](PostfixExpression *n)
-	{
-		delete n;
-	});
+	for (std::list<PostfixExpression*>::iterator iter = mRealParams.begin();
+		iter != mRealParams.end(); iter++)
+		delete *iter;
 }
 
 void SubProcCallExpression::DebugPrint() const
@@ -272,9 +271,9 @@ IMPLEMENT_OBJINFO(QuestionExpression,OperatorExpressionNode)
 
 QuestionExpression::QuestionExpression(const OperatorHelper::OperatorTableEntry *operatorEntry)
 	: OperatorExpressionNode(operatorEntry)
-	, mJudgement(nullptr)
-	, mTrueExpression(nullptr)
-	, mFalseExpression(nullptr)
+	, mJudgement(NULL)
+	, mTrueExpression(NULL)
+	, mFalseExpression(NULL)
 {
 }
 
@@ -362,7 +361,7 @@ OperatorExpressionNode::OperatorExpressionNode(
 	, mDoNotDeleteSubOnDestory(false)
 	//, mDotOperatorStrId(0)
 {
-	mSubNodes[0] = mSubNodes[1] = nullptr;
+	mSubNodes[0] = mSubNodes[1] = NULL;
 }
 
 OperatorExpressionNode::~OperatorExpressionNode()
@@ -521,7 +520,7 @@ int OperatorExpressionNode::GenerateInstruction(Statement *statement, CompileRes
 ///////////////////////////////////////////////////////////////////////////////
 
 PostfixExpression::PostfixExpression()
-	: mGrammaTreeRoot(nullptr)
+	: mGrammaTreeRoot(NULL)
 {
 }
 
@@ -531,17 +530,15 @@ PostfixExpression::~PostfixExpression()
 	if (mGrammaTreeRoot)
 	{
 		RemoveGrammaTree(mGrammaTreeRoot);
-		mGrammaTreeRoot = nullptr;
+		mGrammaTreeRoot = NULL;
 	}
 }
 
 void PostfixExpression::Clear()
 {
-	std::for_each(mPostfixExpression.begin(), mPostfixExpression.end(),
-		[](ExpressionNode *n)
-	{
-		delete n;
-	});
+	for (std::list<ExpressionNode*>::iterator iter = mPostfixExpression.begin();
+		iter != mPostfixExpression.end(); iter++)
+		delete *iter;
 	mPostfixExpression.clear();
 }
 
@@ -594,11 +591,18 @@ void PostfixExpression::AddNode(ExpressionNode *subNode)
 
 void PostfixExpression::DebugPrint() const
 {
-	std::for_each(mPostfixExpression.begin(), mPostfixExpression.end(),
-		[](ExpressionNode *n)
-	{
-		n->DebugPrint();
-	});
+	for (std::list<ExpressionNode*>::const_iterator iter = mPostfixExpression.begin();
+		iter != mPostfixExpression.end(); iter++)
+		(*iter)->DebugPrint();
+}
+
+void PostfixExpression::ThrowBadcast(const char *s)
+{
+#if defined(PLATFORM_WINDOWS)
+	throw std::bad_cast(s);
+#else
+	throw std::bad_cast();
+#endif
 }
 
 bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
@@ -618,7 +622,7 @@ bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
 				return false;
 			if (!(*p->mOperatorEntry->CalcIntConst)(val, val1, val2))
 			{
-				throw std::bad_cast("mod or div by zero!");
+				ThrowBadcast("mod or div by zero!");
 				return false;
 			}
 			return true;
@@ -629,7 +633,7 @@ bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
 		val2 = 0;
 		if (!(*p->mOperatorEntry->CalcIntConst)(val, val1, val2))
 		{
-			throw std::bad_cast("mod or div by zero!");
+			ThrowBadcast("mod or div by zero!");
 			return false;
 		}
 		return true;
@@ -792,7 +796,7 @@ int PostfixExpression::CreateExpressionTree()
 					parseList.pop_back();
 					questionNode->mTrueExpression = colonNode->mSubNodes[0];
 					questionNode->mFalseExpression = colonNode->mSubNodes[1];
-					colonNode->mSubNodes[0] = colonNode->mSubNodes[1] = nullptr;
+					colonNode->mSubNodes[0] = colonNode->mSubNodes[1] = NULL;
 					delete colonNode;
 					parseList.push_back(questionNode);
 				}
@@ -909,7 +913,7 @@ const OperatorHelper::OperatorTableEntry OperatorHelper::mOperTable[] =
 	{ OP_sub,"-", 2, 40, &ConstIntegerCalucator::sub, },
 	{ OP_add,"+", 2, 40, &ConstIntegerCalucator::add, },
 	{ OP_div,"/", 2, 50, &ConstIntegerCalucator::div, },
-	{ OP_setval,"=", 2, 10, nullptr, 1, },
+	{ OP_setval,"=", 2, 10, NULL, 1, },
 	{ OP_lessthan, "<", 2, 30, &ConstIntegerCalucator::lessthan, },
 	{ OP_greaterthan, ">", 2, 30, &ConstIntegerCalucator::greaterthan, },
 
@@ -1106,6 +1110,7 @@ const char SimpleCScriptEngContext::mTerminalAlpha[] =
 	'-', '+', '=', '|', '\\', '.', '<', '>', '/', '?', ':', '[', ']',
 	'{', '}',
 	'\r', '\n',
+	0,
 };
 
 // 这里没有把=本身算进去
@@ -1116,17 +1121,17 @@ const char SimpleCScriptEngContext::mDupTermAlpha[] =
 
 const char SimpleCScriptEngContext::mFollowWithEqual[] =
 {
-	'!', '%', '^', '&', '*', '+', '-', '/', '=', '|', '<', '>', 
+	'!', '%', '^', '&', '*', '+', '-', '/', '=', '|', '<', '>', 0,
 };
 
 std::set<char> SimpleCScriptEngContext::mTerminalAlphaSet;
 std::set<char> SimpleCScriptEngContext::mMayFollowWithEqualSet;
 
 SimpleCScriptEngContext::SimpleCScriptEngContext()
-	: mParseCurrent(nullptr)
+	: mParseCurrent(NULL)
 	, mState(0)
 	, mCurrentStack(mSymbolStack.end())
-	, mCompileResult(nullptr)
+	, mCompileResult(NULL)
 {
 	mKeywordsTransTable.Init();
 	mTopLevelFunction.RegistNameInContainer("CreateArray", -1);
@@ -1140,17 +1145,13 @@ SimpleCScriptEngContext::~SimpleCScriptEngContext()
 
 void SimpleCScriptEngContext::Init()
 {
-	std::for_each(mTerminalAlpha, mTerminalAlpha + sizeof(mTerminalAlpha) / sizeof(mTerminalAlpha[0]),
-		[&](char c)
+	for (const char *c = mTerminalAlpha; *c != 0; c++)
 	{
-		mTerminalAlphaSet.insert(c);
-	});
+		mTerminalAlphaSet.insert(*c);
+	}
 
-	std::for_each(mFollowWithEqual, mFollowWithEqual + sizeof(mFollowWithEqual) / sizeof(SimpleCScriptEngContext::mFollowWithEqual[0]),
-		[&](char c)
-	{
-		mMayFollowWithEqualSet.insert(c);
-	});
+	for (const char *c = mFollowWithEqual; *c != 0; c++)
+		mMayFollowWithEqualSet.insert(*c);
 }
 
 void SimpleCScriptEngContext::Term()
@@ -1312,7 +1313,11 @@ void SimpleCScriptEngContext::GoBack()
 {
 	if (mCurrentStack == mSymbolStack.begin())
 	{
+#if defined(PLATFORM_WINDOWS)
 		throw std::exception("GoBack error");
+#else
+		throw std::exception();
+#endif
 	}
 	--mCurrentStack;
 }
@@ -1355,7 +1360,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 
 				// 返回整数
 				symbol.type = Symbol::constInt;
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				p--;
 				return 0;
 			}
@@ -1369,7 +1375,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 			else if (c == 'f' || c == 'F')
 			{
 				// 确定是浮点了
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				symbol.type = Symbol::constFloat;
 				return 0;
 			}
@@ -1402,7 +1409,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 			}
 			else if (c == 'f' || c == 'F')
 			{
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				symbol.type = Symbol::constFloat;
 				return 0;
 			}
@@ -1414,7 +1422,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 			{
 				// 由于有了小数点，所以在这里也认为是浮点数
 				p--;
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				symbol.type = Symbol::constFloat;
 				return 0;
 			}
@@ -1442,14 +1451,16 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 			}
 			else if (c == 'F' || c == 'f')
 			{
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				symbol.type = Symbol::constFloat;
 				return 0;
 			}
 			else
 			{
 				p--;
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				symbol.type = Symbol::constFloat;
 				return 0;
 			}
@@ -1469,7 +1480,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				state = 2;
 			else {
 				p--;
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				symbol.type = Symbol::constInt;
 				return 0;
 			}
@@ -1489,7 +1501,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 			else
 			{
 				p--;
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				// 删除‘0x两个字符’
 				symbol.symbolOrig.erase(0, 2);
 
@@ -1516,7 +1529,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 			else
 			{
 				p--;
-				symbol.symbolOrig.pop_back();
+				//symbol.symbolOrig.pop_back();
+				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
 				// 去掉头部的那个0
 				symbol.symbolOrig.erase(0, 1);
 
@@ -1778,7 +1792,7 @@ int SimpleCScriptEngContext::GetNextSymbol(Symbol &symbol)
 		if (tn && tn->keywordsId && symbol.type == Symbol::Keywords)
 		{
 			symbol.keywordsType = tn->keywordsId;
-			tn = nullptr;
+			tn = NULL;
 		}
 		else {
 			symbol.type = Symbol::CommonSymbol;
@@ -1795,11 +1809,11 @@ HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeS
 {
 	int r = BeginParseSymbol(codeStream);
 	if (r < 0)
-		return nullptr;
+		return NULL;
 	
 	mCompileResult = new CompileResult(&mConstStringData);
 	do {
-		if ((r = mTopLevelFunction.Compile(nullptr, this)) < 0)
+		if ((r = mTopLevelFunction.Compile(NULL, this)) < 0)
 		{
 			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Compile fail [%d].\n", r);
 			break;
@@ -1816,7 +1830,7 @@ HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeS
 	if (r < 0)
 	{
 		delete mCompileResult;
-		mCompileResult = nullptr;
+		mCompileResult = NULL;
 	}
 	return mCompileResult;
 }
@@ -1914,11 +1928,9 @@ struct DoCallOperator : public Operator
 		}
 		if (r < 0)
 		{
-			std::for_each(paramCallList.begin(), paramCallList.end(),
-				[](PostfixExpression *p)
-			{
-				delete p;
-			});
+			for (std::list<PostfixExpression*>::iterator iter = paramCallList.begin();
+				iter != paramCallList.end(); iter++)
+				delete *iter;
 		}
 		else
 		{

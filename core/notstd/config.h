@@ -18,10 +18,15 @@
 #pragma warning(disable: 4996)
 #endif
 
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winsock2.h>
+#else
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
 #endif
 #include <string>
 #include <list>
@@ -39,16 +44,20 @@
 #include <libxml/xpath.h>
 #include <libxml/xmlsave.h>
 
+#ifdef WIN32
 #pragma warning(push)
 #pragma warning(disable: 4005)
 #include <intsafe.h>
 #include <stdint.h>
 #pragma warning(pop)
 #pragma warning(default: 4005)
+#else
+#include <stdint.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(PLATFORM_WINDOWS)
+#if !defined(PLATFORM_WINDOWS)
 typedef void* HANDLE;
 #endif
 

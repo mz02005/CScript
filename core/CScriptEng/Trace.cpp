@@ -24,7 +24,9 @@ void LogTool::operator()(const char *format, ...)
 	StringHelper::FormatV(s, format, valist);
 	va_end(valist);
 
+#if defined(PLATFORM_WINDOWS)
 	OutputDebugStringA(s.c_str());
+#endif
 	printf(s.c_str());
 }
 

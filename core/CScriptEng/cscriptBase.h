@@ -60,9 +60,9 @@ namespace runtime {
 	class refCounter
 	{
 	public:
-		virtual LONG AddRef() = 0;
-		virtual LONG Release() = 0;
-		virtual LONG ReleaseNotDelete() = 0;
+		virtual long AddRef() = 0;
+		virtual long Release() = 0;
+		virtual long ReleaseNotDelete() = 0;
 	};
 
 	template <typename T>
@@ -70,7 +70,7 @@ namespace runtime {
 		: public T
 	{
 	protected:
-		LONG mRef;
+		long mRef;
 
 	public:
 		ObjectModule()
@@ -78,12 +78,12 @@ namespace runtime {
 		{
 		}
 
-		virtual LONG AddRef() {
+		virtual long AddRef() {
 			return ++mRef;
 		}
 
-		virtual LONG Release() {
-			LONG r =  --mRef;
+		virtual long Release() {
+			long r =  --mRef;
 			if (!r) {
 				delete this;
 				return 0;
@@ -91,8 +91,8 @@ namespace runtime {
 			return r;
 		}
 		
-		virtual LONG ReleaseNotDelete() {
-			LONG r =  --mRef;
+		virtual long ReleaseNotDelete() {
+			long r =  --mRef;
 			if (!r) {
 				return 0;
 			}
@@ -104,7 +104,7 @@ namespace runtime {
 	class ContainModule : public T
 	{
 	protected:
-		LONG mRef;
+		long mRef;
 		refCounter *mContainer;
 
 	public:
@@ -114,14 +114,14 @@ namespace runtime {
 		{
 		}
 
-		virtual LONG AddRef() {
+		virtual long AddRef() {
 			mContainer->AddRef();
 			return ++mRef;
 		}
 
-		virtual LONG Release() {
+		virtual long Release() {
 			mContainer->Release();
-			LONG r =  --mRef;
+			long r =  --mRef;
 			if (!r) {
 				delete this;
 				return 0;
@@ -129,9 +129,9 @@ namespace runtime {
 			return r;
 		}
 
-		virtual LONG ReleaseNotDelete() {
+		virtual long ReleaseNotDelete() {
 			mContainer->Release();
-			LONG r =  --mRef;
+			long r =  --mRef;
 			if (!r) {
 				return 0;
 			}

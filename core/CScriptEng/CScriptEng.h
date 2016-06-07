@@ -365,7 +365,7 @@ namespace runtime {
 	template <typename T>
 	typename T::InnerDataType getObjectData(const runtimeObjectBase *o)
 	{
-		typedef T::InnerDataType ReturnType;
+		typedef typename T::InnerDataType ReturnType;
 		ReturnType r = (ReturnType)0;
 		switch (o->GetObjectTypeId())
 		{

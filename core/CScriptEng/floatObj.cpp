@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "vm.h"
+#include <math.h>
 
 using namespace runtime;
 
@@ -20,11 +21,11 @@ runtimeObjectBase* floatObject::Add(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Add on const variable");
-		return nullptr;
+		return NULL;
 	}
 			
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	floatObject *val = new ObjectModule<floatObject>;
 	val->mVal = mVal + getObjectDataOrig<float>(obj);
@@ -37,11 +38,11 @@ runtimeObjectBase* floatObject::Sub(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Sub on const variable");
-		return nullptr;
+		return NULL;
 	}
 				
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	floatObject *val = new ObjectModule<floatObject>;
 	val->mVal = mVal - getObjectDataOrig<float>(obj);
@@ -54,11 +55,11 @@ runtimeObjectBase* floatObject::Mul(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Mul on const variable");
-		return nullptr;
+		return NULL;
 	}
 	
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	floatObject *val = new ObjectModule<floatObject>;
 	val->mVal = mVal * getObjectDataOrig<float>(obj);
@@ -71,18 +72,18 @@ runtimeObjectBase* floatObject::Div(const runtimeObjectBase *obj)
 	if (mIsConst)
 	{
 		SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Div on const variable");
-		return nullptr;
+		return NULL;
 	}
 	
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 
 	floatObject *val = new ObjectModule<floatObject>;
 	float divisor = getObjectDataOrig<float>(obj);
 	if (fabs(divisor) < 0.0000001)
 	{
 		SCRIPT_TRACE("Divided by zero\n");
-		return nullptr;
+		return NULL;
 	}
 	val->mVal = mVal / divisor;
 	return val;
@@ -91,24 +92,24 @@ runtimeObjectBase* floatObject::Div(const runtimeObjectBase *obj)
 runtimeObjectBase* floatObject::SetValue(runtimeObjectBase *obj)
 {
 	if (!isNumberType(obj))
-		return nullptr;
+		return NULL;
 	mVal = getObjectDataOrig<float>(obj);
 	return this;
 }
 
 runtimeObjectBase* floatObject::GetMember(const char *memName)
 {
-	return __super::GetMember(memName);
+	return baseTypeObject::GetMember(memName);
 }
 
 runtimeObjectBase* floatObject::doCall(doCallContext *context)
 {
-	return nullptr;
+	return NULL;
 }
 
 runtimeObjectBase* floatObject::getIndex(int i)
 {
-	return nullptr;
+	return NULL;
 }
 
 stringObject* floatObject::toString()

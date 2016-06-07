@@ -2,7 +2,7 @@
 #define _BASELIB_CHARCONV_H
 
 #include "config.h"
-#include "iconv.h"
+#include "libiconv/iconv/iconv.h"
 
 namespace notstd {
 

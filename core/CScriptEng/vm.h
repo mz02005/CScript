@@ -206,7 +206,7 @@ namespace runtime {
 
 	private:
 		typedef int(runtimeContext::*OnInstruction)(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
-		static const struct InstructionEntry
+		struct InstructionEntry
 		{
 			OnInstruction inst;
 			uint32_t moreSize;

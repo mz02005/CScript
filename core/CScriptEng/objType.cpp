@@ -3,7 +3,7 @@
 
 namespace runtime {
 	objTypeObject::objTypeObject()
-		: mObj(nullptr)
+		: mObj(NULL)
 	{
 	}
 
@@ -91,13 +91,13 @@ namespace runtime {
 
 	stringObject* objTypeObject::toString()
 	{
-		return mObj ? mObj->toString() : nullptr;
+		return mObj ? mObj->toString() : NULL;
 	}
 
 	///////////////////////////////////////////////////////////////////////////
 
 	Object_getInnerObject::Object_getInnerObject()
-		: mObject(nullptr)
+		: mObject(NULL)
 	{
 	}
 
