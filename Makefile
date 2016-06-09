@@ -5,6 +5,13 @@ SolutionDir=./
 
 TargetDir=$(SolutionDir)Output/
 all: libiconv.so libxml2.so libzlib.so libnotstd.so libCScriptEng.so testCScript
+	cp $(SolutionDir)thirdparty/libzlib/zlib-1.2.8/libzlib.so $(TargetDir)
+	cp $(SolutionDir)thirdparty/libxml2-2.9.2/libxml2.so $(TargetDir)
+	cp $(SolutionDir)thirdparty/libiconv/iconv/libiconv.so $(TargetDir)
+	cp $(SolutionDir)core/notstd/libnotstd.so $(TargetDir)
+	cp $(SolutionDir)core/CScriptEng/libCScriptEng.so $(TargetDir)
+	chmod +x ./ldtool
+	./ldtool
 
 testCScript: libCScriptEng.so
 	make -C $(SolutionDir)test/testCScript

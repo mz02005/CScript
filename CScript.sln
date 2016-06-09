@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "base", "base", "{6E6A8E96-15AF-493B-855E-07A1101C9FB3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{21951F67-9F3D-4E2D-9ADA-59A71F1111A1}"
+	ProjectSection(SolutionItems) = preProject
+		ldtool = ldtool
+		Makefile = Makefile
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BFE84BDE-401A-4F27-89B4-E6317DB73BEF}"
 	ProjectSection(SolutionItems) = preProject

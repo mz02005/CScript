@@ -60,7 +60,7 @@ namespace notstd {
 		std::string::size_type f = name.rfind('.');
 		if (f != name.npos)
 			return name.substr(f + 1);
-		return name;
+		return "";
 	}
 	
 	bool CFindResult::operator == (const CFindResult &fr)
