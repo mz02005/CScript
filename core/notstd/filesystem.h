@@ -52,7 +52,7 @@ private:
 	{
 		std::string dir;
 
-#ifdef WIN32
+#ifdef PLATFORM_WINDOWS
 		HANDLE hFindFile;
 #else
 		DIR *hFindFile;

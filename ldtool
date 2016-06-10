@@ -1,9 +1,9 @@
 #! /bin/sh
-grep -rn "/mnt/CScript/Output" /etc/ld.so.conf
+grep -rn "`pwd`/Output" /etc/ld.so.conf
 if [ $? -eq 0 ];then
  echo "already registed."
 else
  echo `pwd`/Output/ >> /etc/ld.so.conf
+ echo "write ld.so.conf"
 fi
 ldconfig
-

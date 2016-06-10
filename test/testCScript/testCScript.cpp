@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 		r = ExecuteCode(argv[1], true);
 	}
 	scriptAPI::SimpleCScriptEng::Term();
-	return 0;
+	return r;
 }
 
 int RunTestCase()

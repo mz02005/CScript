@@ -97,7 +97,7 @@ runtimeObjectBase* printObj::doCall(runtime::doCallContext *context)
 	if (s)
 	{
 		printf("%s%s", s->mVal->c_str(), mPrintLine ? "\n" : "");
-#if defined(WIN32) && (defined(DEBUG) || defined(_DEBUG))
+#if defined(PLATFORM_WINDOWS)
 		OutputDebugStringA(s->mVal->c_str());
 		if (mPrintLine)
 			OutputDebugStringA("\n");

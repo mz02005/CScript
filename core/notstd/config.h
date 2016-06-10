@@ -44,7 +44,7 @@
 #include <libxml/xpath.h>
 #include <libxml/xmlsave.h>
 
-#ifdef WIN32
+#ifdef PLATFORM_WINDOWS
 #pragma warning(push)
 #pragma warning(disable: 4005)
 #include <intsafe.h>

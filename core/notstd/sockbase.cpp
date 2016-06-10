@@ -176,7 +176,7 @@ bool SocketHandle::setRecvBufferSize(int size)
 bool SocketHandle::enableNoneBlockingMode(bool enable)
 {
 	BOOL ret;
-#ifdef WIN32
+#ifdef PLATFORM_WINDOWS
 	u_long u = (u_long)enable;
 	ret = (::ioctlsocket(mSock, FIONBIO, &u) >= 0);
 #else
@@ -233,7 +233,7 @@ bool SocketHandle::Connect(const NetAddress &netAddr, long timeout)
 		r = ::connect(mSock, reinterpret_cast<const sockaddr*>(&netAddr), sizeof(netAddr));
 		if (r < 0)
 		{
-#if defined(WIN32)
+#if defined(PLATFORM_WINDOWS)
 			if (GetLastError() != WSAEWOULDBLOCK)
 				goto Out;
 #else

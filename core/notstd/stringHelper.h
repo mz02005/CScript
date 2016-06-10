@@ -239,7 +239,7 @@ public:
 
 		//int n = vsnprintf(buffer, size - 1, szFormat, argList);
 		do {
-#if defined(WIN32)
+#if defined(PLATFORM_WINDOWS)
 			while (n == -1)
 			{
 				if (size > 1024)
