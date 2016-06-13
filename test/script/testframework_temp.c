@@ -17,7 +17,7 @@ function TestMain()
 			{
 				string x = i.toString();
 				debugbreak;
-				if (x == "0" || substr(x, x.len - 4) == "0000")
+				if (x == "0" || x.substr(x.len - 4) == "0000")
 				{
 				}
 				else

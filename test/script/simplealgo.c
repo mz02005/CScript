@@ -29,7 +29,7 @@ function strfind(s, m, b)
 		return -1;
 	for(i=b;i<l;i+=1)
 	{
-		if (substr(s, i, lm) == m)
+		if (s.substr(i, lm) == m)
 		{
 			if (l - i >= lm)
 				return i;
@@ -49,7 +49,7 @@ function strrfind(s, m)
 	int i;
 	for (i = l - lm; i >= 0; i-=1)
 	{
-		if (substr(s, i, lm) == m)
+		if (s.substr(i, lm) == m)
 			return i;
 	}
 	return -1;
@@ -59,7 +59,7 @@ function strleft(s, c)
 {
 	if (c < 0) return "";
 	if (s.len >= c)
-		return substr(s, 0, c);
+		return s.substr(0, c);
 	return s;
 }
 
@@ -67,7 +67,7 @@ function strright(s, c)
 {
 	if (c < 0) return "";
 	if (s.len >= c)
-		return substr(s, s.len - c, c);
+		return s.substr(s.len - c, c);
 	return s;
 }
 

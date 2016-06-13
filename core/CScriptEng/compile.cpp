@@ -259,7 +259,7 @@ int SubProcCallExpression::GenerateInstruction(Statement *statement, CompileResu
 		SCRIPT_TRACE("doCall has too many parameters.\n");
 		return -1;
 	}
-	gih.Insert_setParamCount_Instruction(mRealParams.size());
+	gih.Insert_setParamCount_Instruction(static_cast<uint16_t>(mRealParams.size()));
 	gih.Insert_doCall_Instruction();
 
 	return 0;
@@ -980,8 +980,8 @@ size_t ConstStringData::RegistString(const std::string &str)
 	if (it == mIndexTable.end())
 	{
 		StringIndex si;
-		si.offset = mStringBuffer.size();
-		si.size = str.size();
+		si.offset = static_cast<decltype(si.offset)>(mStringBuffer.size());
+		si.size = static_cast<decltype(si.size)>(str.size());
 		mConstStringIndexTable.push_back(std::move(si));
 		mIndexTable[str] = mConstStringIndexTable.size() - 1;
 		mStringBuffer.append(str.c_str(), str.size() + 1);
@@ -1005,12 +1005,12 @@ int ConstStringData::SaveConstStringDataToFile(FILE *file) const
 		return -1;
 
 	// 保存索引表
-	uint32_t totalCount = mConstStringIndexTable.size();
+	uint32_t totalCount = static_cast<decltype(totalCount)>(mConstStringIndexTable.size());
 	fwrite(&totalCount, sizeof(totalCount), 1, file);
 	fwrite(&mConstStringIndexTable[0], sizeof(ConstStringData::StringIndex), totalCount, file);
 
 	// 保存字符常量数据
-	uint32_t dataSize = mStringBuffer.size();
+	uint32_t dataSize = static_cast<decltype(dataSize)>(mStringBuffer.size());
 	fwrite(&dataSize, sizeof(dataSize), 1, file);
 	fwrite(&mStringBuffer[0], 1, mStringBuffer.size(), file);
 	
@@ -1061,8 +1061,7 @@ int ConstStringData::LoadConstStringDataFromFile(FILE *file)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-CompileResult::CompileResult(ConstStringData *stringData)
-	: mConstStringData(stringData)
+CompileResult::CompileResult()
 {
 }
 
@@ -1077,7 +1076,7 @@ void CompileResult::Clear()
 
 int CompileResult::SaveCodeToFile(FILE *file) const
 {
-	uint32_t c = mCode.size();
+	uint32_t c = static_cast<decltype(c)>(mCode.size());
 	if (c >= (ScriptCode::size_type)((uint32_t)-1))
 		return -1;
 
@@ -1811,7 +1810,7 @@ HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeS
 	if (r < 0)
 		return NULL;
 	
-	mCompileResult = new CompileResult(&mConstStringData);
+	mCompileResult = new CompileResult;
 	do {
 		if ((r = mTopLevelFunction.Compile(NULL, this)) < 0)
 		{

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "objType.h"
+#include <string.h>
 
 namespace runtime {
 	objTypeObject::objTypeObject()

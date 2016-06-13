@@ -132,16 +132,6 @@ namespace runtime
 		uint32_t data : 16;
 	};
 
-	struct FunctionDesc
-	{
-		// 函数的字节长度，必须是4的整倍数
-		uint32_t len;
-		// 函数的名称id，如果为0，表示这个函数是匿名函数
-		uint32_t stringId;
-
-		// 函数的参数个数
-		uint32_t paramCount;
-	};
 #pragma pack(pop)
 	typedef uint32_t CommonInstruction;
 }
@@ -194,27 +184,27 @@ namespace compiler
 		// 代码区域，代码大小一定是4字节的整倍数（编译时不够4字节会填充)	
 		ScriptCode mCode;
 
-		ConstStringData *mConstStringData;
+		ConstStringData mConstStringData;
 
 	private:
 		inline ScriptCode& GetCode() { return mCode; }
-		inline ConstStringData* GetStringData() { return mConstStringData; }
+		inline ConstStringData* GetStringData() { return &mConstStringData; }
 		// 得到当前的代码末尾位置
 		void Clear();
 
 	public:
-		CompileResult(ConstStringData *stringData);
+		CompileResult();
 		~CompileResult();
 
-		uint32_t SaveCurrentCodePosition() const { return mCode.size(); }
+		uint32_t SaveCurrentCodePosition() const { return static_cast<uint32_t>(mCode.size()); }
 
 		inline int SaveConstStringDataToFile(FILE *file) const
 		{
-			return mConstStringData->SaveConstStringDataToFile(file);
+			return mConstStringData.SaveConstStringDataToFile(file);
 		}
 		inline int LoadConstStringDataFromFile(FILE *file)
 		{
-			return mConstStringData->LoadConstStringDataFromFile(file);
+			return mConstStringData.LoadConstStringDataFromFile(file);
 		}
 		
 		int SaveCodeToFile(FILE *file) const;
@@ -241,16 +231,16 @@ namespace compiler
 
 		inline uint32_t RegistName(const char *name)
 		{
-			return mCompileResult->GetStringData()->RegistString(name);
+			return (uint32_t)mCompileResult->GetStringData()->RegistString(name);
 		}
 
 		// 直接在代码中插入字符串，返回first是插入的位置，second是基于uint32_t的长度
 		// 这些可见的字符便于查看代码时，较易定位
 		std::pair<uint32_t,uint32_t> InsertStringDataToCode(const char *str)
 		{
-			uint32_t l = (uint32_t)strlen(str);
+			uint32_t l = static_cast<uint32_t>(strlen(str));
 			uint32_t actInsertLen = (l + 3) / 4;
-			uint32_t sNow = mCode.size();
+			uint32_t sNow = static_cast<uint32_t>(mCode.size());
 			mCode.resize(sNow + actInsertLen);
 			memcpy(&mCode[sNow], str, l + 1);
 			return std::make_pair(sNow, actInsertLen);
@@ -544,7 +534,7 @@ namespace compiler
 
 		void InsertFunctionDesc(runtime::FunctionDesc *funcDesc)
 		{
-			uint32_t s = mCode.size();
+			uint32_t s = static_cast<decltype(s)>(mCode.size());
 			mCode.resize(s + sizeof(runtime::FunctionDesc) / 4);
 			*reinterpret_cast<runtime::FunctionDesc*>(&mCode[s]) = *funcDesc;
 		}

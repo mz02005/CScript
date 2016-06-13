@@ -50,7 +50,6 @@ bool rtLibHelper::RegistObjNames(compiler::FunctionStatement *sb)
 	sb->RegistNameInContainer("sin", -1);
 	sb->RegistNameInContainer("pow", -1);
 	sb->RegistNameInContainer("time", -1);
-	sb->RegistNameInContainer("substr", -1);
 	return true;
 }
 
@@ -71,8 +70,6 @@ bool rtLibHelper::RegistRuntimeObjs(runtimeContext *context)
 	context->PushObject(new runtime::ObjectModule<runtime::powfObj>);
 
 	context->PushObject(new runtime::ObjectModule<runtime::timeObj>);
-
-	context->PushObject(new runtime::ObjectModule<runtime::substrObj>);
 
 	return true;
 }
@@ -198,27 +195,3 @@ runtimeObjectBase* timeObj::doCall(runtime::doCallContext *context)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-runtimeObjectBase* substrObj::doCall(runtime::doCallContext *context)
-{
-	uint32_t c = context->GetParamCount();
-	std::string::size_type from = 0, size = -1;
-	stringObject *r = new runtime::ObjectModule<stringObject>;
-	std::string s;
-	if (c < 2)
-		return r;
-	if (c >= 1)
-	{
-		s = context->GetStringParam(0);
-	}
-	if (c >= 2)
-	{
-		from = context->GetUint32Param(1);
-	}
-	if (c >= 3)
-	{
-		size = context->GetUint32Param(2);
-	}
-	*r->mVal = StringHelper::Mid(s, from, size);
-	return r;
-}

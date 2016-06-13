@@ -1,7 +1,9 @@
 #include "stdafx.h"
-#include "CScriptEng/CScriptEng.h"
 #include "CScriptEng/vm.h"
 #include <iostream>
+#include "testCallback.h"
+
+#define DECL_TEST_VAR	"declContent"
 
 int ExecuteCode(const std::string &filePathName, bool saveCodeToFile = false);
 
@@ -32,7 +34,7 @@ int RunTestCase()
 	appDir.resize(::GetModuleFileNameA(NULL, &appDir[0], MAX_PATH));
 	appDir.resize(appDir.rfind('\\') + 1);
 
-	appDir += "..\\test\\script\\";
+	appDir += "..\\..\\test\\script\\";
 #else
 	appDir = "/mnt/CScript/test/script/";
 #endif
@@ -59,6 +61,8 @@ int ExecuteCode(const std::string &filePathName, bool saveCodeToFile)
 	scriptAPI::ScriptCompiler compiler;
 
 	std::cout << "Compile file " << filePathName << std::endl;
+	compiler.PushName(DECL_TEST_VAR);
+	compiler.PushName(TESTCALLBACKNAME);
 	HANDLE h = compiler.Compile(&fs, true);
 	if (h)
 	{
@@ -87,6 +91,10 @@ int ExecuteCode(const std::string &filePathName, bool saveCodeToFile)
 		std::cout << "Compile file success. Start to execute. " << std::endl;
 		scriptAPI::ScriptRuntimeContext *runtimeContext
 			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
+		runtime::stringObject *declContent = new runtime::ObjectModule<runtime::stringObject>;
+		*declContent->mVal = "testCScript v1.0";
+		runtimeContext->PushRuntimeObject(declContent);
+		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<TestCallback>);
 		runtimeContext->Execute(h);
 		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
 		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);

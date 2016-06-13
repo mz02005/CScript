@@ -225,7 +225,9 @@ namespace runtime {
 		int Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack = false);
 
 		// doCallContext
+		virtual int SetParamCount(uint16_t paramCount);
 		virtual uint32_t GetParamCount();
+		virtual int PushObjectToStack(runtimeObjectBase *obj);
 		virtual runtimeObjectBase* GetParam(uint32_t i);
 		virtual double GetDoubleParam(uint32_t i);
 		virtual float GetFloatParam(uint32_t i);

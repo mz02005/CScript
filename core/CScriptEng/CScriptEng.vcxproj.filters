@@ -51,9 +51,6 @@
     <ClInclude Include="rtlib.h">
       <Filter>inner\vm</Filter>
     </ClInclude>
-    <ClInclude Include="cscript.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="cscriptBase.h">
       <Filter>inner</Filter>
     </ClInclude>
@@ -152,9 +149,6 @@
     <ClCompile Include="rtLib.cpp">
       <Filter>inner\vm</Filter>
     </ClCompile>
-    <ClCompile Include="cscript.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="DebugBreakStatement.cpp">
       <Filter>inner\compile</Filter>
     </ClCompile>
@@ -173,11 +167,11 @@
     <ClCompile Include="objType.cpp">
       <Filter>inner\vm</Filter>
     </ClCompile>
+    <ClCompile Include="FuncImpl.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CScriptEng.def">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="..\..\Makefile" />
     <None Include="Makefile" />
   </ItemGroup>

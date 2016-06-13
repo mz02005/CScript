@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CScriptEng.h"
+#include "notstd/stringHelper.h"
 
 using namespace scriptLog;
 

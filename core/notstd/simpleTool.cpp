@@ -135,7 +135,7 @@ static bool AddFile2Zip(const char *strFilePath, const char *strRelPath, zipFile
 	char buf[8192];
 	zipOpenNewFileInZip(zipfile, strRelPath, NULL, NULL, 0, NULL, 0, NULL,
 		Z_DEFLATED, Z_DEFAULT_COMPRESSION);
-	while ((readed = fread(buf, sizeof(char), sizeof(buf) / sizeof(char), file)) > 0)
+	while ((readed = (int)fread(buf, sizeof(char), sizeof(buf) / sizeof(char), file)) > 0)
 	{
 		zipWriteInFileInZip(zipfile, buf, readed);
 	}

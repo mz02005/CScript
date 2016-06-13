@@ -92,7 +92,11 @@ public:
 
 #endif
 
+#if defined(PLATFORM_WINDOWS)
+template <class T = NormalHandleType>
+#else
 template <class T>
+#endif
 class Handle
 {
 public:

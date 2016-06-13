@@ -349,7 +349,7 @@ bool SocketHandle::SendHugeDataBlock(const char *buf, std::size_t size)
 	char sendBuf[16384];
 	sendBuf;
 
-	uint32_t leftSize = size;
+	uint32_t leftSize = static_cast<decltype(leftSize)>(size);
 	const char *sp = buf;
 	while (leftSize)
 	{

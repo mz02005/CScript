@@ -5,7 +5,6 @@
 #include <io.h>
 #endif
 #include <algorithm>
-#include "cscript.h"
 
 #ifdef min
 #undef min
@@ -201,6 +200,11 @@ int ScriptCompiler::FindGlobalName(const char *name)
 HANDLE ScriptCompiler::Compile(ScriptSourceCodeStream *stream, bool end)
 {
 	return mCompilerContext->Compile(stream, end);
+}
+
+HANDLE ScriptCompiler::CreateCompileResult()
+{
+	return new compiler::CompileResult;
 }
 
 int ScriptCompiler::SaveConstStringTableInResultToFile(HANDLE crHandle, FILE *file)

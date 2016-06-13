@@ -12,6 +12,7 @@ CPPS= \
 	doWhileStatement.cpp \
 	forStatement.cpp \
 	functionStatement.cpp \
+	FuncImpl.cpp \
 	IfCondStatement.cpp \
 	PureExpStatement.cpp \
 	returnStatement.cpp \
@@ -35,8 +36,7 @@ CPPS= \
 	uint8Obj.cpp \
 	vm.cpp \
 	CScriptEng.cpp \
-	Trace.cpp \
-	cscript.cpp
+	Trace.cpp
 
 OBJS=$(CPPS:.cpp=.o)
 
@@ -48,7 +48,7 @@ endif
 ifeq ($(DEBUG),y)
 	CFLAGS += -D_DEBUG -DDEBUG -g -fPIC -std=c++0x
 else
-	CFLAGS += -O3 -fPIC -std=c++0x
+	CFLAGS += -O3 -fPIC -std=c++11
 endif
 
 COMPILE_CC=$(CROSS_COMPILE)cc

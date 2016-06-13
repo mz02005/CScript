@@ -1,7 +1,13 @@
 #pragma once
-#include "config.h"
-#include "notstd/notstd.h"
 #include "cscriptBase.h"
+
+namespace runtime {
+	class runtimeContext;
+}
+
+namespace compiler {
+	class SimpleCScriptEngContext;
+}
 
 #define SCRIPT_TRACE scriptLog::LogTool()
 #define SCRIPT_TRACE_(flags) scriptLog::LogTool((uint32_t)flags)
@@ -54,6 +60,120 @@ namespace scriptLog {
 	};
 }
 
+namespace scriptAPI {
+	class ScriptSourceCodeStream
+	{
+	public:
+		enum {
+			Begin = SEEK_SET,
+			End = SEEK_END,
+			Current = SEEK_CUR,
+		};
+	public:
+		virtual void Close() = 0;
+		virtual int Flush() = 0;
+		virtual int Read(uint8_t *data, int offset, int count) = 0;
+		virtual int64_t Seek(int64_t offset, int origPosition) = 0;
+		virtual int SetLength(int64_t length) = 0;
+		virtual int Write(const uint8_t *data, int offset, int count) = 0;
+	};
+
+	class CSCRIPTENG_API FileStream : public ScriptSourceCodeStream
+	{
+	private:
+		FILE *mFile;
+
+	public:
+		FileStream(const char *filePathName);
+		FileStream();
+		virtual ~FileStream();
+
+		int Open(const char *filePathName);
+
+		virtual void Close();
+		virtual int Flush();
+		virtual int Read(uint8_t *data, int offset, int count);
+		virtual int64_t Seek(int64_t offset, int origPosition);
+		virtual int SetLength(int64_t length);
+		virtual int Write(const uint8_t *data, int offset, int count);
+	};
+	
+	class CSCRIPTENG_API StringStream : public ScriptSourceCodeStream
+	{
+	private:
+		size_t mSize;
+		char *mBuf;
+		char *mCur;
+
+	public:
+		StringStream(const char *str, size_t size);
+		virtual ~StringStream();
+
+		virtual void Close();
+		virtual int Flush();
+		virtual int Read(uint8_t *data, int offset, int count);
+		virtual int64_t Seek(int64_t offset, int origPosition);
+		virtual int SetLength(int64_t length);
+		virtual int Write(const uint8_t *data, int offset, int count);
+	};
+	
+	class CSCRIPTENG_API SimpleCScriptEng
+	{
+	public:
+		static void Init();
+		static void Term();
+	};
+	
+	class CSCRIPTENG_API ScriptCompiler
+	{
+	private:
+		compiler::SimpleCScriptEngContext *mCompilerContext;
+
+	public:
+		struct CompileCode
+		{
+			uint32_t sizeInUint32;
+			uint32_t *code;
+		};
+
+	public:
+		ScriptCompiler();
+		~ScriptCompiler();
+		int PushName(const char *name);
+		int FindGlobalName(const char *name);
+		HANDLE Compile(ScriptSourceCodeStream *stream, bool end = true);
+		static HANDLE CreateCompileResult();
+		static int SaveConstStringTableInResultToFile(HANDLE crHandle, FILE *file);
+		static int LoadConstStringTableToResultFromFile(HANDLE crHandle, FILE *file);
+		static int SaveCodeToFile(HANDLE crHandle, FILE *file);
+		static int LoadCodeFromFile(HANDLE crHandle, FILE *file);
+		// 返回代表代码区域的句柄
+		static HANDLE CopyAndClearCompileResult(HANDLE compileResult);
+		static void ReleaseCompileResult(HANDLE result);
+		static void ReleaseCompileCode(HANDLE code);
+	};
+
+	class CSCRIPTENG_API ScriptRuntimeContext
+	{
+	private:
+		runtime::runtimeContext *mContextInner;
+		ScriptRuntimeContext(uint32_t stackSize, uint32_t stackFrameSize);
+
+	public:
+		static ScriptRuntimeContext* CreateScriptRuntimeContext(
+			uint32_t stackSize = 512, uint32_t stackFrameSize = 128);
+		static void DestroyScriptRuntimeContext(ScriptRuntimeContext *context);
+		~ScriptRuntimeContext();
+		int PushRuntimeObject(runtime::runtimeObjectBase *obj);
+		int Execute(HANDLE compileResult);
+
+		// 执行codeHandle指定的代码，但是使用compileResult指定的符号表
+		int ExecuteCode(HANDLE code, HANDLE compileResult);
+
+		int ReplaceRuntimeFunc(const char *toReplace, void *runtimeObj, void *cHandle);
+	};
+}
+
 namespace runtime {
 
 	class CSCRIPTENG_API baseObjDefault : public runtimeObjectBase
@@ -98,7 +218,18 @@ namespace runtime {
 
 		virtual runtimeObjectBase* GetMember(const char *memName);
 	};
+	
+	struct FunctionDesc
+	{
+		// 函数的字节长度，必须是4的整倍数
+		uint32_t len;
+		// 函数的名称id，如果为0，表示这个函数是匿名函数
+		uint32_t stringId;
 
+		// 函数的参数个数
+		uint32_t paramCount;
+	};
+	
 	class CSCRIPTENG_API intObject : public baseTypeObject
 	{
 	public:
@@ -309,6 +440,39 @@ namespace runtime {
 		virtual stringObject* toString();
 	};
 
+	class runtimeContext;
+	class CSCRIPTENG_API FunctionObject : public baseTypeObject
+	{
+	private:
+		FunctionDesc mFuncDesc;
+		uint32_t *mInstHead, *mInstTail;
+		runtimeContext *mContext;
+		std::string *mFuncName;
+
+	public:
+		FunctionObject();
+		virtual ~FunctionObject();
+
+		const FunctionDesc* GetDesc() const { return &mFuncDesc; }
+		const std::string& GetFuncName() const { return *mFuncName; }
+
+		bool ReadFuncHeader(uint32_t *codeHeader, uint32_t *codeTail, 
+			uint32_t off, runtimeContext *context);
+
+		virtual uint32_t GetObjectTypeId() const;
+		virtual runtimeObjectBase* Add(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj);
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj);
+		virtual runtimeObjectBase* GetMember(const char *memName);
+		virtual runtimeObjectBase* doCall(doCallContext *context);
+		virtual runtimeObjectBase* getIndex(int i);
+		virtual stringObject* toString();
+		virtual bool isGreaterThan(const runtimeObjectBase *obj);
+		virtual bool isEqual(const runtimeObjectBase *obj);
+	};
+	
 	// 一些辅助函数
 	inline bool isNumberType(const runtimeObjectBase *o)
 	{
@@ -412,125 +576,4 @@ namespace runtime {
 			return static_cast<const stringObject*>(o)->mVal->c_str();
 		return (ReturnType)empty;
 	}
-}
-
-namespace runtime {
-	class runtimeContext;
-}
-
-namespace compiler {
-	class SimpleCScriptEngContext;
-}
-
-namespace scriptAPI {
-	class ScriptSourceCodeStream
-	{
-	public:
-		enum {
-			Begin = SEEK_SET,
-			End = SEEK_END,
-			Current = SEEK_CUR,
-		};
-	public:
-		virtual void Close() = 0;
-		virtual int Flush() = 0;
-		virtual int Read(uint8_t *data, int offset, int count) = 0;
-		virtual int64_t Seek(int64_t offset, int origPosition) = 0;
-		virtual int SetLength(int64_t length) = 0;
-		virtual int Write(const uint8_t *data, int offset, int count) = 0;
-	};
-
-	class CSCRIPTENG_API FileStream : public ScriptSourceCodeStream
-	{
-	private:
-		FILE *mFile;
-
-	public:
-		FileStream(const char *filePathName);
-		FileStream();
-		virtual ~FileStream();
-
-		int Open(const char *filePathName);
-
-		virtual void Close();
-		virtual int Flush();
-		virtual int Read(uint8_t *data, int offset, int count);
-		virtual int64_t Seek(int64_t offset, int origPosition);
-		virtual int SetLength(int64_t length);
-		virtual int Write(const uint8_t *data, int offset, int count);
-	};
-	
-	class CSCRIPTENG_API SimpleCScriptEng
-	{
-	public:
-		static void Init();
-		static void Term();
-	};
-
-	class CSCRIPTENG_API StringStream : public ScriptSourceCodeStream
-	{
-	private:
-		size_t mSize;
-		char *mBuf;
-		char *mCur;
-
-	public:
-		StringStream(const char *str, size_t size);
-		virtual ~StringStream();
-
-		virtual void Close();
-		virtual int Flush();
-		virtual int Read(uint8_t *data, int offset, int count);
-		virtual int64_t Seek(int64_t offset, int origPosition);
-		virtual int SetLength(int64_t length);
-		virtual int Write(const uint8_t *data, int offset, int count);
-	};
-	
-	class CSCRIPTENG_API ScriptCompiler
-	{
-	private:
-		compiler::SimpleCScriptEngContext *mCompilerContext;
-
-	public:
-		struct CompileCode
-		{
-			uint32_t sizeInUint32;
-			uint32_t *code;
-		};
-
-	public:
-		ScriptCompiler();
-		~ScriptCompiler();
-		int PushName(const char *name);
-		int FindGlobalName(const char *name);
-		HANDLE Compile(ScriptSourceCodeStream *stream, bool end = true);
-		static int SaveConstStringTableInResultToFile(HANDLE crHandle, FILE *file);
-		static int LoadConstStringTableToResultFromFile(HANDLE crHandle, FILE *file);
-		static int SaveCodeToFile(HANDLE crHandle, FILE *file);
-		static int LoadCodeFromFile(HANDLE crHandle, FILE *file);
-		// 返回代表代码区域的句柄
-		static HANDLE CopyAndClearCompileResult(HANDLE compileResult);
-		static void ReleaseCompileResult(HANDLE result);
-		static void ReleaseCompileCode(HANDLE code);
-	};
-
-	class CSCRIPTENG_API ScriptRuntimeContext
-	{
-	private:
-		runtime::runtimeContext *mContextInner;
-		ScriptRuntimeContext(uint32_t stackSize, uint32_t stackFrameSize);
-
-	public:
-		static ScriptRuntimeContext* CreateScriptRuntimeContext(
-			uint32_t stackSize = 512, uint32_t stackFrameSize = 128);
-		static void DestroyScriptRuntimeContext(ScriptRuntimeContext *context);
-		~ScriptRuntimeContext();
-		int PushRuntimeObject(runtime::runtimeObjectBase *obj);
-		int Execute(HANDLE compileResult);
-
-		// 执行codeHandle指定的代码，但是使用compileResult指定的符号表
-		int ExecuteCode(HANDLE code, HANDLE compileResult);
-
-		int ReplaceRuntimeFunc(const char *toReplace, void *runtimeObj, void *cHandle);
-	};
 }

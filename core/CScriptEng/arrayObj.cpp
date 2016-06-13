@@ -1,5 +1,6 @@
 #include "stdAfx.h"
 #include "arrayType.h"
+#include <string.h>
 
 using namespace runtime;
 
@@ -200,7 +201,7 @@ runtimeObjectBase* Array_addObj::doCall(runtime::doCallContext *context)
 	}
 
 	if (i < 0)
-		i = mArrayObject->mData->size();
+		i = static_cast<decltype(i)>(mArrayObject->mData->size());
 
 	o->AddRef();
 	mArrayObject->mData->insert(mArrayObject->mData->begin() + i, o);

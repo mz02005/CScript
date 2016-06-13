@@ -257,7 +257,7 @@ bool NamedPipe::Write(const char *buffer, std::size_t size)
 		return false;
 	mPipeDataWrite.operation = PIPE_OPERATION_WRITE;
 	memcpy(mPipeDataWrite.buffer, buffer, size);
-	if (!::WriteFile(mNamePipe, mPipeDataWrite.buffer, size, NULL,
+	if (!::WriteFile(mNamePipe, mPipeDataWrite.buffer, static_cast<DWORD>(size), NULL,
 		reinterpret_cast<LPOVERLAPPED>(&mPipeDataWrite)))
 	{
 		DWORD lastError = ::GetLastError();
@@ -274,7 +274,8 @@ bool NamedPipe::SyncWrite(const char *buffer, std::size_t size)
 	while (left)
 	{
 		DWORD writed = 0;
-		if (!::WriteFile(mNamePipe, p, left, &writed, NULL) || !writed)
+		if (!::WriteFile(mNamePipe, p, static_cast<DWORD>(left), &writed, NULL)
+			|| !writed)
 			return false;
 		p += writed;
 		left -= writed;

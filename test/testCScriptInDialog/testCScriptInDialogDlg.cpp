@@ -3,6 +3,7 @@
 #include "testCScriptInDialogDlg.h"
 #include "afxdialogex.h"
 #include "CScriptEng/cscriptBase.h"
+#include "test/testCScript/testCallback.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,9 +52,68 @@ public:
 
 		if (mDlg && ::IsWindow(mDlg->GetSafeHwnd()))
 		{
-			mDlg->mPrintHostBox.AddString(CA2W(s).m_psz);
-			mDlg->mPrintHostBox.SetCurSel(
-				mDlg->mPrintHostBox.GetCount());
+			mDlg->DispString(CA2W(s).m_psz);
+			mDlg->DispString(L"\n");
+		}
+
+		so->AddRef();
+		so->Release();
+		return this;
+	}
+
+	// getindex（索引访问一元运算）
+	virtual runtimeObjectBase* getIndex(int i) { return NULL; }
+	// 对象转化为字符串
+	virtual runtime::stringObject* toString() { return NULL; }
+
+	// 比较
+	virtual bool isGreaterThan(const runtimeObjectBase *obj) { return false; }
+
+	virtual bool isEqual(const runtimeObjectBase *obj) { return false; }
+};
+
+class printInListBox : public runtime::runtimeObjectBase
+{
+public:
+	CtestCScriptInDialogDlg *mDlg;
+
+public:
+	printInListBox()
+		: mDlg(NULL)
+	{
+	}
+
+	virtual uint32_t GetObjectTypeId() const
+	{
+		return runtime::DT_UserTypeBegin;
+	}
+
+	virtual runtimeObjectBase* Add(const runtimeObjectBase *obj){ return NULL; }
+	virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj){ return NULL; }
+	virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj){ return NULL; }
+	virtual runtimeObjectBase* Div(const runtimeObjectBase *obj){ return NULL; }
+
+	// =二元运算
+	virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) { return NULL; }
+
+	// 处理.操作符（一元的）
+	virtual runtimeObjectBase* GetMember(const char *memName) { return NULL; }
+
+	// docall（函数调用一元运算）
+	virtual runtimeObjectBase* doCall(runtime::doCallContext *context)
+	{
+		if (context->GetParamCount() < 1)
+			return this;
+
+		runtimeObjectBase *o = context->GetParam(0);
+		if (!o)
+			return this;
+		runtime::stringObject *so = o->toString();
+		const char *s = so->mVal->c_str();
+
+		if (mDlg && ::IsWindow(mDlg->GetSafeHwnd()))
+		{
+			mDlg->DispString(CA2W(s).m_psz);
 		}
 
 		so->AddRef();
@@ -122,6 +182,41 @@ void CtestCScriptInDialogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SOURCE_PATH, mSourcePath);
 }
 
+void CtestCScriptInDialogDlg::DispString(const CString &s)
+{
+	CString left = s, ss;
+	int f = left.Find('\n', 0);
+	do {
+		bool has = mLastString.GetLength() > 0;
+		if (f >= 0)
+		{
+			if (!f)
+			{
+				mLastString.Truncate(0);
+			}
+			else
+			{
+				mLastString += left.Left(f);
+				left = left.Mid(f + 1);
+				if (has)
+					mPrintHostBox.DeleteString(mPrintHostBox.GetCount() - 1);
+				mPrintHostBox.AddString(mLastString);
+				mPrintHostBox.SetCurSel(mPrintHostBox.GetCount() - 1);
+			}
+		}
+		else
+		{
+			mLastString += left;
+			if (has)
+				mPrintHostBox.DeleteString(mPrintHostBox.GetCount() - 1);
+			mPrintHostBox.AddString(mLastString);
+			mPrintHostBox.SetCurSel(mPrintHostBox.GetCount() - 1);
+			break;
+		}
+		f = left.Find('\n', f + 1);
+	} while (1);
+}
+
 void CtestCScriptInDialogDlg::ExecuteThreadProc(void *param)
 {
 	SimpleThread *thread = reinterpret_cast<SimpleThread*>(param);
@@ -131,91 +226,92 @@ void CtestCScriptInDialogDlg::ExecuteThreadProc(void *param)
 void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 {
 	SimpleThread *thread = reinterpret_cast<SimpleThread*>(param);
-
-	//scriptAPI::SimpleCScriptEng::Init();
-	//scriptAPI::FileStream fs("c:\\work\\test.c");
-	//scriptAPI::ScriptCompiler compiler;
-
-	//HANDLE h = compiler.Compile(&fs, true);
-	//if (h)
-	//{
-	//	scriptAPI::ScriptRuntimeContext *runtimeContext
-	//		= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(512, 512);
-	//	runtimeContext->Execute(h);
-	//	scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
-	//	scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
-	//}
-	//scriptAPI::SimpleCScriptEng::Term();
-
-	CompilerHandle cHandle = NULL;
-	CompileResultHandle crHandle = NULL;
-	VirtualMachineHandle virtualMachine = NULL;
-
+		
 	FILE *file = NULL;
 	println2 *println = NULL;
+	printInListBox *print = NULL;
+	HANDLE compileResult = NULL;
+	scriptAPI::ScriptRuntimeContext *rc = NULL;
 
 	do {
-
-		if (InitializeCScriptEngine() < 0)
-			break;
+		scriptAPI::SimpleCScriptEng::Init();
 		
-		if (CreateCScriptCompile(&cHandle) < 0)
-			break;
+		scriptAPI::ScriptCompiler comp;
+		comp.PushName("println2");
+		comp.PushName("printInListBox");
 
-		PushCompileTimeName(cHandle, "println2");
+		scriptAPI::FileStream fs(CW2A(mSourcePath).m_psz);
 
-		if ((crHandle = CompileCode(CW2A(mSourcePath).m_psz, cHandle, 1)) == NULL)
+		if (!mLoadCodeExists)
 		{
-			MessageBox(L"编译错误");
-			break;
-		}
-
-		if (mLoadCodeExists)
-		{
-			if (fopen_s(&file, "c:\\work\\codeoutput.txt", "rb"))
+			comp.PushName(TESTCALLBACKNAME);
+			if ((compileResult = comp.Compile(&fs, true)) == NULL)
+			{
+				MessageBox(L"编译错误");
 				break;
-			LoadCodeFromFile(crHandle, file);
-			LoadConstStringTableFromFile(crHandle, file);
+			}
+			if (fopen_s(&file, "c:\\work\\codeoutput.txt", "wb"))
+				break;
+			if (comp.SaveCodeToFile(compileResult, file) < 0)
+			{
+				MessageBox(L"保存代码失败");
+				break;
+			}
+			if (comp.SaveConstStringTableInResultToFile(compileResult, file) < 0)
+			{
+				MessageBox(L"保存字符串标失败");
+				break;
+			}
 		}
 		else
 		{
-			if (fopen_s(&file, "c:\\work\\codeoutput.txt", "wb"))
+			if (fopen_s(&file, "c:\\work\\codeoutput.txt", "rb"))
 				break;
-			SaveCodeToFile(crHandle, file);
-			SaveConstStringTableToFile(crHandle, file);
-		}
-		if (file)
-		{
-			fclose(file);
-			file = NULL;
+
+			compileResult = scriptAPI::ScriptCompiler::CreateCompileResult();
+			if (!compileResult)
+				break;
+			if (comp.LoadCodeFromFile(compileResult, file) < 0)
+				break;
+			if (comp.LoadConstStringTableToResultFromFile(compileResult, file) < 0)
+				break;
 		}
 
-		if (CreateVirtualMachine(&virtualMachine, 512, 512) < 0)
+		rc = scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext();
+		if (!rc)
 			break;
 		println = new runtime::ObjectModule<println2>;
+		print = new runtime::ObjectModule<printInListBox>;
 		println->mDlg = this;
-		PushRuntimeObject(virtualMachine, println);
-
-		ReplaceRuntimeFunc("println", println, cHandle, virtualMachine);
-		ReplaceRuntimeFunc("print", println, cHandle, virtualMachine);
-
-		if (VirtualMachineExecute(virtualMachine, crHandle) < 0)
+		print->mDlg = this;
+		rc->PushRuntimeObject(println);
+		rc->PushRuntimeObject(print);
+		rc->ReplaceRuntimeFunc("println", println, &comp);
+		rc->ReplaceRuntimeFunc("print", print, &comp);
+		rc->PushRuntimeObject(new runtime::ObjectModule<TestCallback>);
+		if (rc->Execute(compileResult) < 0)
 			break;
+		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(rc);
 
 		MessageBox(L"执行完毕");
 
 	} while (0);
-	
-	if (file)
-		fclose(file);
 
-	if (virtualMachine)
-		DestroyVirtualMachine(virtualMachine);
-	if (crHandle)
-		ReleaseCompileResult(crHandle);
-	if (cHandle)
-		DestroyCScriptCompile(cHandle);
-	UninitializeCScriptEngine();
+	if (compileResult)
+	{
+		scriptAPI::ScriptCompiler::ReleaseCompileResult(compileResult);
+	}
+
+	if (rc)
+		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(rc);
+
+	if (file)
+	{
+		fclose(file);
+		file = NULL;
+	}
+
+	scriptAPI::SimpleCScriptEng::Term();
 }
 
 BOOL CtestCScriptInDialogDlg::OnInitDialog()
@@ -249,6 +345,12 @@ BOOL CtestCScriptInDialogDlg::OnInitDialog()
 
 	mSourcePath = AfxGetApp()->GetProfileString(L"ui", L"lastRun", L"");
 	UpdateData(FALSE);
+
+	LOGFONT lf = { 0, };
+	lf.lfHeight = -12;
+	wcscpy(lf.lfFaceName, L"consolas");
+	mFont.CreateFontIndirect(&lf);
+	mPrintHostBox.SetFont(&mFont);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }

@@ -25,10 +25,11 @@
 #define INVALID_SET_FILE_POINTER ((DWORD)-1)
 #endif
 
-
+#if 0
 #if defined(WINAPI_FAMILY_PARTITION) && (!(defined(IOWIN32_USING_WINRT_API)))
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 #define IOWIN32_USING_WINRT_API 1
+#endif
 #endif
 #endif
 

@@ -7,7 +7,7 @@ function first()
 		for(x=-1.5f;x<1.5f;x+=0.05f) {
 			z=x*x+y*y-1;
 			f=z*z*z-x*x*y*y*y;
-			print(f <=0.0f ? substr(".:-=+*#%@",f*-8.f,1) : " ");
+			print(f <=0.0f ? ".:-=+*#%@".substr(f*-8.f,1) : " ");
 		}
 		print("\n");
 	}
@@ -47,7 +47,7 @@ function main()
 				nz=h(x,z+ny)-y0;
 				nd=1.f/sqrt(nx*nx+ny*ny+nz*nz);
 				d=(nx+ny-nz)*nd*0.5f+0.5f;
-				print(substr(".:-=+*#%@", d*5.f,1));
+				print(".:-=+*#%@".substr(d*5.f,1));
 			}
 			else
 				print(" ");

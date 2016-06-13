@@ -8,9 +8,20 @@ using namespace runtime;
 #define THROW_EXECEPTION(type, expinfo) \
 	do { throw std::exception(); } while (0)
 
+int runtimeContext::SetParamCount(uint16_t paramCount)
+{
+	mParamCount = paramCount;
+	return 0;
+}
+
 uint32_t runtimeContext::GetParamCount()
 {
 	return mParamCount;
+}
+
+int runtimeContext::PushObjectToStack(runtimeObjectBase *obj)
+{
+	return PushObject(obj);
 }
 
 runtimeObjectBase* runtimeContext::GetParam(uint32_t i)
@@ -163,7 +174,7 @@ uint32_t runtimeContext::GetArrayParamElemCount(uint32_t i)
 	if (o->GetObjectTypeId() != DT_array)
 		THROW_EXECEPTION(std::bad_cast, "runtimeContext::GetArrayParamElemCount: not array");
 
-	return static_cast<arrayObject*>(o)->mData->size();
+	return (uint32_t)static_cast<arrayObject*>(o)->mData->size();
 }
 
 double runtimeContext::GetDoubleElemOfArrayParam(uint32_t i, uint32_t e)

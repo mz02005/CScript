@@ -50,8 +50,8 @@ bool AdvIOBuffer::Malloc(std::size_t len)
 	if (!len)
 		return false;
 
-	mRealCap = (len + 15) / 16 * 16;
-	mReportCap = len;
+	mRealCap = static_cast<decltype(mRealCap)>((len + 15) / 16 * 16);
+	mReportCap = static_cast<decltype(mReportCap)>(len);
 
 	mBuf = reinterpret_cast<char*>(realloc(mBuf, mRealCap));
 	if (!mBuf)
@@ -81,9 +81,9 @@ void AdvIOBuffer::AppendData(const char *str, std::size_t len)
 	if (needSize > mRealCap)
 		Malloc(needSize);
 	if (needSize > mReportCap)
-		mReportCap = needSize;
+		mReportCap = static_cast<decltype(mReportCap)>(needSize);
 	memcpy(mBuf + mSize, str, len);
-	mSize = needSize;
+	mSize = static_cast<decltype(mSize)>(needSize);
 }
 
 void AdvIOBuffer::SetLength(std::size_t s)
@@ -91,15 +91,15 @@ void AdvIOBuffer::SetLength(std::size_t s)
 	if (mRealCap < s)
 		Malloc(s);
 	if (s > mReportCap)
-		mReportCap = s;
-	mSize = s;
+		mReportCap = static_cast<decltype(mReportCap)>(s);
+	mSize = static_cast<decltype(mSize)>(s);
 }
 
 void AdvIOBuffer::SetCap(std::size_t s)
 {
 	if (s > mRealCap)
 		Malloc(s);
-	mReportCap = s;
+	mReportCap = static_cast<decltype(mReportCap)>(s);
 	if (mSize > mReportCap)
 		mSize = mReportCap;
 }

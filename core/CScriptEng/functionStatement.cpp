@@ -217,7 +217,7 @@ int FunctionStatement::GenerateInstruction(CompileResult *compileResult)
 		functionStart = compileResult->SaveCurrentCodePosition();
 		runtime::FunctionDesc fd;
 		fd.len = 0;
-		fd.paramCount = mParamList.size();
+		fd.paramCount = static_cast<decltype(fd.paramCount)>(mParamList.size());
 		fd.stringId = gih.RegistName(mName.c_str());
 		gih.InsertFunctionDesc(&fd);
 	}
@@ -251,7 +251,7 @@ bool FunctionStatement::RegistNameInContainer(const char *name, uint32_t declTyp
 {
 	if (mLocalName.find(name) != mLocalName.end())
 		return false;
-	mLocalName[name] = mLocalType.size();
+	mLocalName[name] = static_cast<decltype(mLocalName.begin()->second)>(mLocalType.size());
 	mLocalType.push_back(declType);
 	return true;
 }
@@ -270,5 +270,5 @@ bool FunctionStatement::FindNameInContainer(const char *name, uint32_t &level, u
 
 uint32_t FunctionStatement::ReservedVariableRoom(uint32_t type) {
 	mLocalType.push_back(type);
-	return mLocalType.size() - 1;
+	return static_cast<uint32_t>(mLocalType.size() - 1);
 }

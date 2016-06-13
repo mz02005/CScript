@@ -57,4 +57,4 @@
 
 
 #define IMPORT_APIS
-#include "CScriptEng/cscript.h"
+#include "CScriptEng/CScriptEng.h"

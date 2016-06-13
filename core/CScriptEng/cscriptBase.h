@@ -1,4 +1,6 @@
 #pragma once
+#include "config.h"
+#include <string>
 
 namespace runtime {
 	class runtimeObjectBase;
@@ -29,8 +31,10 @@ namespace runtime {
 	class doCallContext
 	{
 	public:
+		virtual int SetParamCount(uint16_t paramCount) = 0;
 		virtual uint32_t GetParamCount() = 0;
 
+		virtual int PushObjectToStack(runtimeObjectBase *obj) = 0;
 		virtual runtimeObjectBase* GetParam(uint32_t i) = 0;
 
 		virtual double GetDoubleParam(uint32_t i) = 0;

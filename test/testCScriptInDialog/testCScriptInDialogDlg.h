@@ -7,6 +7,10 @@ class CtestCScriptInDialogDlg : public CDialogEx
 {
 	DECLARE_MESSAGE_MAP()
 
+private:
+	CString mLastString;
+	CFont mFont;
+
 public:
 	CtestCScriptInDialogDlg(CWnd* pParent = NULL);
 
@@ -16,6 +20,8 @@ public:
 	CListBox mPrintHostBox;
 	BOOL mLoadCodeExists;
 	CString mSourcePath;
+
+	void DispString(const CString &s);
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
