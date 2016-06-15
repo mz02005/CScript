@@ -6,7 +6,7 @@ if (a == 0)
 	println("OK");
 
 if (a != 0)
-	debugbreak;
+	return -1;
 
 if (a > -1)
 	println("OK");
@@ -48,18 +48,18 @@ println(a);
 if (1 + 1 == 2)
 	println("OK");
 else
-	debugbreak;
+	return -2;
 
 a = 1;
 if (a * 2 == 2)
 	println("OK");
 else
-	debugbreak;
+	return -3;
 
 a = 1;
 if (a += 1 == 2)
 	println("OK");
 else
-	debugbreak;
+	return -4;
 
 println("ifstatement.c finished\n\n");

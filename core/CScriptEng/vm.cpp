@@ -136,13 +136,17 @@ runtimeObjectBase* baseTypeObject::GetMember(const char *memName)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+VMExecuteContext::VMExecuteContext()
+{
+	memset(this, 0, sizeof(*this));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 runtimeContext::runtimeContext(VMConfig *config)
-	: mPC(NULL)
-	, mPCEnd(NULL)
-	, mCurrentStack(0)
-	, mParamCount(0)
-	, mCallStackLayer(0)
+	: mCurrentStack(0)
 	, mBlockFrameSize(0)
+	, mA(nullptr)
 {
 	if (config) {
 		mConfig = *config;
@@ -488,7 +492,7 @@ int runtimeContext::OnInst_createObject(Instruction *inst, uint8_t *moreData, ui
 
 int runtimeContext::OnInst_end(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
-	return -100;
+	return EC_Normal;
 }
 
 int runtimeContext::OnInst_pushStackFrame(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
@@ -997,7 +1001,7 @@ int runtimeContext::OnInst_createFunction(Instruction *inst, uint8_t *moreData, 
 
 int runtimeContext::OnInst_return(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
-	return -100;
+	return EC_Normal;
 }
 
 template <typename T>
@@ -1494,7 +1498,8 @@ int runtimeContext::RunInner()
 	return r;
 }
 
-int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack)
+int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, 
+	bool recoveryStack, int *exitValue)
 {
 	scriptAPI::ScriptCompiler::CompileCode *theCode = 
 		reinterpret_cast<scriptAPI::ScriptCompiler::CompileCode*>(code);
@@ -1506,7 +1511,24 @@ int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, 
 
 	uint32_t stackPosition = mCurrentStack;
 
+	if (mA)
+		mA = nullptr;
 	int r = RunInner();
+
+	if (exitValue)
+	{
+		do {
+			if (!mA) {
+				*exitValue = 1;
+				break;
+			}
+			if (!isNumberType(mA)) {
+				*exitValue = 1;
+				break;
+			}
+			*exitValue = getObjectData<intObject>(mA);
+		} while (0);
+	}
 
 	if (recoveryStack)
 	{
@@ -1519,13 +1541,13 @@ int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult, 
 	return r;
 }
 
-int runtimeContext::Execute(compiler::CompileResult *compileResult)
+int runtimeContext::Execute(compiler::CompileResult *compileResult, int *exitValue)
 {
 	scriptAPI::ScriptCompiler::CompileCode cc;
 	cc.code = &compileResult->GetCode()[0];
 	cc.sizeInUint32 = static_cast<decltype(cc.sizeInUint32)>(compileResult->GetCode().size());
 
-	return Execute(&cc, compileResult, true);
+	return Execute(&cc, compileResult, true, exitValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

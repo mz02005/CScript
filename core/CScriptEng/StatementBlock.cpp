@@ -31,10 +31,10 @@ int StatementBlock::GenerateInstruction(CompileResult *compileResult)
 			return r;
 	}
 
-	// 如果父亲是函数，且不是顶层函数，则在末尾增加一个return语句
+	// 如果父亲是函数，则在末尾增加一个return语句
 	// 这可以保证如果用户忘了写return语句，堆栈还能够平衡
-	if (mParentBlock->GetThisObjInfo() == OBJECT_INFO(FunctionStatement)
-		&& !static_cast<FunctionStatement*>(mParentBlock)->isTopLevelFun())
+	if (mParentBlock->GetThisObjInfo() == OBJECT_INFO(FunctionStatement)/*
+		&& !static_cast<FunctionStatement*>(mParentBlock)->isTopLevelFun()*/)
 	{
 		// 返回的是整数0
 		gih.Insert_createInt_Instruction(0);

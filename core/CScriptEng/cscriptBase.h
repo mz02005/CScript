@@ -7,6 +7,10 @@ namespace runtime {
 	class stringObject;
 	class refCounter;
 
+	enum {
+		EC_Normal = -100,
+	};
+
 	enum
 	{
 		DT_nullType,

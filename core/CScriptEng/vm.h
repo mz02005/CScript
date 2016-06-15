@@ -15,7 +15,37 @@ namespace runtime {
 		void Normalize();
 	};
 
-	class runtimeContext : public doCallContext
+	struct VMExecuteContext
+	{
+		// 指令指针
+		uint32_t *mPC;
+
+		// 当前栈帧的代码头
+		uint32_t *mSectionHeader;
+
+		// 指令尾部
+		uint32_t *mPCEnd;
+
+		// 记录当前doCall的参数个数
+		uint32_t mParamCount;
+
+		uint32_t mCallStackLayer;
+
+		VMExecuteContext();
+
+		inline void SaveExecuteContext(VMExecuteContext *cont) const
+		{
+			*cont = *this;
+		}
+		inline void RestoreExecuteContext(const VMExecuteContext *cont)
+		{
+			*this = *cont;
+		}
+	};
+
+	class runtimeContext
+		: public doCallContext
+		, public VMExecuteContext
 	{
 		friend class FunctionObject;
 
@@ -32,24 +62,12 @@ namespace runtime {
 		// 记录块帧，用于释放块内对象的内存
 		std::vector<uint32_t> mBlockFrame;
 		uint32_t mBlockFrameSize;
-
-		// 记录当前doCall的参数个数
-		uint32_t mParamCount;
-
+		
 		// 临时寄存器，保存return之前的返回值
 		runtimeObjectBase *mA;
 
 		compiler::CompileResult *mCompileResult;
-
-		// 当前栈帧的代码头
-		uint32_t *mSectionHeader;
-		// 指令指针
-		uint32_t *mPC;
-		// 指令尾部
-		uint32_t *mPCEnd;
-
-		uint32_t mCallStackLayer;
-
+		
 		VMConfig mConfig;
 		
 	private:
@@ -221,8 +239,9 @@ namespace runtime {
 		runtimeContext(VMConfig *config);
 		~runtimeContext();
 
-		int Execute(compiler::CompileResult *compileResult);
-		int Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack = false);
+		// exitValue表示虚拟机刚刚执行的顶级函数的返回值，如果返回值不为整数，则exitValue返回1
+		int Execute(compiler::CompileResult *compileResult, int *exitValue = nullptr);
+		int Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack = false, int *exitValue = nullptr);
 
 		// doCallContext
 		virtual int SetParamCount(uint16_t paramCount);

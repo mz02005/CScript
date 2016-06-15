@@ -45,7 +45,8 @@ int RunTestCase()
 		if (!fr.IsDirectory() && fr.GetSuffix() == "c")
 		{
 			std::cout << "Find file " << fr.GetPath() << std::endl;
-			ExecuteCode(fr.GetPath());
+			if (ExecuteCode(fr.GetPath()) < 0)
+				break;
 		}
 	}
 
@@ -95,9 +96,19 @@ int ExecuteCode(const std::string &filePathName, bool saveCodeToFile)
 		*declContent->mVal = "testCScript v1.0";
 		runtimeContext->PushRuntimeObject(declContent);
 		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<TestCallback>);
-		runtimeContext->Execute(h);
+		int exitCode = 0;
+		int er = runtimeContext->Execute(h, &exitCode);
 		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
 		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
+		if (er != runtime::EC_Normal)
+		{
+			std::cerr << "Execute return fail: " << er << std::endl;
+			return -1;
+		}
+		else
+		{
+			std::cout << "Execute finished, return value is " << exitCode << std::endl;
+		}
 		return 0;
 	}
 	else

@@ -92,20 +92,20 @@ function parseToInt(s)
 
 string is = "19999";
 if (parseToInt(is).toString() != is)
-	println("Error 1");
+	return -1;
 
 string a = "hello,world";
 if (strfind(a, ",w", 0) != 5)
-	println("Error 2");
+	return -2;
 
 if (strleft(a, 10) != "hello,worl")
-	println("Error 3");
+	return -3;
 if (strright(a, 3) != "rld")
-	println("Error 4");
+	return -4;
 
 if (strfind(a, "l", 0) != 2)
-	println("Error 5");
+	return -5;
 if (strrfind(a, "l") != 9)
-	println("Error 6");
+	return -6;
 
 println("Test simple algorithm end.\n");

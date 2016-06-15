@@ -20,7 +20,7 @@ case 2:
 switch (s)
 {
 default:
-	debugbreak;
+	return -1;
 
 case 0:
 	println("0");
@@ -28,7 +28,7 @@ case 0:
 
 case 1:
 case 2:
-	debugbreak;
+	return -2;
 }
 
 switch (s)
@@ -48,7 +48,7 @@ case 0:
 	break;
 
 default:
-	debugbreak;
+	return -3;
 }
 
 println("switchstatement finished\n\n");

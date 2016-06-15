@@ -16,12 +16,11 @@ function TestMain()
 			if (i % 10000 == 0)
 			{
 				string x = i.toString();
-				debugbreak;
 				if (x == "0" || x.substr(x.len - 4) == "0000")
 				{
 				}
 				else
-					return "false";
+					return -1;
 			}
 		}
 		return "true";
@@ -35,7 +34,10 @@ function TestMain()
 	for (; i < l; i+=1)
 	{
 		if (toTest[i]() != "true")
+		{
 			println("Test " + toTest[i].toString() + " fail.");
+			return -2;
+		}
 		else
 			println("Test " + toTest[i].toString() + " success.");
 	}

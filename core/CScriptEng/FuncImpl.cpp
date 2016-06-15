@@ -105,11 +105,8 @@ runtimeObjectBase* FunctionObject::doCall(doCallContext *context)
 	}
 
 	// 保存执行环境
-	uint32_t *pcSaved = mContext->mPC;
-	uint32_t *sectionHeaderSaved = mContext->mSectionHeader;
-	uint32_t *pcEndSaved = mContext->mPCEnd;
-	uint32_t paramCountSaved = mContext->mParamCount;
-	uint32_t callLayerSaved = mContext->mCallStackLayer;
+	VMExecuteContext cont;
+	mContext->SaveExecuteContext(&cont);
 
 	mContext->OnInst_pushStackFrame(NULL, NULL, 0);
 	scriptAPI::ScriptCompiler::CompileCode cc;
@@ -121,7 +118,7 @@ runtimeObjectBase* FunctionObject::doCall(doCallContext *context)
 		mContext->PushObject(mContext->mRuntimeStack[tempStackPos - mFuncDesc.paramCount + pi]);
 	}
 	mContext->mCallStackLayer++;
-	if ((calRet = mContext->Execute(&cc, mContext->GetCompileResult())) != -100)
+	if ((calRet = mContext->Execute(&cc, mContext->GetCompileResult())) != EC_Normal)
 	{
 		return NULL;
 	}
@@ -130,11 +127,7 @@ runtimeObjectBase* FunctionObject::doCall(doCallContext *context)
 	mContext->OnInst_popStackFrame(NULL, NULL, 0);
 
 	// 恢复当前级别的执行环境
-	mContext->mPC = pcSaved;
-	mContext->mSectionHeader = sectionHeaderSaved;
-	mContext->mPCEnd = pcEndSaved;
-	mContext->mParamCount = paramCountSaved;
-	mContext->mCallStackLayer = callLayerSaved;
+	mContext->RestoreExecuteContext(&cont);
 	o->ReleaseNotDelete();
 	return o;
 }
