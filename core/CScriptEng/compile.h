@@ -52,7 +52,7 @@ namespace compiler
 			CK_STRUCT,
 			CK_RETURN,
 
-			// 扩充，用来在代码中国插入debug指令
+			// 扩充，用来在代码中插入debug指令
 			CK_DEBUGBREAK,
 		};
 
@@ -188,7 +188,6 @@ namespace compiler
 		ExpressionNode();
 		virtual ~ExpressionNode();
 		ExpressionNode* GetParent() const { return mParent; }
-		virtual void DebugPrint() const = 0;
 		virtual void BeforeAddToPostfixExpression(PostfixExpression *postfixExpression);
 		virtual void AfterAddToPostfixExpression(PostfixExpression *postfixExpression);
 		virtual int GenerateInstruction(Statement *statement, CompileResult *compileResult) {
@@ -236,7 +235,6 @@ namespace compiler
 
 	public:
 		SymbolExpressionNode(const Symbol &symbol);
-		virtual void DebugPrint() const;
 		virtual int GenerateInstruction(Statement *statement, CompileResult *compileResult);
 
 		Symbol& GetSymbol() { return mSymbol; }
@@ -270,7 +268,6 @@ namespace compiler
 	public:
 		OperatorExpressionNode(const OperatorHelper::OperatorTableEntry *operatorEntry);
 		virtual ~OperatorExpressionNode();
-		virtual void DebugPrint() const;
 		virtual int GenerateInstruction(Statement *statement, CompileResult *compileResult);
 	};
 
@@ -286,7 +283,6 @@ namespace compiler
 	public:
 		SubProcCallExpression(const OperatorHelper::OperatorTableEntry *operatorEntry);
 		virtual ~SubProcCallExpression();
-		virtual void DebugPrint() const;
 		virtual void BeforeAddToPostfixExpression(PostfixExpression *postfixExpression);
 		virtual int GenerateInstruction(Statement *statement, CompileResult *compileResult);
 
@@ -322,11 +318,26 @@ namespace compiler
 	public:
 		ArrayAccessExpress(const OperatorHelper::OperatorTableEntry *operatorEntry);
 		virtual ~ArrayAccessExpress();
-		virtual void DebugPrint() const;
 		virtual void BeforeAddToPostfixExpression(PostfixExpression *postfixExpression);
 		virtual int GenerateInstruction(Statement *statement, CompileResult *compileResult);
 
 		PostfixExpression*& GetIndexExpression() { return mAccessPosExpression; }
+	};
+
+	class FunctionStatement;
+	class FunctionDefinationExpress : public ExpressionNode
+	{
+		DECLARE_OBJINFO(FunctionDefinationExpress)
+
+	private:
+		std::string mName;
+		FunctionStatement *mFuncStatement;
+
+	public:
+		FunctionDefinationExpress(const std::string &funcName);
+		virtual ~FunctionDefinationExpress();
+		int Compile(SimpleCScriptEngContext *context);
+		virtual int GenerateInstruction(Statement *parent, CompileResult *compileResult);
 	};
 
 	class PostfixExpression
@@ -365,8 +376,6 @@ namespace compiler
 		int CreateExpressionTree();
 		int GenerateInstruction(Statement *statement, CompileResult *compileResult);
 		static int GenerateInstruction(ExpressionNode *root, Statement *statement, CompileResult *compileResult);
-
-		void DebugPrint() const;
 
 		bool IsConstIntergerExpression(int &val);
 	};
@@ -606,6 +615,7 @@ namespace compiler
 	class FunctionStatement
 		: public Statement
 	{
+		friend class FunctionDefinationExpress;
 		DECLARE_OBJINFO(FunctionStatement)
 
 	public:
@@ -618,6 +628,8 @@ namespace compiler
 		bool mIsTopLevel;
 
 	private:
+		// 是否是在表达式中的匿名函数
+		bool mIsAnonymousFuncInExpression;
 		std::string mName;
 
 		struct Param
@@ -636,6 +648,9 @@ namespace compiler
 		//runtime::CommonInstruction DeclTypeToCreateInstuction(uint32_t declType) const;
 		// 根据声明类型，插入create***指令
 		void InsertCreateTypeInstructionByDeclType(uint32_t declType, GenerateInstructionHelper *giHelper);
+
+		int GenerateNamedFunctionCode(CompileResult *compileResult);
+		int GenerateAnonymousFunctionCode(CompileResult *compileResult);
 
 	public:
 		FunctionStatement();

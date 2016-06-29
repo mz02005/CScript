@@ -16,10 +16,10 @@
 #include <notstd/crc.h>
 #include <notstd/objbase.h>
 #include <notstd/filesystem.h>
+#include <notstd/simpleTool.h>
 
 #if defined(PLATFORM_WINDOWS)
 #include <notstd/cmdline.h>
-#include <notstd/simpleTool.h>
 #include <notstd/pipe.h>
 #include <notstd/timer.h>
 #include <notstd/AsynTask.h>

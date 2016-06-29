@@ -1,6 +1,7 @@
 #include "stdAfx.h"
 #include "arrayType.h"
 #include <string.h>
+#include "objType.h"
 
 using namespace runtime;
 
@@ -106,15 +107,15 @@ runtimeObjectBase* arrayObject::getIndex(int i)
 	{
 		return (*mData)[i];
 	}
-	return NULL;
+	return runtime::NullTypeObject::CreateNullTypeObject();
 }
 
-bool arrayObject::isGreaterThan(const runtimeObjectBase *obj)
+bool arrayObject::isGreaterThan(runtimeObjectBase *obj)
 {
 	return false;
 }
 
-bool arrayObject::isEqual(const runtimeObjectBase *obj)
+bool arrayObject::isEqual(runtimeObjectBase *obj)
 {
 	if (obj->GetObjectTypeId() != DT_array)
 		return false;

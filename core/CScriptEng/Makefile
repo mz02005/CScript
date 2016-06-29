@@ -1,4 +1,8 @@
-INCLUDE_OPTIONS = -I./ -I./include/ -I../../thirdparty/libxml2-2.9.2/include -I../ -I../../thirdparty/
+INCLUDE_OPTIONS= \
+	-I./ -I./include/ \
+	-I../../thirdparty/libxml2-2.9.2/include \
+	-I../ -I../../thirdparty/ \
+	-I../../thirdparty/libzlib/zlib-1.2.8/
 
 TARGET=libCScriptEng.so
 

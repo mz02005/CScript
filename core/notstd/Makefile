@@ -1,4 +1,8 @@
-INCLUDE_OPTIONS = -I./ -I./include/ -I./linuxbuild/ -I../../thirdparty/libxml2-2.9.2/include -I../ -I../../thirdparty/ -I../../thirdparty/libzlib/zlib-1.2.8/
+INCLUDE_OPTIONS= \
+	-I../ \
+	-I./ -I./include/ -I./linuxbuild/ \
+	-I../../thirdparty/libxml2-2.9.2/include \
+	-I../../thirdparty/ -I../../thirdparty/libzlib/zlib-1.2.8/
 
 TARGET=libnotstd.so
 
@@ -14,7 +18,8 @@ CPPS= \
 	stringHelper.cpp \
 	vcverport.cpp \
 	xmlparserHelper.cpp \
-	xmlSerialize.cpp
+	xmlSerialize.cpp \
+	zipWrapper.cpp
 
 OBJS=$(CPPS:.cpp=.o)
 

@@ -26,8 +26,8 @@ namespace runtime {
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
 
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
 

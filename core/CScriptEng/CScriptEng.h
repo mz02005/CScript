@@ -194,8 +194,8 @@ namespace runtime {
 
 		virtual stringObject* toString();
 
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 	};
 
 	// 外部不能从基本类型派生
@@ -248,8 +248,8 @@ namespace runtime {
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
 
@@ -274,8 +274,8 @@ namespace runtime {
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
 	};
@@ -386,8 +386,8 @@ namespace runtime {
 		virtual runtimeObjectBase* GetMember(const char *memName);
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
 	};
@@ -434,8 +434,8 @@ namespace runtime {
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
 
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
 	};
@@ -469,8 +469,8 @@ namespace runtime {
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
 		virtual stringObject* toString();
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 	};
 	
 	// 一些辅助函数

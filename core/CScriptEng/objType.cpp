@@ -3,6 +3,30 @@
 #include <string.h>
 
 namespace runtime {
+	uint32_t NullTypeObject::GetObjectTypeId() const
+	{
+		return DT_null;
+	}
+	
+	bool NullTypeObject::isEqual(runtimeObjectBase *obj)
+	{
+		static runtime::ObjectModule<intObject> nullVal;
+		if (obj->GetObjectTypeId() == DT_null)
+			return true;
+
+		if (isNumberType(obj) && obj->isEqual(&nullVal))
+			return true;
+
+		return false;
+	}
+
+	NullTypeObject* NullTypeObject::CreateNullTypeObject()
+	{
+		return new runtime::ObjectModule<NullTypeObject>;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+
 	objTypeObject::objTypeObject()
 		: mObj(NULL)
 	{
@@ -80,12 +104,12 @@ namespace runtime {
 		return mObj ? mObj->getIndex(i) : mObj;
 	}
 
-	bool objTypeObject::isGreaterThan(const runtimeObjectBase *obj)
+	bool objTypeObject::isGreaterThan(runtimeObjectBase *obj)
 	{
 		return mObj ? mObj->isGreaterThan(obj) : false;
 	}
 
-	bool objTypeObject::isEqual(const runtimeObjectBase *obj)
+	bool objTypeObject::isEqual(runtimeObjectBase *obj)
 	{
 		return mObj ? mObj->isEqual(obj) : false;
 	}

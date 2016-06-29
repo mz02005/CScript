@@ -112,7 +112,7 @@ stringObject* uintObject::toString()
 	return s;
 }
 
-bool uintObject::isGreaterThan(const runtimeObjectBase *obj)
+bool uintObject::isGreaterThan(runtimeObjectBase *obj)
 {
 	if (isNumberType(obj))
 	{
@@ -121,7 +121,7 @@ bool uintObject::isGreaterThan(const runtimeObjectBase *obj)
 	return false;
 }
 
-bool uintObject::isEqual(const runtimeObjectBase *obj)
+bool uintObject::isEqual(runtimeObjectBase *obj)
 {
 	return isNumberType(obj)
 		&& (mVal == getObjectData<uintObject>(obj));

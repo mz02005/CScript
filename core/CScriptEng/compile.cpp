@@ -153,14 +153,6 @@ SymbolExpressionNode::SymbolExpressionNode(const Symbol &symbol)
 	mSymbol.symbolOrig = symbol.symbolOrig;
 }
 
-void SymbolExpressionNode::DebugPrint() const
-{
-	if (mSymbol.type == Symbol::String)
-		printf("\"%s\" ", mSymbol.symbolOrig.c_str());
-	else
-		printf("%s ", mSymbol.symbolOrig.c_str());
-}
-
 int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResult *compileResult)
 {
 	GenerateInstructionHelper gih(compileResult);
@@ -223,11 +215,6 @@ SubProcCallExpression::~SubProcCallExpression()
 	for (std::list<PostfixExpression*>::iterator iter = mRealParams.begin();
 		iter != mRealParams.end(); iter++)
 		delete *iter;
-}
-
-void SubProcCallExpression::DebugPrint() const
-{
-	//printf("%s() ", mSubProcName.c_str());
 }
 
 void SubProcCallExpression::BeforeAddToPostfixExpression(PostfixExpression *postfixExpression)
@@ -327,10 +314,6 @@ ArrayAccessExpress::~ArrayAccessExpress()
 		delete mAccessPosExpression;
 }
 
-void ArrayAccessExpress::DebugPrint() const
-{
-}
-
 void ArrayAccessExpress::BeforeAddToPostfixExpression(PostfixExpression *postfixExpression)
 {
 	//postfixExpression->RemoveTail();
@@ -373,11 +356,6 @@ OperatorExpressionNode::~OperatorExpressionNode()
 		if (mSubNodes[1])
 			delete mSubNodes[1];
 	}
-}
-
-void OperatorExpressionNode::DebugPrint() const
-{
-	printf("%s ", mOperatorEntry->operString);
 }
 
 int OperatorExpressionNode::GenerateInstruction(Statement *statement, CompileResult *compileResult)
@@ -589,13 +567,6 @@ void PostfixExpression::AddNode(ExpressionNode *subNode)
 	subNode->AfterAddToPostfixExpression(this);
 }
 
-void PostfixExpression::DebugPrint() const
-{
-	for (std::list<ExpressionNode*>::const_iterator iter = mPostfixExpression.begin();
-		iter != mPostfixExpression.end(); iter++)
-		(*iter)->DebugPrint();
-}
-
 void PostfixExpression::ThrowBadcast(const char *s)
 {
 #if defined(PLATFORM_WINDOWS)
@@ -639,7 +610,9 @@ bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
 		return true;
 	}
 
-	assert(n->isInheritFrom(OBJECT_INFO(SymbolExpressionNode)));
+	if (!n->isInheritFrom(OBJECT_INFO(SymbolExpressionNode)))
+		return false;
+
 	SymbolExpressionNode *sn = static_cast<SymbolExpressionNode*>(n);
 	int type = sn->GetSymbol().type;
 	if (type == Symbol::constInt)
@@ -2047,6 +2020,20 @@ int SimpleCScriptEngContext::ParseExpressionEndWith(char &c,
 			if ((parseResult = indexOperator->Compile(this)) < 0)
 				return parseResult;
 			OnOperator(pe, &operatorList, lastIsOperatorOrFirstInLocal, indexOperator);
+			lastIsOperatorOrFirstInLocal = false;
+		}
+		else if (symbol.symbolOrig == "function")
+		{
+			static int anonymousFunctionId = 0;
+			std::string funcName;
+			StringHelper::Format(funcName, "anonymousFun_%d", anonymousFunctionId++);
+			FunctionDefinationExpress *fde = new FunctionDefinationExpress(funcName);
+			if ((parseResult = fde->Compile(this)) < 0)
+			{
+				delete fde;
+				return parseResult;
+			}
+			pe->AddNode(fde);
 			lastIsOperatorOrFirstInLocal = false;
 		}
 		else

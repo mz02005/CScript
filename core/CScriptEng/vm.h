@@ -1,6 +1,7 @@
 #pragma once
 #include "CScriptEng.h"
 #include "scriptDef.h"
+#include "objType.h"
 
 namespace runtime {
 	class FunctionObject;
@@ -94,6 +95,10 @@ namespace runtime {
 				return getObjectData<charObject>(base) == 0;
 			case DT_uint32:
 				return getObjectData<charObject>(base) == 0;
+			case DT_null:
+				return true;
+			case DT_object:
+				return isZero(static_cast<runtime::objTypeObject*>(base)->getInner());
 			default:
 				break;
 			}

@@ -77,12 +77,12 @@ stringObject* baseObjDefault::toString()
 	return NULL;
 }
 
-bool baseObjDefault::isGreaterThan(const runtimeObjectBase *obj)
+bool baseObjDefault::isGreaterThan(runtimeObjectBase *obj)
 {
 	return false;
 }
 
-bool baseObjDefault::isEqual(const runtimeObjectBase *obj)
+bool baseObjDefault::isEqual(runtimeObjectBase *obj)
 {
 	return false;
 }
@@ -199,6 +199,7 @@ int runtimeContext::OnInst_getIndex(Instruction *inst, uint8_t *moreData, uint32
 {
 	if (mCurrentStack < 2) {
 		SCRIPT_TRACE("OnInst_getIndex: stack out of range.\n");
+		exit(1);
 		return -1;
 	}
 	runtimeObjectBase *a = mRuntimeStack[mCurrentStack - 2];
@@ -208,6 +209,7 @@ int runtimeContext::OnInst_getIndex(Instruction *inst, uint8_t *moreData, uint32
 	{
 	default:
 		SCRIPT_TRACE("OnInst_getIndex: invalid index data type.\n");
+		exit(1);
 		return -1;
 
 	case DT_int32:
@@ -224,7 +226,7 @@ int runtimeContext::OnInst_getIndex(Instruction *inst, uint8_t *moreData, uint32
 	if (!r)
 	{
 		SCRIPT_TRACE("OnInst_getIndex: object does not support getIndex operation.\n");
-		return -1;
+		exit(1);
 	}
 	mCurrentStack -= 2;
 	PushObject(r);
@@ -274,7 +276,7 @@ int runtimeContext::OnInst_getMember(Instruction *inst, uint8_t *moreData, uint3
 	}
 	runtimeObjectBase *o = mRuntimeStack[mCurrentStack - 1]->GetMember(s.c_str());
 	if (!o) {
-		SCRIPT_TRACE("OnInst_getMember: fail.\n");
+		SCRIPT_TRACE("OnInst_getMember: get member [%s] fail.\n", s.c_str());
 		return -1;
 	}
 	o->AddRef();

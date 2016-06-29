@@ -69,6 +69,14 @@ typedef void* POSITION;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#if !defined(PLATFORM_WINDOWS)
+#if !defined(MAX_PATH)
+#define MAX_PATH 260
+#endif
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 #ifdef PLATFORM_WINDOWS
 # ifdef NOTSTD_EXPORTS
 #  define NOTSTD_API __declspec(dllexport)

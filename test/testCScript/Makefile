@@ -12,8 +12,10 @@ INCLUDES=-I$(SolutionDir)core/ -I$(SolutionDir)thirdparty/ \
 	-I$(SolutionDir)thirdparty/libxml2-2.9.2/include/
 
 CPPS = \
-	testCScript.cpp
-
+	cRuntimeExt.cpp \
+	testCScript.cpp \
+	svnTool.cpp
+	
 OBJS=$(CPPS:.cpp=.o)
 
 COMPILE_CC=$(CROSS_COMPILE)cc

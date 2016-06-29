@@ -119,7 +119,7 @@ stringObject* floatObject::toString()
 	return s;
 }
 
-bool floatObject::isGreaterThan(const runtimeObjectBase *obj)
+bool floatObject::isGreaterThan(runtimeObjectBase *obj)
 {
 	if (isNumberType(obj))
 	{
@@ -128,7 +128,7 @@ bool floatObject::isGreaterThan(const runtimeObjectBase *obj)
 	return false;
 }
 
-bool floatObject::isEqual(const runtimeObjectBase *obj)
+bool floatObject::isEqual(runtimeObjectBase *obj)
 {
 	return isNumberType(obj)
 		&& (mVal == getObjectData<floatObject>(obj));

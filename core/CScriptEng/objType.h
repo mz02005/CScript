@@ -2,6 +2,16 @@
 #include "CScriptEng.h"
 
 namespace runtime {
+	// null¿‡–Õ
+	class CSCRIPTENG_API NullTypeObject :public baseTypeObject
+	{
+	public:
+		virtual uint32_t GetObjectTypeId() const;
+		virtual bool isEqual(runtimeObjectBase *obj);
+
+		static NullTypeObject* CreateNullTypeObject();
+	};
+
 	class Object_getInnerObject;
 	class CSCRIPTENG_API objTypeObject : public baseTypeObject
 	{
@@ -23,10 +33,12 @@ namespace runtime {
 		virtual runtimeObjectBase* doCall(doCallContext *context);
 		virtual runtimeObjectBase* getIndex(int i);
 
-		virtual bool isGreaterThan(const runtimeObjectBase *obj);
-		virtual bool isEqual(const runtimeObjectBase *obj);
+		virtual bool isGreaterThan(runtimeObjectBase *obj);
+		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
+
+		runtimeObjectBase* getInner() { return mObj; }
 	};
 	
 	class Object_getInnerObject : public runtime::baseObjDefault

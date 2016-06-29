@@ -28,6 +28,7 @@ namespace runtime {
 		DT_array,
 		DT_function,
 		DT_object,
+		DT_null,
 
 		DT_UserTypeBegin,
 	};
@@ -173,7 +174,7 @@ namespace runtime {
 		virtual stringObject* toString() = 0;
 
 		// ±È½Ï
-		virtual bool isGreaterThan(const runtimeObjectBase *obj) = 0;
-		virtual bool isEqual(const runtimeObjectBase *obj) = 0;
+		virtual bool isGreaterThan(runtimeObjectBase *obj) = 0;
+		virtual bool isEqual(runtimeObjectBase *obj) = 0;
 	};
 }

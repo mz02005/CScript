@@ -29,7 +29,7 @@ XmlPropSerializerBase::XmlPropSerializerBase()
 std::string XmlPropSerializerBase::ToString() const
 {
 	throw std::bad_cast();
-	return false;
+	return "";
 }
 
 bool XmlPropSerializerBase::FromString(const char *s)

@@ -64,4 +64,28 @@ namespace runtime {
 	public:
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
+
+	class systemCallObject : public runtime::baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
+	};
+
+	class unzipFileObj : public runtime::baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
+	};
+
+	class zipFilesInDirectoryObj : public runtime::baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
+	};
+
+	class csOpenFile : public runtime::baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
+	};
 }

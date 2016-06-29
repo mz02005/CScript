@@ -63,7 +63,7 @@ public:
 	}
 
 	// ±È½Ï
-	virtual bool isGreaterThan(const runtimeObjectBase *obj) { return false; }
+	virtual bool isGreaterThan(runtimeObjectBase *obj) { return false; }
 
-	virtual bool isEqual(const runtimeObjectBase *obj) { return false; }
+	virtual bool isEqual(runtimeObjectBase *obj) { return false; }
 };

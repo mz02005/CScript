@@ -67,9 +67,9 @@ public:
 	virtual runtime::stringObject* toString() { return NULL; }
 
 	// 比较
-	virtual bool isGreaterThan(const runtimeObjectBase *obj) { return false; }
+	virtual bool isGreaterThan(runtimeObjectBase *obj) { return false; }
 
-	virtual bool isEqual(const runtimeObjectBase *obj) { return false; }
+	virtual bool isEqual(runtimeObjectBase *obj) { return false; }
 };
 
 class printInListBox : public runtime::runtimeObjectBase
@@ -127,9 +127,9 @@ public:
 	virtual runtime::stringObject* toString() { return NULL; }
 
 	// 比较
-	virtual bool isGreaterThan(const runtimeObjectBase *obj) { return false; }
+	virtual bool isGreaterThan(runtimeObjectBase *obj) { return false; }
 
-	virtual bool isEqual(const runtimeObjectBase *obj) { return false; }
+	virtual bool isEqual(runtimeObjectBase *obj) { return false; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

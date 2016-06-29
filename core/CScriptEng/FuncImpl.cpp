@@ -144,12 +144,12 @@ stringObject* FunctionObject::toString()
 	return s;
 }
 
-bool FunctionObject::isGreaterThan(const runtimeObjectBase *obj)
+bool FunctionObject::isGreaterThan(runtimeObjectBase *obj)
 {
 	return false;
 }
 
-bool FunctionObject::isEqual(const runtimeObjectBase *obj)
+bool FunctionObject::isEqual(runtimeObjectBase *obj)
 {
 	return false;
 }

@@ -186,6 +186,7 @@
     <ClInclude Include="tuple.hpp" />
     <ClInclude Include="vcverport.h" />
     <ClInclude Include="xmlparserHelper.h" />
+    <ClInclude Include="zipWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AsynTask.cpp" />
@@ -229,6 +230,7 @@
     <ClCompile Include="vcverport.cpp" />
     <ClCompile Include="xmlparserHelper.cpp" />
     <ClCompile Include="xmlSerialize.cpp" />
+    <ClCompile Include="zipWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />

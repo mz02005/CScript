@@ -197,6 +197,34 @@ namespace runtime {
 		}
 	};
 
+	class String_replaceObj : public runtime::baseObjDefault
+	{
+		friend class stringObject;
+
+	private:
+		stringObject *mStringObj;
+
+	public:
+		String_replaceObj()
+			: mStringObj(nullptr)
+		{
+		}
+		virtual runtimeObjectBase* doCall(doCallContext *context)
+		{
+			if (context->GetParamCount() != 2)
+				return mStringObj;
+
+			const char *pat = context->GetStringParam(0);
+			const char *dest = context->GetStringParam(1);
+			if (!pat || !dest)
+				return mStringObj;
+
+			StringHelper::Replace(*mStringObj->mVal, pat, dest);
+
+			return mStringObj;
+		}
+	};
+
 	runtimeObjectBase* stringObject::GetMember(const char *memName)
 	{
 		if (!strcmp(memName, "len"))
@@ -220,6 +248,12 @@ namespace runtime {
 		else if (!strcmp(memName, "split"))
 		{
 			String_splitObj *o = new ContainModule<String_splitObj>(this);
+			o->mStringObj = this;
+			return o;
+		}
+		else if (!strcmp(memName, "replace"))
+		{
+			String_replaceObj *o = new ContainModule<String_replaceObj>(this);
 			o->mStringObj = this;
 			return o;
 		}
@@ -249,12 +283,12 @@ namespace runtime {
 		return r;
 	}
 
-	bool stringObject::isGreaterThan(const runtimeObjectBase *obj)
+	bool stringObject::isGreaterThan(runtimeObjectBase *obj)
 	{
 		return *mVal > getObjectData<stringObject>(obj);
 	}
 
-	bool stringObject::isEqual(const runtimeObjectBase *obj)
+	bool stringObject::isEqual(runtimeObjectBase *obj)
 	{
 		return *mVal == getObjectData<stringObject>(obj);
 	}

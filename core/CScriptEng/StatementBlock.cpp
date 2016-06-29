@@ -183,24 +183,36 @@ int StatementBlock::Compile(Statement *parent, SimpleCScriptEngContext *context,
 			{
 				if ((parseResult = context->GetNextSymbol(symbol)) != 0)
 					return -1;
-				// 名字必须是普通的标志符
+				
 				if (symbol.type != Symbol::CommonSymbol)
-					return -1;
-				uint32_t l = 0, i = 0;
-				// 名字重复
-				if (FindName(symbol.symbolOrig.c_str(), l, i)
-					&& CheckValidLayer(l - 1))
 				{
-					SCRIPT_TRACE("name [%s] already exists.", symbol.symbolOrig.c_str());
-					return -1;
+					// 如果没有名字，则说明是进入了function表达式模式
+					context->GoBack(); context->GoBack();
+					PureExpressionStatement *pureExp = new PureExpressionStatement;
+					if ((parseResult = pureExp->Compile(this, context)) != 0)
+					{
+						delete pureExp;
+						RETHELP(parseResult);
+					}
+					AddStatement(pureExp);
 				}
-				FunctionStatement *fs = new FunctionStatement(symbol.symbolOrig);
-				if ((parseResult = fs->Compile(this, context)) != 0)
-				{
-					delete fs;
-					RETHELP(parseResult);
+				else {
+					uint32_t l = 0, i = 0;
+					// 名字重复
+					if (FindName(symbol.symbolOrig.c_str(), l, i)
+						&& CheckValidLayer(l - 1))
+					{
+						SCRIPT_TRACE("name [%s] already exists.", symbol.symbolOrig.c_str());
+						return -1;
+					}
+					FunctionStatement *fs = new FunctionStatement(symbol.symbolOrig);
+					if ((parseResult = fs->Compile(this, context)) != 0)
+					{
+						delete fs;
+						RETHELP(parseResult);
+					}
+					AddStatement(fs);
 				}
-				AddStatement(fs);
 			}
 			else if (symbol.keywordsType == KeywordsTransTable::CK_RETURN)
 			{
