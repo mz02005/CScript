@@ -3,7 +3,6 @@
 
 using namespace compiler;
 
-
 IMPLEMENT_OBJINFO(Statement,objBase)
 
 Statement::Statement()
@@ -13,6 +12,12 @@ Statement::Statement()
 
 Statement::~Statement()
 {
+}
+
+int Statement::GenerateInstruction(CompileResult *compileResult) {
+	SCRIPT_TRACE("GenerateInstruction function does not implement by [%s].\n",
+		GetThisObjInfo()->className);
+	return -1;
 }
 
 FunctionStatement* Statement::GetFunctionParent()

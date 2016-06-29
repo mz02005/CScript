@@ -1,6 +1,5 @@
 #pragma once
-#include "CScriptEng/vm.h"
-#include "CScriptEng/arrayType.h"
+#include "CScriptEng/CScriptEng.h"
 
 namespace tools {
 	class svnTools : public runtime::baseObjDefault

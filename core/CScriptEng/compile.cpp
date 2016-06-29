@@ -134,6 +134,14 @@ void ExpressionNode::AfterAddToPostfixExpression(PostfixExpression *postfixExpre
 {
 }
 
+int ExpressionNode::GenerateInstruction(Statement *statement, CompileResult *compileResult) {
+#if defined(DEBUG) || defined(_DEBUG)
+	SCRIPT_TRACE("expression node [%s] has not implement the GenerateInstruction function.\n",
+		GetThisObjInfo()->className);
+#endif
+	return -12;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 Symbol::Symbol()

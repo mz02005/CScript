@@ -1,5 +1,5 @@
 #pragma once
-#include "CScriptEng.h"
+#include "rtTypes.h"
 
 namespace runtime {
 	class CreateArrayObj;
@@ -37,42 +37,6 @@ namespace runtime {
 	class CreateArrayObj : public runtime::baseObjDefault
 	{
 	public:
-		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
-	};
-
-	class Array_addObj : public runtime::baseObjDefault
-	{
-		friend class arrayObject;
-
-	private:
-		arrayObject *mArrayObject;
-
-	public:
-		Array_addObj();
-		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
-	};
-
-	class Array_deleteObj : public runtime::baseObjDefault
-	{
-		friend class arrayObject;
-
-	private:
-		arrayObject *mArrayObject;
-
-	public:
-		Array_deleteObj();
-		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
-	};
-
-	class Array_clearObj : public runtime::baseObjDefault
-	{
-		friend class arrayObject;
-
-	private:
-		arrayObject *mArrayObject;
-
-	public:
-		Array_clearObj();
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
 }

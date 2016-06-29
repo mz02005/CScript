@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include "CScriptEng/vm.h"
-#include "CScriptEng/arrayType.h"
 #include <iostream>
 #include "testCallback.h"
 #include "svnTool.h"

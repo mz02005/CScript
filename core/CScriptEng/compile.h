@@ -1,6 +1,7 @@
 #pragma once
 #include "CScriptEng.h"
 #include "scriptDef.h"
+#include "trace.h"
 
 #define RETHELP(result) return ((result) > 0 ? -1 : (result))
 
@@ -190,13 +191,7 @@ namespace compiler
 		ExpressionNode* GetParent() const { return mParent; }
 		virtual void BeforeAddToPostfixExpression(PostfixExpression *postfixExpression);
 		virtual void AfterAddToPostfixExpression(PostfixExpression *postfixExpression);
-		virtual int GenerateInstruction(Statement *statement, CompileResult *compileResult) {
-#if defined(DEBUG) || defined(_DEBUG)
-			SCRIPT_TRACE("expression node [%s] has not implement the GenerateInstruction function.\n",
-				GetThisObjInfo()->className);
-#endif
-			return -12;
-		}
+		virtual int GenerateInstruction(Statement *statement, CompileResult *compileResult);
 	};
 
 	struct CodePosition
@@ -404,11 +399,8 @@ namespace compiler
 		static bool BlockDistance(StatementType *parent, Statement *sun, uint32_t &dist);
 
 		virtual int Compile(Statement *parent, SimpleCScriptEngContext *context) { return -1; }
-		virtual int GenerateInstruction(CompileResult *compileResult) {
-			SCRIPT_TRACE("GenerateInstruction function does not implement by [%s].\n",
-				GetThisObjInfo()->className);
-			return -1;
-		}
+		virtual int GenerateInstruction(CompileResult *compileResult);
+
 		const Statement* GetParent() const { return mParentBlock; }
 		Statement* GetParent() { return mParentBlock; }
 

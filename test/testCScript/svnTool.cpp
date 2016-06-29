@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "svnTool.h"
-#include "CScriptEng/objType.h"
+#include "notstd/notstd.h"
 
 namespace tools {
 	class svnGetRevisionObj : public runtime::baseTypeObject

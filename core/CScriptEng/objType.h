@@ -1,5 +1,5 @@
 #pragma once
-#include "CScriptEng.h"
+#include "rtTypes.h"
 
 namespace runtime {
 	// null¿‡–Õ

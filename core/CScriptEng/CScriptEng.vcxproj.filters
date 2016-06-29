@@ -60,6 +60,12 @@
     <ClInclude Include="objType.h">
       <Filter>inner\vm</Filter>
     </ClInclude>
+    <ClInclude Include="rtTypes.h">
+      <Filter>inner\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BreakStatement.cpp">

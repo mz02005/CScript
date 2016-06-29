@@ -2,6 +2,7 @@
 #include "CScriptEng.h"
 #include "scriptDef.h"
 #include "objType.h"
+#include "trace.h"
 
 namespace runtime {
 	class FunctionObject;
