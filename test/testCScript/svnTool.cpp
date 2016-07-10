@@ -28,17 +28,17 @@ namespace tools {
 			if (!file)
 				return def;
 			bool findIt = false;
-			StringHelper::ReadLineContext c;
+			notstd::StringHelper::ReadLineContextT<4096> c;
 			std::string line;
-			while (StringHelper::ReadLine(file, line, &c))
+			while (notstd::StringHelper::ReadLine(file, line, &c))
 			{
 				std::string::size_type f;
 				static const char toFind[] = "Revision:";
 				static const size_t fl = strlen(toFind);
 				if ((f = line.find(toFind)) != line.npos)
 				{
-					std::string revision = StringHelper::Mid(line, f + fl + 1);
-					StringHelper::Trim(revision, "\t ");
+					std::string revision = notstd::StringHelper::Mid(line, f + fl + 1);
+					notstd::StringHelper::Trim(revision, "\t ");
 					*r->mVal = revision;
 					findIt = true;
 					break;
@@ -46,6 +46,8 @@ namespace tools {
 			}
 			file.Close();
 			::remove(svnResultFileTempName);
+			if (findIt)
+				delete def;
 			return findIt ? r : def;
 		}
 	};

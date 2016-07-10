@@ -1,34 +1,38 @@
 #pragma once
 #include "ioCompletionManager.h"
 
-class NOTSTD_API Serial : public IOOperationBase
-{
-private:
-	HANDLE mSerial;
-	IOCompletionManager *mCompletionManager;
+namespace notstd {
 
-protected:
-	virtual void OnCustumMsg(IOCompleteData *completeData);
-	virtual void OnReceive(IOCompleteData *completeData);
-	virtual void OnSend(IOCompleteData *completeData);
-	virtual void OnConnect(bool connectOK);
-	virtual void OnAccept(const NetAddress &client, const NetAddress &serv);
-	virtual void OnClose();
-	virtual bool IsError();
+	class NOTSTD_API Serial : public IOOperationBase
+	{
+	private:
+		HANDLE mSerial;
+		IOCompletionManager *mCompletionManager;
 
-	virtual bool SendPartial(IOCompleteData *completeData);
+	protected:
+		virtual void OnCustumMsg(IOCompleteData *completeData);
+		virtual void OnReceive(IOCompleteData *completeData);
+		virtual void OnSend(IOCompleteData *completeData);
+		virtual void OnConnect(bool connectOK);
+		virtual void OnAccept(const NetAddress &client, const NetAddress &serv);
+		virtual void OnClose();
+		virtual bool IsError();
 
-public:
-	bool Open(int commId, DWORD baudrate, BYTE byteSize, BYTE stopBits, BYTE parity);
-	void Close();
+		virtual bool SendPartial(IOCompleteData *completeData);
 
-	virtual bool PostRead(IOCompleteData *completeData);
-	virtual bool PostWrite(IOCompleteData *completeData);
-	virtual bool Read(char *buf, uint32_t &bufSize);
-	virtual bool Write(const char *buf, uint32_t &bufSize);
+	public:
+		bool Open(int commId, DWORD baudrate, BYTE byteSize, BYTE stopBits, BYTE parity);
+		void Close();
 
-	bool SetReadTimeout(DWORD timeout);
+		virtual bool PostRead(IOCompleteData *completeData);
+		virtual bool PostWrite(IOCompleteData *completeData);
+		virtual bool Read(char *buf, uint32_t &bufSize);
+		virtual bool Write(const char *buf, uint32_t &bufSize);
 
-	Serial(IOCompletionManager *ioManager);
-	virtual ~Serial();
-};
+		bool SetReadTimeout(DWORD timeout);
+
+		Serial(IOCompletionManager *ioManager);
+		virtual ~Serial();
+	};
+
+}

@@ -1,4 +1,4 @@
-#include "stdAfx.h"
+#include "stdafx.h"
 #include "arrayType.h"
 #include <string.h>
 #include "objType.h"

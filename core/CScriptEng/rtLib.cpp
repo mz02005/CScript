@@ -1,4 +1,4 @@
-#include "stdAfx.h"
+#include "stdafx.h"
 #include "rtlib.h"
 #include "vm.h"
 #include "arrayType.h"
@@ -56,34 +56,36 @@ namespace runtime {
 		sb->RegistNameInContainer("unzipFile", -1);
 		sb->RegistNameInContainer("zipFile", -1);
 		sb->RegistNameInContainer("csOpenFile", -1);
+		sb->RegistNameInContainer("DeleteFile", -1);
 		return true;
 	}
 
 	bool rtLibHelper::RegistRuntimeObjs(runtimeContext *context)
 	{
 		context->PushObject(NullTypeObject::CreateNullTypeObject());
-		context->PushObject(new runtime::ObjectModule<runtime::sleepObj>);
+		context->PushObject(new ObjectModule<sleepObj>);
 
 		// printºÍprintln
-		context->PushObject(new runtime::ObjectModule<runtime::printObj>);
-		runtime::printObj *println = new runtime::ObjectModule<runtime::printObj>;
+		context->PushObject(new ObjectModule<printObj>);
+		printObj *println = new ObjectModule<printObj>;
 		println->SetIsPrintLine(true);
 		context->PushObject(println);
 
-		context->PushObject(new runtime::ObjectModule<runtime::randObj>);
-		context->PushObject(new runtime::ObjectModule<runtime::srandObj>);
+		context->PushObject(new ObjectModule<randObj>);
+		context->PushObject(new ObjectModule<srandObj>);
 
-		context->PushObject(new runtime::ObjectModule<runtime::sinObj>);
-		context->PushObject(new runtime::ObjectModule<runtime::powfObj>);
+		context->PushObject(new ObjectModule<sinObj>);
+		context->PushObject(new ObjectModule<powfObj>);
 
-		context->PushObject(new runtime::ObjectModule<runtime::timeObj>);
+		context->PushObject(new ObjectModule<timeObj>);
 
-		context->PushObject(new runtime::ObjectModule<runtime::systemCallObject>);
+		context->PushObject(new ObjectModule<systemCallObject>);
 
-		context->PushObject(new runtime::ObjectModule<runtime::unzipFileObj>);
-		context->PushObject(new runtime::ObjectModule<runtime::zipFilesInDirectoryObj>);
+		context->PushObject(new ObjectModule<unzipFileObj>);
+		context->PushObject(new ObjectModule<zipFilesInDirectoryObj>);
 
-		context->PushObject(new runtime::ObjectModule<runtime::csOpenFile>);
+		context->PushObject(new ObjectModule<csOpenFile>);
+		context->PushObject(new ObjectModule<DeleteFileObj>);
 
 		return true;
 	}
@@ -296,6 +298,17 @@ namespace runtime {
 		virtual runtime::runtimeObjectBase* doCall(doCallContext *context);
 	};
 
+	class FileReadLineObject : public runtime::baseObjDefault
+	{
+		friend class FileObject;
+
+	private:
+		FileObject *mFileObject;
+
+	public:
+		virtual runtime::runtimeObjectBase* doCall(doCallContext *context);
+	};
+
 	class CloseFileObject : public runtime::baseObjDefault
 	{
 		friend class FileObject;
@@ -324,6 +337,12 @@ namespace runtime {
 			if (!strcmp(memName, "WriteFile"))
 			{
 				WriteFileObject *o = new runtime::ContainModule<WriteFileObject>(this);
+				o->mFileObject = this;
+				return o;
+			}
+			if (!strcmp(memName, "ReadLine"))
+			{
+				FileReadLineObject *o = new ContainModule<FileReadLineObject>(this);
 				o->mFileObject = this;
 				return o;
 			}
@@ -384,10 +403,42 @@ namespace runtime {
 		return r;
 	}
 
+	runtime::runtimeObjectBase* FileReadLineObject::doCall(doCallContext *context)
+	{
+		NullTypeObject *retNull = NullTypeObject::CreateNullTypeObject();
+		if (context->GetParamCount() != 1
+			|| context->GetParam(0)->GetObjectTypeId() != DT_string)
+			return retNull;
+		stringObject *s = static_cast<stringObject*>(context->GetParam(0));
+		if (!notstd::StringHelper::ReadLine<256>(mFileObject->getFileHandle(), *s->mVal, nullptr))
+			return retNull;
+		delete retNull;
+		return s;
+	}
+
 	runtime::runtimeObjectBase* CloseFileObject::doCall(doCallContext *context)
 	{
 		runtime::intObject *r = new runtime::ObjectModule<runtime::intObject>;
 		r->mVal = fclose(mFileObject->getFileHandle());
+		return r;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	runtimeObjectBase* DeleteFileObj::doCall(doCallContext *context)
+	{
+		NullTypeObject *retNull = NullTypeObject::CreateNullTypeObject();
+		if (context->GetParamCount() != 1)
+			return retNull;
+
+		const char *filePathName = context->GetStringParam(0);
+		if (!filePathName)
+			return retNull;
+
+		delete retNull;
+
+		intObject *r = intObject::CreateBaseTypeObject<intObject>(false);
+		r->mVal = ::unlink(filePathName);
 		return r;
 	}
 

@@ -12,6 +12,8 @@ namespace runtime {
 		uint32_t stackSize;
 		uint32_t stackFrameSize;
 
+		bool stackSizeAutoAdjust;
+
 		VMConfig();
 
 		void Normalize();
@@ -226,6 +228,9 @@ namespace runtime {
 		int OnInst_saveToA(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 	private:
+		// 尝试保留指定大小的栈空间，如果目前有合适的大小可供使用，则返回大于等于0的值
+		// 否则，如果允许堆栈空间自动调整，则返回调整是否成功；否则返回小于0的值
+		int ReserveMoreStackSpace(uint32_t size);
 		int RunInner();
 
 	private:

@@ -14,6 +14,7 @@ using namespace runtime;
 VMConfig::VMConfig()
 	: stackSize(1024)
 	, stackFrameSize(512)
+	, stackSizeAutoAdjust(false)
 {
 }
 
@@ -180,11 +181,9 @@ int runtimeContext::OnInvalidInstruction(Instruction *inst, uint8_t *moreData, u
 
 int runtimeContext::OnInst_push(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
-	if (mCurrentStack == mRuntimeStack.size())
-	{
-		SCRIPT_TRACE("runtimeContext::OnInst_push: stack overflow.\n");
-		return -1;
-	}
+	int r;
+	if ((r = ReserveMoreStackSpace(1)) < 0)
+		return r;
 	if (inst->data >= mCurrentStack)
 	{
 		SCRIPT_TRACE("OnInst_push: stack out of range.\n");
@@ -687,14 +686,12 @@ int runtimeContext::OnInst_setVal(Instruction *inst, uint8_t *moreData, uint32_t
 
 int runtimeContext::PushObject(runtimeObjectBase *obj)
 {
-	if (mRuntimeStack.size() == mCurrentStack)
-	{
-		SCRIPT_TRACE("¶ÑÕ»ÉÏÒç³ö\n");
-		return -1;
-	}
+	int r;
+	if ((r = ReserveMoreStackSpace(1)) < 0)
+		return r;
 	obj->AddRef();
 	mRuntimeStack[mCurrentStack++] = obj;
-	return 0;
+	return r;
 }
 
 int runtimeContext::ReplaceObject(int pos, runtimeObjectBase *obj)
@@ -1476,6 +1473,25 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 };
+
+int runtimeContext::ReserveMoreStackSpace(uint32_t size)
+{
+	if (mCurrentStack + size >= mRuntimeStack.size())
+	{
+		if (mConfig.stackSizeAutoAdjust)
+		{
+			size_t newSize = mCurrentStack + size;
+			newSize += 1023;
+			newSize *= 1024;
+			newSize /= 1024;
+			mRuntimeStack.resize(newSize);
+			return 0;
+		}
+		SCRIPT_TRACE("stack upper overflow\n");
+		return -1;
+	}
+	return 0;
+}
 
 int runtimeContext::RunInner()
 {

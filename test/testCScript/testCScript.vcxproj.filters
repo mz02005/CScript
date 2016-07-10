@@ -16,6 +16,9 @@
     <Filter Include="测试用例">
       <UniqueIdentifier>{d15c944d-28d2-4c27-850e-9d4aa203ad26}</UniqueIdentifier>
     </Filter>
+    <Filter Include="发布脚本">
+      <UniqueIdentifier>{0a6f4528-bfa9-45b2-8717-0dd5b4932f18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -86,8 +89,14 @@
     <ClCompile Include="cRuntimeExt.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\core\tools\makeDevPackage.c">
+      <Filter>发布脚本</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
+    <None Include="..\..\core\tools\releaseDevPackage.bat">
+      <Filter>发布脚本</Filter>
+    </None>
   </ItemGroup>
 </Project>

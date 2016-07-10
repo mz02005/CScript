@@ -28,7 +28,7 @@ protected:
 	virtual BOOL OnInitDialog();
 
 protected:
-	SimpleThread mThread;
+	notstd::SimpleThread mThread;
 	HICON m_hIcon;
 
 	static void ExecuteThreadProc(void *param);

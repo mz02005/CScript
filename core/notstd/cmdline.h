@@ -8,53 +8,57 @@
 #include "config.h"
 #include "simpleTool.h"
 
-class NOTSTD_API CommandlineParser {
-protected:
-	virtual bool OnCommandlinePart(const std::string &param, bool isOption, 
-		const std::string &nextParam, bool &hasParam);
+namespace notstd {
 
-public:
-	virtual ~CommandlineParser();
+	class NOTSTD_API CommandlineParser {
+	protected:
+		virtual bool OnCommandlinePart(const std::string &param, bool isOption,
+			const std::string &nextParam, bool &hasParam);
 
-	bool parseCommandLine(const std::string &commandLine);
-	//bool parseCommandLine(int argc, char *argv[]);
-};
+	public:
+		virtual ~CommandlineParser();
 
-///////////////////////////////////////////////////////////////////////////////
+		bool parseCommandLine(const std::string &commandLine);
+		//bool parseCommandLine(int argc, char *argv[]);
+	};
 
-struct NOTSTD_API ApplicationData {
-	Handle<NormalHandleType> readOnlyHandle;
-	int readOnlySize;
+	///////////////////////////////////////////////////////////////////////////////
 
-	Handle<NormalHandleType> readWriteHandle;
-	int readWriteSize;
+	struct NOTSTD_API ApplicationData {
+		Handle<NormalHandleType> readOnlyHandle;
+		int readOnlySize;
 
-	Handle<NormalHandleType> stringHandle;
-	int stringSize;
+		Handle<NormalHandleType> readWriteHandle;
+		int readWriteSize;
 
-	std::string *namedPipeName;
+		Handle<NormalHandleType> stringHandle;
+		int stringSize;
 
-	unsigned long parentProcessId;
+		std::string *namedPipeName;
 
-	std::string *projRootPath;
-	std::string *devTypeName;
+		unsigned long parentProcessId;
 
-	uint32_t theId;
+		std::string *projRootPath;
+		std::string *devTypeName;
 
-	// for ps
-	ULONG userData;
+		uint32_t theId;
 
-	ApplicationData();
-	~ApplicationData();
-};
+		// for ps
+		ULONG userData;
 
-class NOTSTD_API appCommandLine : public CommandlineParser {
-	ApplicationData &mAppData;
+		ApplicationData();
+		~ApplicationData();
+	};
 
-protected:
-	virtual bool OnCommandlinePart(const std::string &param, 
-		bool isOption, const std::string &nextParam, bool &hasParam);
+	class NOTSTD_API appCommandLine : public CommandlineParser {
+		ApplicationData &mAppData;
 
-public:
-	appCommandLine(ApplicationData &appData);
-};
+	protected:
+		virtual bool OnCommandlinePart(const std::string &param,
+			bool isOption, const std::string &nextParam, bool &hasParam);
+
+	public:
+		appCommandLine(ApplicationData &appData);
+	};
+
+}

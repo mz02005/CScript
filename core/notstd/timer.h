@@ -1,41 +1,44 @@
 #pragma once
-#include "Config.h"
+#include "config.h"
 #include "simpleTool.h"
 
-class Task;
+namespace notstd {
 
-class NOTSTD_API TimerHandleType
-{
-public:
-	typedef HANDLE HandleType;
+	class Task;
 
-	static bool IsNullHandle(HandleType h);
-	static void CloseHandleProc(HandleType h);
-	static void SetHandleNull(HandleType &h);
-};
+	class NOTSTD_API TimerHandleType
+	{
+	public:
+		typedef HANDLE HandleType;
 
-template class NOTSTD_API Handle < TimerHandleType >;
+		static bool IsNullHandle(HandleType h);
+		static void CloseHandleProc(HandleType h);
+		static void SetHandleNull(HandleType &h);
+	};
 
-class NOTSTD_API TimerSeed
-{
-protected:
-	Handle<TimerHandleType> mTimer;
+	template class NOTSTD_API Handle < TimerHandleType >;
 
-protected:
-	static void CALLBACK OnTimerCallback(PVOID parameter, BOOLEAN timerOrWaitFired);
+	class NOTSTD_API TimerSeed
+	{
+	protected:
+		Handle<TimerHandleType> mTimer;
 
-public:
-	TimerSeed();
-	virtual ~TimerSeed();
+	protected:
+		static void CALLBACK OnTimerCallback(PVOID parameter, BOOLEAN timerOrWaitFired);
 
-	operator HANDLE() {
-		return mTimer;
-	}
+	public:
+		TimerSeed();
+		virtual ~TimerSeed();
 
-	static TimerSeed* GetGlobalTimerSeed();
-	
-	HANDLE CreateTimer(Task *task, DWORD dueTime, DWORD perid, bool onlyOnce = false);
-	void DeleteTimer(HANDLE timer);
-};
+		operator HANDLE() {
+			return mTimer;
+		}
 
-extern TimerSeed theTimerSeed;
+		static TimerSeed* GetGlobalTimerSeed();
+
+		HANDLE CreateTimer(Task *task, DWORD dueTime, DWORD perid, bool onlyOnce = false);
+		void DeleteTimer(HANDLE timer);
+	};
+
+	extern TimerSeed theTimerSeed;
+}

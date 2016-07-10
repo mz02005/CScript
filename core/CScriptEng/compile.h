@@ -177,7 +177,7 @@ namespace compiler
 	class SimpleCScriptEngContext;
 	class PostfixExpression;
 
-	class ExpressionNode : public objBase
+	class ExpressionNode : public notstd::objBase
 	{
 		friend class PostfixExpression;
 		DECLARE_OBJINFO(ExpressionNode)
@@ -376,7 +376,7 @@ namespace compiler
 	};
 
 	class FunctionStatement;
-	class Statement : public objBase
+	class Statement : public notstd::objBase
 	{
 		friend class StatementBlock;
 		DECLARE_OBJINFO(Statement)

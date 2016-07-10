@@ -3,36 +3,38 @@
 #include "simpleTool.h"
 #include "AsynTask.h"
 
-class NOTSTD_API SimpleThread
-{
-public:
-	typedef void (*OnThreadProc)(void *lParam);
+namespace notstd {
 
-private:
-	void *mUser;
-	Handle<NormalHandleType> mThread;
-	Handle<NormalHandleType> mStopEvent;
-	//Handle<LONG(NULL)> mThread;
-	//Handle<LONG(NULL)> mStopEvent;
-	OnThreadProc mOnThread;
+	class NOTSTD_API SimpleThread
+	{
+	public:
+		typedef void(*OnThreadProc)(void *lParam);
 
-private:
-	static UINT WINAPI ThreadProcInner(LPVOID lParam);
+	private:
+		void *mUser;
+		Handle<NormalHandleType> mThread;
+		Handle<NormalHandleType> mStopEvent;
+		//Handle<LONG(NULL)> mThread;
+		//Handle<LONG(NULL)> mStopEvent;
+		OnThreadProc mOnThread;
 
-public:
-	SimpleThread();
-	~SimpleThread();
+	private:
+		static UINT WINAPI ThreadProcInner(LPVOID lParam);
 
-	bool startThread(OnThreadProc onThread, void *lParam);
-	void stopThread();
-	bool isStopped();
-	bool shouldIStop(unsigned long timeout = 0);
+	public:
+		SimpleThread();
+		~SimpleThread();
 
-	void* GetUserData() { return mUser; }
+		bool startThread(OnThreadProc onThread, void *lParam);
+		void stopThread();
+		bool isStopped();
+		bool shouldIStop(unsigned long timeout = 0);
 
-	operator HANDLE() { return mThread; }
-	HANDLE GetStopSignalHandle() { return mStopEvent; }
-};
+		void* GetUserData() { return mUser; }
+
+		operator HANDLE() { return mThread; }
+		HANDLE GetStopSignalHandle() { return mStopEvent; }
+	};
 
 #define DECLARE_THREAD(theThread) \
 	private: \
@@ -47,29 +49,30 @@ public:
 		SimpleThread *thread = reinterpret_cast<SimpleThread*>(lParam); \
 		classname *c = reinterpret_cast<classname*>(thread->GetUserData()); \
 		c->On##theThread(thread); \
-	} \
+		} \
 	bool classname::Start##theThread() { \
 		return m##theThread.startThread(&classname::theThread##Proc, this); \
-	}
+		}
 
-// 能够处理Task的线程
-class NOTSTD_API TaskThread
-{
-protected:
-	SimpleThread mThread;
-	AsyncTaskManager mTaskManager;
+	// 能够处理Task的线程
+	class NOTSTD_API TaskThread
+	{
+	protected:
+		SimpleThread mThread;
+		AsyncTaskManager mTaskManager;
 
-	static void OnTaskThread(void *thread);
-	void TaskThreadProc();
-	virtual void OnIdle(DWORD tick);
+		static void OnTaskThread(void *thread);
+		void TaskThreadProc();
+		virtual void OnIdle(DWORD tick);
 
-public:
-	TaskThread();
-	virtual ~TaskThread();
+	public:
+		TaskThread();
+		virtual ~TaskThread();
 
-	SimpleThread* GetThread() { return &mThread; }
-	bool startTaskThread();
-	void stopTaskThread();
+		SimpleThread* GetThread() { return &mThread; }
+		bool startTaskThread();
+		void stopTaskThread();
 
-	void AddTask(Task *task) { mTaskManager.AddItem(task); }
-};
+		void AddTask(Task *task) { mTaskManager.AddItem(task); }
+	};
+}

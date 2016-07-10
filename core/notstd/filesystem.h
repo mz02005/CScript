@@ -7,6 +7,18 @@ namespace notstd {
 class CFindResult;
 class CFindIterator;
 
+class NOTSTD_API AppHelper
+{
+public:
+#if defined(PLATFORM_WINDOWS)
+	static const char splash[];
+#else
+	static const char splash[];
+#endif
+
+	static std::string GetAppPath();
+};
+
 class NOTSTD_API CFindResult
 {
 	friend class CFindIterator;

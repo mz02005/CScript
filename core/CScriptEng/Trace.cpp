@@ -23,7 +23,7 @@ namespace scriptLog {
 		std::string s;
 		va_list valist;
 		va_start(valist, format);
-		StringHelper::FormatV(s, format, valist);
+		notstd::StringHelper::FormatV(s, format, valist);
 		va_end(valist);
 
 #if defined(PLATFORM_WINDOWS)

@@ -88,4 +88,10 @@ namespace runtime {
 	public:
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
+
+	class DeleteFileObj : public baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(doCallContext *context);
+	};
 }

@@ -46,7 +46,7 @@
  */
 
 #include "stdafx.h"
-#include "MD5.h"
+#include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
 

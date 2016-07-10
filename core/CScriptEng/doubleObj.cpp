@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "vm.h"
 #include <math.h>
 
@@ -115,7 +115,7 @@ runtimeObjectBase* doubleObject::getIndex(int i)
 stringObject* doubleObject::toString()
 {
 	stringObject *s = new ObjectModule<stringObject>;
-	StringHelper::Format(*s->mVal, "%.6f", mVal);
+	notstd::StringHelper::Format(*s->mVal, "%.6f", mVal);
 	return s;
 }
 

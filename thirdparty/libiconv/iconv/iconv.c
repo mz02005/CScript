@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
+#include "Config.h"
 #include "localcharset.h"
 
 #ifdef __CYGWIN__

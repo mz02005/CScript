@@ -219,13 +219,13 @@ void CtestCScriptInDialogDlg::DispString(const CString &s)
 
 void CtestCScriptInDialogDlg::ExecuteThreadProc(void *param)
 {
-	SimpleThread *thread = reinterpret_cast<SimpleThread*>(param);
+	notstd::SimpleThread *thread = reinterpret_cast<notstd::SimpleThread*>(param);
 	reinterpret_cast<CtestCScriptInDialogDlg*>(thread->GetUserData())->ExecuteThreadInner(thread);
 }
 
 void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 {
-	SimpleThread *thread = reinterpret_cast<SimpleThread*>(param);
+	notstd::SimpleThread *thread = reinterpret_cast<notstd::SimpleThread*>(param);
 		
 	FILE *file = NULL;
 	println2 *println = NULL;

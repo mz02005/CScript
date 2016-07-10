@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "vm.h"
 #include <regex>
 #include "arrayType.h"
@@ -124,7 +124,7 @@ namespace runtime {
 			if (c == 2)
 				sc = context->GetUint32Param(1);
 			stringObject *r = new runtime::ObjectModule<stringObject>;
-			*r->mVal = StringHelper::Mid(*mStringObj->mVal, i, sc);
+			*r->mVal = notstd::StringHelper::Mid(*mStringObj->mVal, i, sc);
 			return r;
 		}
 	};
@@ -186,7 +186,7 @@ namespace runtime {
 			const char *s = context->GetStringParam(0);
 			if (!s)
 				return a;
-			StringHelper::StringArray sa = StringHelper::SplitString(*mStringObj->mVal, s);
+			notstd::StringHelper::StringArray sa = notstd::StringHelper::SplitString(*mStringObj->mVal, s);
 			for (auto iter = sa.begin(); iter != sa.end(); iter++)
 			{
 				stringObject *ss = new ObjectModule<stringObject>;
@@ -219,7 +219,7 @@ namespace runtime {
 			if (!pat || !dest)
 				return mStringObj;
 
-			StringHelper::Replace(*mStringObj->mVal, pat, dest);
+			notstd::StringHelper::Replace(*mStringObj->mVal, pat, dest);
 
 			return mStringObj;
 		}
@@ -285,12 +285,12 @@ namespace runtime {
 
 	bool stringObject::isGreaterThan(runtimeObjectBase *obj)
 	{
-		return *mVal > getObjectData<stringObject>(obj);
+		return obj->GetObjectTypeId() == DT_string ? *mVal > getObjectData<stringObject>(obj) : false;
 	}
 
 	bool stringObject::isEqual(runtimeObjectBase *obj)
 	{
-		return *mVal == getObjectData<stringObject>(obj);
+		return obj->GetObjectTypeId() == DT_string ? *mVal == getObjectData<stringObject>(obj) : false;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////

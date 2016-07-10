@@ -421,7 +421,7 @@ std::string Time::GetString() const
 	if (!t)
 		return "";
 	std::string r;
-	return StringHelper::Format(r, "%02d-%02d-%02d %02d:%02d:%02d",
+	return notstd::StringHelper::Format(r, "%02d-%02d-%02d %02d:%02d:%02d",
 		t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
 		t->tm_hour, t->tm_min, t->tm_sec);
 }

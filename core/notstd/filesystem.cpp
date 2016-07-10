@@ -4,6 +4,38 @@
 #include <string.h>
 
 namespace notstd {
+	///////////////////////////////////////////////////////////////////////////
+
+#if defined(PLATFORM_WINDOWS)
+	const char AppHelper::splash[] = "\\";
+#else
+	const char AppHelper::splash[] = "/";
+#endif
+
+#if defined(PLATFORM_WINDOWS)
+	std::string AppHelper::GetAppPath()
+	{
+		std::string appDir;
+		appDir.resize(MAX_PATH);
+		appDir.resize(::GetModuleFileNameA(NULL, &appDir[0], MAX_PATH));
+		return appDir;
+	}
+#else
+	std::string AppHelper::GetAppPath()
+	{
+		std::string appDir;
+		const static int MAX_PATH_LEN = 1024;
+		appDir.resize(MAX_PATH_LEN);
+		int c = readlink("/proc/self/exe", &appDir[0], MAX_PATH_LEN);
+		if (c < 0 || c >= MAX_PATH_LEN)
+			return "";
+		appDir.resize(c);
+		return appDir;
+}
+#endif
+
+	///////////////////////////////////////////////////////////////////////////
+
 	const CFindResult CFindResult::mFindEnd;
 
 	CFindResult::CFindResult()

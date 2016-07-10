@@ -34,177 +34,181 @@
 #define HOSTENT hostent
 #endif
 
+namespace notstd {
+
 #ifndef PLATFORM_WINDOWS
 #define INVALID_SOCKET	(-1)
 #define SOCKET_ERROR	(-1)
-typedef int				SOCKET;
+	typedef int				SOCKET;
 #endif
 
 #ifdef PLATFORM_WINDOWS
-typedef short		FAMILY_T;
-typedef u_short	PORT_T;
-typedef u_long	S_ADDR;
-typedef int			SOCKLEN_T;
+	typedef short		FAMILY_T;
+	typedef u_short	PORT_T;
+	typedef u_long	S_ADDR;
+	typedef int			SOCKLEN_T;
 #define VALID_SOCKET(sock) (sock != INVALID_SOCKET)
 #elif
-typedef sa_family_t	FAMILY_T;
-typedef in_port_t		PORT_T;
-typedef in_addr_t		S_ADDR;
-typedef socklen_t		SOCKLEN_T;
+	typedef sa_family_t	FAMILY_T;
+	typedef in_port_t		PORT_T;
+	typedef in_addr_t		S_ADDR;
+	typedef socklen_t		SOCKLEN_T;
 #define VALID_SOCKET(sock) (sock >= 0)
 #endif
 
-enum {
-	IO_NOUSE,
-	IO_TERMINATE,
-	IO_READ,
-	IO_WRITE,
-	IO_READFROM,
-	IO_WRITETO,
-	IO_CONNECT,
-	IO_ACCEPT,
-	IO_CUSTUM,
-};
+	enum {
+		IO_NOUSE,
+		IO_TERMINATE,
+		IO_READ,
+		IO_WRITE,
+		IO_READFROM,
+		IO_WRITETO,
+		IO_CONNECT,
+		IO_ACCEPT,
+		IO_CUSTUM,
+	};
 
-///////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
 
-class NOTSTD_API IPV4Address {
-public:
-	S_ADDR mAddr;
+	class NOTSTD_API IPV4Address {
+	public:
+		S_ADDR mAddr;
 
-public:
-	IPV4Address();
-	IPV4Address(const std::string &ipAddr);
-	IPV4Address(const char *ipAddr);
-	IPV4Address(S_ADDR ipAddr);
+	public:
+		IPV4Address();
+		IPV4Address(const std::string &ipAddr);
+		IPV4Address(const char *ipAddr);
+		IPV4Address(S_ADDR ipAddr);
 
-	IPV4Address& Parse(const std::string &ipAddr);
-	IPV4Address& Parse(const char *ipAddr);
-	IPV4Address& FromDNS(const std::string &name);
-	IPV4Address& FromDNS(const char *name);
+		IPV4Address& Parse(const std::string &ipAddr);
+		IPV4Address& Parse(const char *ipAddr);
+		IPV4Address& FromDNS(const std::string &name);
+		IPV4Address& FromDNS(const char *name);
 
-	std::string ToReadableString() const;
-};
+		std::string ToReadableString() const;
+	};
 
-class NOTSTD_API NetAddress : public sockaddr_in {
-public:
-	NetAddress();
-	NetAddress(const IPV4Address &ip, PORT_T port);
-	NetAddress(const std::string &ipAddr, PORT_T port);
-	NetAddress(const char *ipAddr, PORT_T port);
-	NetAddress(S_ADDR ipAddr, PORT_T port);
+	class NOTSTD_API NetAddress : public sockaddr_in {
+	public:
+		NetAddress();
+		NetAddress(const IPV4Address &ip, PORT_T port);
+		NetAddress(const std::string &ipAddr, PORT_T port);
+		NetAddress(const char *ipAddr, PORT_T port);
+		NetAddress(S_ADDR ipAddr, PORT_T port);
 
-	NetAddress& SetAddress(const IPV4Address &ip, PORT_T port);
-	NetAddress& SetAddress(const char *ipAddr, PORT_T port);
-	NetAddress& SetAddress(const std::string &ipAddr, PORT_T port);
-	NetAddress& SetAddress(S_ADDR ipAddr, PORT_T port);
+		NetAddress& SetAddress(const IPV4Address &ip, PORT_T port);
+		NetAddress& SetAddress(const char *ipAddr, PORT_T port);
+		NetAddress& SetAddress(const std::string &ipAddr, PORT_T port);
+		NetAddress& SetAddress(S_ADDR ipAddr, PORT_T port);
 
-	std::string GetIPString() const;
-	PORT_T GetPort() const;
-};
+		std::string GetIPString() const;
+		PORT_T GetPort() const;
+	};
 
-///////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
 
-class NOTSTD_API Buffer
-{
-public:
-	virtual uint32_t GetCap() const = 0;
-	virtual uint32_t GetSize() const = 0;
-	virtual char* GetBuffer() = 0;
-	virtual void AppendData(const char *str, std::size_t s) = 0;
-	virtual void SetLength(std::size_t s) = 0;
-	virtual void SetCap(std::size_t s) = 0;
-};
+	class NOTSTD_API Buffer
+	{
+	public:
+		virtual uint32_t GetCap() const = 0;
+		virtual uint32_t GetSize() const = 0;
+		virtual char* GetBuffer() = 0;
+		virtual void AppendData(const char *str, std::size_t s) = 0;
+		virtual void SetLength(std::size_t s) = 0;
+		virtual void SetCap(std::size_t s) = 0;
+	};
 
-class IOOperationBase;
+	class IOOperationBase;
 
-struct NOTSTD_API IOCompleteData : public OVERLAPPED
-{
-	DWORD mOperation;
-	IOOperationBase *mIOOperation;
-	Buffer *mBuffer;
-	WSABUF buf;
-	UINT hasDone;
-	UINT tryToSend;
+	struct NOTSTD_API IOCompleteData : public OVERLAPPED
+	{
+		DWORD mOperation;
+		IOOperationBase *mIOOperation;
+		Buffer *mBuffer;
+		WSABUF buf;
+		UINT hasDone;
+		UINT tryToSend;
 
-	IOCompleteData();
-};
+		IOCompleteData();
+	};
 
-class NOTSTD_API IOCompletionManager
-{
-	friend class Socket;
-	friend class Serial;
+	class NOTSTD_API IOCompletionManager
+	{
+		friend class Socket;
+		friend class Serial;
 
-private:
-	HANDLE mIOCP;
+	private:
+		HANDLE mIOCP;
 
-	UINT mThreadCount;
-	HANDLE *mIOCompletionThreads;
+		UINT mThreadCount;
+		HANDLE *mIOCompletionThreads;
 
-private:
-	static UINT WINAPI CompletionThread(LPVOID lpParam);
-	void CompletionProc();
-	void PostTerminateSignal();
+	private:
+		static UINT WINAPI CompletionThread(LPVOID lpParam);
+		void CompletionProc();
+		void PostTerminateSignal();
 
-public:
-	IOCompletionManager();
-	virtual ~IOCompletionManager();
+	public:
+		IOCompletionManager();
+		virtual ~IOCompletionManager();
 
-	virtual bool StartManager(DWORD minThread = 0);
-	virtual void StopManager();
-	virtual void Join();
-	virtual bool BindIOHandle(HANDLE handle);
+		virtual bool StartManager(DWORD minThread = 0);
+		virtual void StopManager();
+		virtual void Join();
+		virtual bool BindIOHandle(HANDLE handle);
 
-	HANDLE GetHandle() { return mIOCP; }
-};
+		HANDLE GetHandle() { return mIOCP; }
+	};
 
-class NOTSTD_API IOOperationBase {
-	friend class IOCompletionManager;
+	class NOTSTD_API IOOperationBase {
+		friend class IOCompletionManager;
 
-protected:
-	virtual void OnCustumMsg(IOCompleteData *completeData) = 0;
-	virtual void OnReceive(IOCompleteData *completeData) = 0;
-	virtual void OnSend(IOCompleteData *completeData) = 0;
-	virtual void OnConnect(bool connectOK) = 0;
-	virtual void OnAccept(const NetAddress &client, const NetAddress &serv) = 0;
-	virtual void OnClose() = 0;
-	virtual bool IsError() = 0;
+	protected:
+		virtual void OnCustumMsg(IOCompleteData *completeData) = 0;
+		virtual void OnReceive(IOCompleteData *completeData) = 0;
+		virtual void OnSend(IOCompleteData *completeData) = 0;
+		virtual void OnConnect(bool connectOK) = 0;
+		virtual void OnAccept(const NetAddress &client, const NetAddress &serv) = 0;
+		virtual void OnClose() = 0;
+		virtual bool IsError() = 0;
 
-	virtual bool SendPartial(IOCompleteData *completeData) = 0;
+		virtual bool SendPartial(IOCompleteData *completeData) = 0;
 
-public:
-	virtual ~IOOperationBase();
-};
+	public:
+		virtual ~IOOperationBase();
+	};
 
-class NOTSTD_API AdvIOBuffer : public Buffer {
-protected:
-	char *mBuf;
-	// 对外报告的容量
-	uint32_t mReportCap;
-	// 实际的容量
-	uint32_t mRealCap;
-	// 数据量
-	uint32_t mSize;
+	class NOTSTD_API AdvIOBuffer : public Buffer {
+	protected:
+		char *mBuf;
+		// 对外报告的容量
+		uint32_t mReportCap;
+		// 实际的容量
+		uint32_t mRealCap;
+		// 数据量
+		uint32_t mSize;
 
-protected:
-	bool Malloc(std::size_t len);
+	protected:
+		bool Malloc(std::size_t len);
 
-public:
-	virtual uint32_t GetCap() const;
-	virtual uint32_t GetSize() const;
-	virtual char* GetBuffer();
-	virtual void AppendData(const char *str, std::size_t len);
-	virtual void SetLength(std::size_t s);
-	virtual void SetCap(std::size_t s);
+	public:
+		virtual uint32_t GetCap() const;
+		virtual uint32_t GetSize() const;
+		virtual char* GetBuffer();
+		virtual void AppendData(const char *str, std::size_t len);
+		virtual void SetLength(std::size_t s);
+		virtual void SetCap(std::size_t s);
 
-	AdvIOBuffer(UINT defaultSize = 4096);
-	virtual ~AdvIOBuffer();
-};
+		AdvIOBuffer(UINT defaultSize = 4096);
+		virtual ~AdvIOBuffer();
+	};
 
-struct NOTSTD_API DefaultCompleteData : public IOCompleteData
-{
-	AdvIOBuffer mIOBuffer;
+	struct NOTSTD_API DefaultCompleteData : public IOCompleteData
+	{
+		AdvIOBuffer mIOBuffer;
 
-public:
-	DefaultCompleteData();
-};
+	public:
+		DefaultCompleteData();
+	};
+
+}

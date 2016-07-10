@@ -48,7 +48,11 @@ int RunTestCase(const ParamList &pl);
 // 1. sf	后面跟待处理的源代码的路径
 // 目前的开关有
 // 1. bytecode	表示试图直接加载字节码文件进行处理，而不是加载源代码编译后执行
+// 2. 如果没有指定sf选项，同时指定了runtest开关，则执行测试用例
 // 
+// 如果没有指定sf，但是有一个参数放入了pl中，则认为它是待执行的源代码文件
+// 这是为了方便在外壳程序中直接执行源代码
+//
 
 int ParseCommandLine(int argc, char *argv[], std::string &pathName, ParamList &pl, ExecuteParam &ep);
 
@@ -63,6 +67,12 @@ int main(int argc, char* argv[])
 
 	if (ParseCommandLine(argc, argv, filePathName, pl, ep) < 0)
 		return 1;
+	if (filePathName.empty() && pl.size() == 1)
+	{
+		filePathName = pl.front();
+		pl.clear();
+	}
+
 	if (filePathName.empty())
 		r = RunTestCase(pl);
 	else
@@ -77,7 +87,7 @@ int OnQuotation(int &i, int argc, const std::string &thisString, std::string &st
 	stringInQuotation.clear();
 	for (; i < argc; i++)
 	{
-		bool endWithQuotation = StringHelper::Right(thisString, 1) == "\"";
+		bool endWithQuotation = notstd::StringHelper::Right(thisString, 1) == "\"";
 		stringInQuotation += endWithQuotation ? thisString.substr(0, thisString.size() - 1) : thisString;
 		if (endWithQuotation)
 		{
@@ -100,9 +110,9 @@ int ParseCommandLine(int argc, char *argv[], std::string &pathName, ParamList &p
 		if (waitOption)
 		{
 			waitOption = false;
-			if (StringHelper::Left(ss, 1) == "\"")
+			if (notstd::StringHelper::Left(ss, 1) == "\"")
 			{
-				int r = OnQuotation(i, argc, StringHelper::Mid(ss, 1), ss);
+				int r = OnQuotation(i, argc, notstd::StringHelper::Mid(ss, 1), ss);
 				if (r < 0)
 					return r;
 			}
@@ -111,10 +121,10 @@ int ParseCommandLine(int argc, char *argv[], std::string &pathName, ParamList &p
 		}
 		else
 		{
-			std::string t = StringHelper::Left(ss, 1);
+			std::string t = notstd::StringHelper::Left(ss, 1);
 			if (t == "/")
 			{
-				theOption = StringHelper::Mid(ss, 1);
+				theOption = notstd::StringHelper::Mid(ss, 1);
 				if (theOption == "sf")
 					waitOption = true;
 				else if (theOption == "bytecode")
@@ -138,7 +148,7 @@ int ParseCommandLine(int argc, char *argv[], std::string &pathName, ParamList &p
 			{
 				if (t == "\"")
 				{
-					int r = OnQuotation(i, argc, StringHelper::Mid(ss, 1), ss);
+					int r = OnQuotation(i, argc, notstd::StringHelper::Mid(ss, 1), ss);
 					if (r < 0)
 						return r;
 				}
@@ -153,24 +163,24 @@ int ParseCommandLine(int argc, char *argv[], std::string &pathName, ParamList &p
 		std::cout << "Expect option value(" << theOption.c_str() << ")\n";
 		return -1;
 	}
-	StringHelper::Trim(pathName, " ");
+	notstd::StringHelper::Trim(pathName, " ");
 
 	return 0;
 }
 
 int RunTestCase(const ParamList &pl)
 {
-	std::string appDir;
-
+	std::string appDir = notstd::AppHelper::GetAppPath();
+	if (appDir.empty())
+		return -1;
+	appDir.resize(appDir.rfind(notstd::AppHelper::splash[0]) + 1);
+	
+#define SPLASH notstd::AppHelper::splash
 #if defined(PLATFORM_WINDOWS)
-	appDir.resize(MAX_PATH);
-	appDir.resize(::GetModuleFileNameA(NULL, &appDir[0], MAX_PATH));
-	appDir.resize(appDir.rfind('\\') + 1);
-
-	appDir += "..\\..\\test\\script\\";
-#else
-	appDir = "/mnt/CScript/test/script/";
+	appDir.append("..").append(SPLASH);
 #endif
+	appDir.append("..").append(SPLASH).append("test").
+		append(SPLASH).append("script").append(SPLASH);
 
 	notstd::CFindIterator fi(appDir);
 	for (notstd::CFindResult fr = fi.begin(); fr != fi.end(); fr = fi.next())
@@ -232,8 +242,8 @@ int ExecuteCode(const std::string &filePathName, const ParamList &pl, const Exec
 					std::cout << "Save code to file fail\n";
 				}
 			}
+			std::cout << "Compile file success. Start to execute. \n";
 		} while (0);
-		std::cout << "Compile file success. Start to execute. \n";
 	}
 	else
 	{
@@ -267,41 +277,51 @@ int ExecuteCode(const std::string &filePathName, const ParamList &pl, const Exec
 		} while (0);
 	}
 
-	if (!h) {
-		// 运行到这里说明编译或者加载字节码失败
-		return r;
-	}
+	do {
+		if (!h) {
+			// 运行到这里说明编译或者加载字节码失败
+			break;
+		}
 
-	scriptAPI::ScriptRuntimeContext *runtimeContext
-		= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
-	runtime::arrayObject *argvArray = new runtime::ObjectModule<runtime::arrayObject>;
-	runtime::stringObject *singleArgv;
-	for (auto iter = pl.begin(); iter != pl.end(); iter++)
-	{
-		singleArgv = new runtime::ObjectModule<runtime::stringObject>;
-		*singleArgv->mVal = *iter;
-		argvArray->AddSub(singleArgv);
-	}
-	runtimeContext->PushRuntimeObject(argvArray);
-	runtime::stringObject *declContent = new runtime::ObjectModule<runtime::stringObject>;
-	*declContent->mVal = "testCScript v1.0";
-	runtimeContext->PushRuntimeObject(declContent);
-	runtimeContext->PushRuntimeObject(new runtime::ObjectModule<TestCallback>);
-	runtimeContext->PushRuntimeObject(new runtime::ObjectModule<tools::svnTools>);
-	runtimeContext->PushRuntimeObject(new runtime::ObjectModule<tools::CRuntimeExtObj>);
-	int exitCode = 0;
-	int er = runtimeContext->Execute(h, &exitCode);
-	scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
-	scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
-	if (er != runtime::EC_Normal)
-	{
-		std::cerr << "Execute return fail: " << er << std::endl;
-		return -1;
-	}
-	else
-	{
-		std::cout << "Execute finished, return value is " << exitCode << std::endl;
-	}
+		scriptAPI::ScriptRuntimeContext *runtimeContext
+			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
+		runtime::arrayObject *argvArray = new runtime::ObjectModule<runtime::arrayObject>;
+		runtime::stringObject *singleArgv;
+		for (auto iter = pl.begin(); iter != pl.end(); iter++)
+		{
+			singleArgv = new runtime::ObjectModule<runtime::stringObject>;
+			*singleArgv->mVal = *iter;
+			argvArray->AddSub(singleArgv);
+		}
+		runtimeContext->PushRuntimeObject(argvArray);
+		runtime::stringObject *declContent = new runtime::ObjectModule<runtime::stringObject>;
+		*declContent->mVal = "testCScript v1.0";
+		runtimeContext->PushRuntimeObject(declContent);
+		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<TestCallback>);
+		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<tools::svnTools>);
+		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<tools::CRuntimeExtObj>);
+		int exitCode = 0;
+		int er = runtimeContext->Execute(h, &exitCode);
+		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
+		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
+		if (er != runtime::EC_Normal)
+		{
+			std::cerr << "Execute return fail: " << er << std::endl;
+			r = -1;
+		}
+		else
+		{
+			std::cout << "Execute finished, return value is " << exitCode << std::endl;
+			r = 0;
+		}
+	} while (0);
 
-	return 0;
+#if defined(PLATFORM_WINDOWS)
+	if (r < 0)
+	{
+		system("pause");
+	}
+#endif
+
+	return r;
 }

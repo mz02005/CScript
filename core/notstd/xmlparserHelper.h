@@ -108,135 +108,133 @@ namespace notstd {
 		int tableSize = sizeof(s2iTable) / sizeof(s2iTable[0]); \
 		const String2IntegerTableEntry *entry = s2iTable, *lastentry = s2iTable + tableSize; \
 		if (!isRead) { \
-			while (entry < lastentry) { \
+					while (entry < lastentry) { \
 				if (entry->val == v) { \
 					notstd::xmlHelper::xmlWriteHelper::WriteProperty(node,name,entry->s); \
 					break; \
-				} \
+								} \
 				entry ++; \
-			} \
+								} \
 			if (entry == lastentry) \
 				return -1; \
-		} \
-		else { \
+				} \
+				else { \
 			std::string temp; \
-			while (entry < lastentry) { \
+						while (entry < lastentry) { \
 				if (entry->val == def) { \
 					temp = entry->s; \
 					break; \
-				} \
+								} \
 				entry ++; \
-			} \
+									} \
 			notstd::xmlHelper::xmlReadHelper::ReadProperty(node, name, \
 				temp, entry < lastentry ? temp : s2iTable[0].s); \
 			entry = s2iTable; \
-			while (entry < lastentry) { \
+						while (entry < lastentry) { \
 				if (entry->s == temp) { \
 					v = entry->val; \
 					break; \
-				} \
+								} \
 				entry ++; \
-			} \
+									} \
 			if (entry == lastentry) v = def; \
-		} \
-	} while (0)
+			} \
+		} while (0)
 
 #define PARSE_XML_PROPERTY(isRead,node,name,v,def) \
 	do { \
 		if (!isRead) { \
 			notstd::xmlHelper::xmlWriteHelper::WriteProperty(node, name, v); \
-		} \
-		else { \
+				} \
+				else { \
 			if (!notstd::xmlHelper::xmlReadHelper::ReadProperty(node, name, v, def)) \
 				return -1; \
-		} \
-	} while (0)
-}
+			} \
+		} while (0)
 
-class NOTSTD_API xmlSAXParser {
-protected:
-	std::list<std::string> *mNameQueue;
+	class NOTSTD_API xmlSAXParser {
+	protected:
+		std::list<std::string> *mNameQueue;
 
-protected:
-	virtual void OnStartElement(const char *name, const char **atts);
-	virtual void OnEndElement(const char *name);
-	virtual void OnCharacters(const char *ch, int len);
+	protected:
+		virtual void OnStartElement(const char *name, const char **atts);
+		virtual void OnEndElement(const char *name);
+		virtual void OnCharacters(const char *ch, int len);
 
-	virtual void BeforeParse(xmlSAXHandler *handler);
-	virtual void AfterParse();
+		virtual void BeforeParse(xmlSAXHandler *handler);
+		virtual void AfterParse();
 
-public:
-	static void onStartElement(void *ctx, const xmlChar *name, const xmlChar **atts);
-	static void onEndElement(void *ctx, const xmlChar *name);
-	static void onCharacters(void *ctx, const xmlChar *ch, int len);
+	public:
+		static void onStartElement(void *ctx, const xmlChar *name, const xmlChar **atts);
+		static void onEndElement(void *ctx, const xmlChar *name);
+		static void onCharacters(void *ctx, const xmlChar *ch, int len);
 
-	xmlSAXParser();
-	virtual ~xmlSAXParser();
+		xmlSAXParser();
+		virtual ~xmlSAXParser();
 
-	xmlDocPtr ParseFile(const std::string &pathName);
-	xmlDocPtr ParseBuffer(const char *buffer, std::size_t bufferSize);
-};
+		xmlDocPtr ParseFile(const std::string &pathName);
+		xmlDocPtr ParseBuffer(const char *buffer, std::size_t bufferSize);
+	};
 
-class NOTSTD_API xmlPath {
-private:
-	xmlXPathContextPtr mContext;
-	xmlXPathObjectPtr mPathObject;
+	class NOTSTD_API xmlPath {
+	private:
+		xmlXPathContextPtr mContext;
+		xmlXPathObjectPtr mPathObject;
 
-public:
-	xmlPath();
-	~xmlPath();
+	public:
+		xmlPath();
+		~xmlPath();
 
-	bool Find(xmlDocPtr doc, const char *strPath);
-	void Close();
+		bool Find(xmlDocPtr doc, const char *strPath);
+		void Close();
 
-	xmlXPathObjectPtr GetXPathObject() {
-		return mPathObject;
-	}
-};
+		xmlXPathObjectPtr GetXPathObject() {
+			return mPathObject;
+		}
+	};
 
-class NOTSTD_API xmlString {
-private:
-	xmlChar *mString;
+	class NOTSTD_API xmlString {
+	private:
+		xmlChar *mString;
 
-public:
-	xmlString(xmlChar *str);
-	xmlString();
-	~xmlString();
+	public:
+		xmlString(xmlChar *str);
+		xmlString();
+		~xmlString();
 
-	xmlChar** operator&() {
-		return &mString;
-	}
+		xmlChar** operator&() {
+			return &mString;
+		}
 
-	operator const char* () {
-		return reinterpret_cast<const char*>(mString);
-	}
+		operator const char* () {
+			return reinterpret_cast<const char*>(mString);
+		}
 
-	operator std::string() {
-		return std::string(mString ? reinterpret_cast<const char*>(mString) : "");
-	}
-};
+		operator std::string() {
+			return std::string(mString ? reinterpret_cast<const char*>(mString) : "");
+		}
+	};
 
-class NOTSTD_API xmlDocumentHelper {
-private:
-	xmlDocPtr mDoc;
+	class NOTSTD_API xmlDocumentHelper {
+	private:
+		xmlDocPtr mDoc;
 
-public:
-	xmlDocumentHelper();
-	~xmlDocumentHelper();
+	public:
+		xmlDocumentHelper();
+		~xmlDocumentHelper();
 
-	bool LoadFromFile(const char *filePathName);
-	bool LoadFromBuffer(const char *buffer, std::size_t size);
-	void ReleaseDoc();
+		bool LoadFromFile(const char *filePathName);
+		bool LoadFromBuffer(const char *buffer, std::size_t size);
+		void ReleaseDoc();
 
-	operator xmlDocPtr() {
-		return mDoc;
-	}
+		operator xmlDocPtr() {
+			return mDoc;
+		}
 
-	static xmlDocumentHelper* CreateDocFromFile(const char *filePathName);
-	static void DestroyDocFromFile(xmlDocumentHelper *doc);
-};
+		static xmlDocumentHelper* CreateDocFromFile(const char *filePathName);
+		static void DestroyDocFromFile(xmlDocumentHelper *doc);
+	};
 
-namespace notstd {
 	namespace xmlHelper {
 		class xmlWriteHelper {
 		public:
@@ -323,13 +321,12 @@ namespace notstd {
 			}
 		};
 	}
-}
 
 #pragma warning(push)
 #pragma warning(disable: 4251)
 
-// xml对象序列化
-using namespace std;
+	// xml对象序列化
+	using namespace std;
 
 #define DECLARE_XMLSERIAL_PROP(classname) \
 	DECLARE_DYNAMICOBJ(classname)
@@ -344,9 +341,9 @@ using namespace std;
 	public: \
 		std::string mCharacters; \
 	virtual std::string GetTagName() const \
-	{ \
+		{ \
 		return alias; \
-	} 
+		} 
 
 #define DECLARE_XMLSERIAL_ELEM(classname) \
 	DECLARE_DYNAMICOBJ(classname) \
@@ -355,9 +352,9 @@ using namespace std;
 	public: \
 		std::string mCharacters; \
 	virtual std::string GetTagName() const \
-	{ \
+		{ \
 	return GetThisObjInfo()->className; \
-	}
+		}
 
 #define IMPLEMENT_XMLSERIAL_ELEM(classname,parentname) \
 	IMPLEMENT_DYNAMICOBJ(classname,parentname)
@@ -384,44 +381,44 @@ using namespace std;
 
 #define END_XMLSERIAL_FLAG_TABLE() \
 			notstd::XmlFlagItem(notstd::XmlFlagItem::NullType, NULL, 0), \
-		}; \
+			}; \
 		__super::GetXmlFlagItemList(type, flagItemList); \
 		const notstd::XmlFlagItem *lastFlag = xmlFlagItemList + sizeof(xmlFlagItemList) / sizeof(xmlFlagItemList[0]) - 1; \
 		for (const notstd::XmlFlagItem *flag = xmlFlagItemList; flag != lastFlag; flag++) { \
 			if (type == notstd::XmlFlagItem::NullType || flag->itemType == type) \
 				flagItemList.AddTail(flag); \
-		} \
+				} \
 		return true; \
-	}
+		}
 
 #define DECLARE_BASETYPE_XMLPROP(theTypeName) \
 	class NOTSTD_API theTypeName##BaseTypeXmlProp : public XmlPropSerializerBase \
-	{ \
+		{ \
 		DECLARE_XMLSERIAL_PROP(theTypeName##BaseTypeXmlProp) \
 	public: \
 		theTypeName mVal; \
 	public: \
 		virtual std::string ToString() const; \
 		virtual bool FromString(const char *s); \
-	};
+		};
 
 #define IMPLEMENT_BASETYPE_XMLPROP(theTypeName) \
 	IMPLEMENT_DYNAMICOBJ(theTypeName##BaseTypeXmlProp,XmlPropSerializerBase) \
 	std::string theTypeName##BaseTypeXmlProp::ToString() const { \
 		return TS(mVal); \
-	} \
+		} \
 	bool theTypeName##BaseTypeXmlProp::FromString(const char *s) { \
 		return notstd::DataConv::DataFromString(s, mVal); \
-	}
+		}
 
 #define DECLARE_SIMPLE_XMLELEM(classname) \
 	class classname : public notstd::XmlElemSerializerBase \
-	{ \
+		{ \
 		DECLARE_XMLSERIAL_ELEM(classname) \
 		\
 	public: \
 		classname(); \
-	};
+		};
 
 #define IMPLEMENT_SIMPLE_XMLELEM(classname) \
 	IMPLEMENT_XMLSERIAL_ELEM(classname, notstd::XmlElemSerializerBase) \
@@ -429,8 +426,6 @@ using namespace std;
 	END_XMLSERIAL_FLAG_TABLE() \
 	classname::classname() { mHasCharactors = true; }
 
-namespace notstd
-{
 	///////////////////////////////////////////////////////////////////////////////
 
 	class XmlElemSerializerBase;
@@ -460,7 +455,7 @@ namespace notstd
 	DECLARE_BASETYPE_XMLPROP(uint32_t)
 
 	///////////////////////////////////////////////////////////////////////////////
-	
+
 	struct NOTSTD_API XmlFlagItem
 	{
 		enum ItemType {
@@ -502,7 +497,7 @@ namespace notstd
 #if defined(PLATFORM_WINDOWS)
 	template class NOTSTD_API List<XmlElemSerializerBase*>;
 #endif
-	
+
 	///////////////////////////////////////////////////////////////////////////////
 
 	class NOTSTD_API SubElementList : public objBase
@@ -559,6 +554,5 @@ namespace notstd
 
 	///////////////////////////////////////////////////////////////////////////////
 
-}
-
 #pragma warning(pop)
+}

@@ -26,8 +26,7 @@ for (;g=c*2;)
 {
 	for(b=c; for1Mid(); d*=b);
 	c-=14;
-	string data = (e+d/a).toString().substr(0, 4);
-	data = "000" + data;
+	string data = "000" + (e + d / a).toString().substr(0, 4);
 	print(data.substr(data.len - 4, 4));
 	e=d%a;
 	d=0;

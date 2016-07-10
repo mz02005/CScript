@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "compile.h"
 #include "notstd/notstd.h"
 #include "rtlib.h"
@@ -1377,7 +1377,7 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				{
 					symbol.symbolOrig.erase(0, 1);
 					uint32_t v = strtoul(symbol.symbolOrig.c_str(), NULL, 8);
-					StringHelper::Format(symbol.symbolOrig, "%u", v);
+					notstd::StringHelper::Format(symbol.symbolOrig, "%u", v);
 				}
 				return 0;
 			}
@@ -1487,7 +1487,7 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				symbol.symbolOrig.erase(0, 2);
 
 				uint32_t v = strtoul(symbol.symbolOrig.c_str(), NULL, 16);
-				StringHelper::Format(symbol.symbolOrig, "%u", v);
+				notstd::StringHelper::Format(symbol.symbolOrig, "%u", v);
 				symbol.type = Symbol::constInt;
 				return 0;
 			}
@@ -1515,7 +1515,7 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				symbol.symbolOrig.erase(0, 1);
 
 				uint32_t v = strtoul(symbol.symbolOrig.c_str(), NULL, 8);
-				StringHelper::Format(symbol.symbolOrig, "%u", v);
+				notstd::StringHelper::Format(symbol.symbolOrig, "%u", v);
 				symbol.type = Symbol::constInt;
 				return 0;
 			}
@@ -2034,7 +2034,7 @@ int SimpleCScriptEngContext::ParseExpressionEndWith(char &c,
 		{
 			static int anonymousFunctionId = 0;
 			std::string funcName;
-			StringHelper::Format(funcName, "anonymousFun_%d", anonymousFunctionId++);
+			notstd::StringHelper::Format(funcName, "anonymousFun_%d", anonymousFunctionId++);
 			FunctionDefinationExpress *fde = new FunctionDefinationExpress(funcName);
 			if ((parseResult = fde->Compile(this)) < 0)
 			{

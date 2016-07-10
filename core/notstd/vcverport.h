@@ -1,5 +1,5 @@
 #pragma once
-#include "Config.h"
+#include "config.h"
 
 #if _MSC_VER <= 1600
 

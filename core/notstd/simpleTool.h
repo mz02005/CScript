@@ -202,7 +202,7 @@ public:
 #if defined(PLATFORM_WINDOWS)
 	typedef __time64_t TimeType;
 #else
-	typedef int64_t TimeType;
+	typedef time_t TimeType;
 #endif
 	TimeType mTime;
 

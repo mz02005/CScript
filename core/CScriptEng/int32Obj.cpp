@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "vm.h"
 
 using namespace runtime;
@@ -111,7 +111,7 @@ runtimeObjectBase* intObject::getIndex(int i)
 stringObject* intObject::toString()
 {
 	stringObject *s = new ObjectModule<stringObject>;
-	StringHelper::Format(*s->mVal, "%d", mVal);
+	notstd::StringHelper::Format(*s->mVal, "%d", mVal);
 	return s;
 }
 

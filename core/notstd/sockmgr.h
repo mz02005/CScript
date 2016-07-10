@@ -5,69 +5,73 @@
 #include "ioCompletionManager.h"
 #include "sockbase.h"
 
-class NOTSTD_API Socket : public IOOperationBase
-{
-	friend class IOCompletionManager;
-	friend class IOManagerUseSystemThreadPool;
-	friend class SockByAccept;
-	
-protected:
-	IOCompletionManager *mIOManager;
+namespace notstd {
 
-protected:
-	SocketHandle mSocket;
+	class NOTSTD_API Socket : public IOOperationBase
+	{
+		friend class IOCompletionManager;
+		friend class IOManagerUseSystemThreadPool;
+		friend class SockByAccept;
 
-protected:
-	virtual void OnCustumMsg(IOCompleteData *completeData);
-	virtual void OnReceive(IOCompleteData *completeData);
-	virtual void OnSend(IOCompleteData *completeData);
-	virtual void OnConnect(bool connectOK);
-	virtual void OnAccept(const NetAddress &client, const NetAddress &serv);
-	virtual void OnClose();
-	virtual bool IsError();
+	protected:
+		IOCompletionManager *mIOManager;
 
-	virtual bool SendPartial(IOCompleteData *completeData);
+	protected:
+		SocketHandle mSocket;
 
-public:
-	Socket();
-	virtual ~Socket();
+	protected:
+		virtual void OnCustumMsg(IOCompleteData *completeData);
+		virtual void OnReceive(IOCompleteData *completeData);
+		virtual void OnSend(IOCompleteData *completeData);
+		virtual void OnConnect(bool connectOK);
+		virtual void OnAccept(const NetAddress &client, const NetAddress &serv);
+		virtual void OnClose();
+		virtual bool IsError();
 
-	virtual bool Connect(IOCompleteData *completeData, const std::string &ipAddr, PORT_T port);
-	virtual bool Connect(IOCompleteData *completeData, const NetAddress &netAddr);
-	virtual bool Receive(IOCompleteData *completeData);
-	virtual bool Send(IOCompleteData *completeData);
-	bool SendSync(IOCompleteData *completeData);
-	bool SendSync(const char *buf, std::size_t size);
+		virtual bool SendPartial(IOCompleteData *completeData);
 
-	// 这两个函数没有经过测试，不保证正确性
-	// RecvFrom的返回值addrFrom应该会在OnReceive返回时由系统填充
-	// 保证该参数的生命周期和有效性是需要特别注意的
-	virtual bool RecvFrom(IOCompleteData *completeData, NetAddress *addrFrom);
-	virtual bool SendTo(IOCompleteData *completeData, const NetAddress *addrTo);
+	public:
+		Socket();
+		virtual ~Socket();
 
-	virtual bool Create(IOCompletionManager *ioManager, SocketType nSocketType = Stream, 
-		ProtocolType nProtocolType = Tcp, DWORD dwFlags = 0);
-	virtual bool Close();
+		virtual bool Connect(IOCompleteData *completeData, const std::string &ipAddr, PORT_T port);
+		virtual bool Connect(IOCompleteData *completeData, const NetAddress &netAddr);
+		virtual bool Receive(IOCompleteData *completeData);
+		virtual bool Send(IOCompleteData *completeData);
+		bool SendSync(IOCompleteData *completeData);
+		bool SendSync(const char *buf, std::size_t size);
 
-	// 可将内部状态置为某个值，然后发送通知让底层处理
-	// 最后系统会调用OnCustumMsg函数
-	virtual bool PostCustumMsg(IOCompleteData *completeData);
+		// 这两个函数没有经过测试，不保证正确性
+		// RecvFrom的返回值addrFrom应该会在OnReceive返回时由系统填充
+		// 保证该参数的生命周期和有效性是需要特别注意的
+		virtual bool RecvFrom(IOCompleteData *completeData, NetAddress *addrFrom);
+		virtual bool SendTo(IOCompleteData *completeData, const NetAddress *addrTo);
 
-	SocketHandle& GetHandle();
-};
+		virtual bool Create(IOCompletionManager *ioManager, SocketType nSocketType = Stream,
+			ProtocolType nProtocolType = Tcp, DWORD dwFlags = 0);
+		virtual bool Close();
 
-class NOTSTD_API SockByAccept : public Socket {
-	friend class IOCompletionManager;
-	friend class IOManagerUseSystemThreadPool;
+		// 可将内部状态置为某个值，然后发送通知让底层处理
+		// 最后系统会调用OnCustumMsg函数
+		virtual bool PostCustumMsg(IOCompleteData *completeData);
 
-private:
-	SOCKET mServerSock;
+		SocketHandle& GetHandle();
+	};
 
-	// 储存Accept返回的服务端客户端地址
-	char mSockAddr[(sizeof(NetAddress) + 16) * 2];
+	class NOTSTD_API SockByAccept : public Socket {
+		friend class IOCompletionManager;
+		friend class IOManagerUseSystemThreadPool;
 
-	NetAddress mServer, mClient;
+	private:
+		SOCKET mServerSock;
 
-public:
-	virtual bool Accept(IOCompleteData *completeData, Socket &sockServer);
-};
+		// 储存Accept返回的服务端客户端地址
+		char mSockAddr[(sizeof(NetAddress) + 16) * 2];
+
+		NetAddress mServer, mClient;
+
+	public:
+		virtual bool Accept(IOCompleteData *completeData, Socket &sockServer);
+	};
+
+}
