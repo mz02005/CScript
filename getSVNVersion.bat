@@ -10,4 +10,8 @@ for /f "delims=: tokens=1,2" %%i in (vtemp.txt) do (
   exit 0
  )
 )
-exit 1
+
+echo Could not find revision information
+echo #pragma once > %SVNINFO_PATHNAME%
+echo #define SVN_VERSION -1 >> %SVNINFO_PATHNAME%
+exit 0
