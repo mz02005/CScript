@@ -193,28 +193,28 @@ topLevel(haha);
 
 #嵌入功能
 脚本引擎最主要的功能就是嵌入到宿主程序中运行，宿主程序可以提供更多的功能给脚本编写者使用，同时和脚本执行环境进行适当的交互。<br>
-** 需要的头文件和库
+##需要的头文件和库
 所需头文件为CScriptEng.h<br>
 在linux上编译需要libnotstd.so、libCScriptEng.so两个库，另外还需要libzlib.so、libxml2.so、libiconv.so<br>
 在windows上用vc编译需要链接notstd_$(Configuration)_$(Platform).lib、CScriptEng_$(Configuration)_$(Platform).lib两个库<br>
-** 初始化和清理
+##初始化和清理
 用语句
 ```c++
 scriptAPI::SimpleCScriptEng::Init();
 scriptAPI::SimpleCScriptEng::Term();
 ```
 两个函数来执行初始化和清理操作，这两个函数在分别在进程的开始和结束各调用一次即可<br>
-** 执行脚本
-*** 首先准备源代码，源代码通过FileStream流来获得
+##执行脚本
+###首先准备源代码，源代码通过FileStream流来获得
 ```c++
 std::string fName = filePathName;
 scriptAPI::FileStream fs(fName.c_str());
 ```
-*** 然后是编译，成功会返回非空的句柄
+###然后是编译，成功会返回非空的句柄
 ```c++
 HANDLE h = compiler.Compile(&fs, true);
 ```
-*** 这就可以执行脚本了，下面的代码首先创建了一个运行环境上下文，然后调用它的Execute成员来执行编译后的代码
+###这就可以执行脚本了，下面的代码首先创建了一个运行环境上下文，然后调用它的Execute成员来执行编译后的代码
 ```c++
 scriptAPI::ScriptRuntimeContext *runtimeContext
 	= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
@@ -222,14 +222,14 @@ int exitCode = 0;
 int er = runtimeContext->Execute(h, &exitCode);
 ```
 以上er返回值如果是runtime::EC_Normal表示执行成功，否则表示执行失败。若执行成功且传入了exitCode，则exitCode返回顶级函数返回值的整数形式<br>
-*** 最后需要做清理工作，释放编译结果和执行环境占用的资源
+###最后需要做清理工作，释放编译结果和执行环境占用的资源
 ```c++
 scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
 scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
 ```
-** 扩展脚本的功能
-** 使宿主程序可以回调脚本中的函数
-** 引用计数陷阱
+##扩展脚本的功能
+##使宿主程序可以回调脚本中的函数
+##引用计数陷阱
 本章待完善<br>
 
 ======================================================================================================
