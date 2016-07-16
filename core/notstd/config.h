@@ -39,10 +39,6 @@
 #include <functional>
 #include <unordered_map>
 #include <unordered_set>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <libxml/xpath.h>
-#include <libxml/xmlsave.h>
 
 #ifdef PLATFORM_WINDOWS
 #pragma warning(push)

@@ -767,6 +767,8 @@ namespace compiler
 		CompileResult *mCompileResult;
 		FunctionStatement mTopLevelFunction;
 
+		scriptAPI::ScriptLibRegister mlibRegister;
+
 	private:
 		// 返回>=256的值表示读到了终结字符terminal
 		// 返回>=0的值表示实际的ASCII字符
@@ -788,6 +790,8 @@ namespace compiler
 	public:
 		static void Init();
 		static void Term();
+
+		scriptAPI::ScriptLibRegister& GetLibRegister() { return mlibRegister; }
 
 		int BeginParseSymbol(scriptAPI::ScriptSourceCodeStream *codeStream);
 		int GetNextSymbol(Symbol &symbol);

@@ -66,6 +66,9 @@
     <ClInclude Include="trace.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="svnInfo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BreakStatement.cpp">
@@ -180,6 +183,9 @@
   <ItemGroup>
     <None Include="..\..\Makefile" />
     <None Include="Makefile" />
+    <None Include="..\..\getSVNVersion.bat">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CScriptEng.rc">

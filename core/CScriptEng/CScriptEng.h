@@ -74,6 +74,30 @@ namespace scriptAPI {
 		static void Init();
 		static void Term();
 	};
+
+	struct ScriptLibReg
+	{
+		const char *objName;
+		runtime::runtimeObjectBase *objInst;
+	};
+
+	struct LibEntry
+	{
+		std::string name;
+		std::vector<ScriptLibReg> reg;
+	};
+
+	class CSCRIPTENG_API ScriptLibRegister
+	{
+	private:
+		std::vector<LibEntry> *mLibEntryList;
+
+	public:
+		ScriptLibRegister();
+		~ScriptLibRegister();
+		int RegistLib(const std::string &libName, const ScriptLibReg *libReg, size_t c);
+		std::vector<LibEntry>& GetLibList() { return *mLibEntryList; }
+	};
 	
 	class CSCRIPTENG_API ScriptCompiler
 	{
@@ -92,6 +116,7 @@ namespace scriptAPI {
 		~ScriptCompiler();
 		int PushName(const char *name);
 		int FindGlobalName(const char *name);
+		ScriptLibRegister& GetLibRegister();
 		HANDLE Compile(ScriptSourceCodeStream *stream, bool end = true);
 		static HANDLE CreateCompileResult();
 		static int SaveConstStringTableInResultToFile(HANDLE crHandle, FILE *file);
@@ -116,6 +141,7 @@ namespace scriptAPI {
 		static void DestroyScriptRuntimeContext(ScriptRuntimeContext *context);
 		~ScriptRuntimeContext();
 		int PushRuntimeObject(runtime::runtimeObjectBase *obj);
+		int PushRuntimeObjectInLibs(ScriptLibRegister *reg);
 		int Execute(HANDLE compileResult, int *exitValue = nullptr);
 
 		// 执行codeHandle指定的代码，但是使用compileResult指定的符号表

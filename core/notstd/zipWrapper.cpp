@@ -19,8 +19,8 @@ namespace notstd {
 	{
 #if defined(PLATFORM_WINDOWS)
 		if (!::CreateDirectoryA(dir.c_str(), nullptr))
-			return ::GetLastError() == ERROR_ALREADY_EXISTS;
-		return -E_UNKNOWNERROR;
+			return ::GetLastError() == ERROR_ALREADY_EXISTS ? 0 : -1;
+		return 0;
 #else
 		return mkdir(dir.c_str(), 0777);
 #endif

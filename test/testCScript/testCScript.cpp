@@ -211,11 +211,28 @@ int ExecuteCode(const std::string &filePathName, const ParamList &pl, const Exec
 	scriptAPI::ScriptCompiler compiler;
 
 	std::cout << "Compile file " << filePathName << std::endl;
-	compiler.PushName(ARGV);
-	compiler.PushName(DECL_TEST_VAR);
-	compiler.PushName(TESTCALLBACKNAME);
-	compiler.PushName("SvnTool");
-	compiler.PushName("cruntime");
+
+	runtime::arrayObject *argvArray = new runtime::ObjectModule<runtime::arrayObject>;
+	runtime::stringObject *singleArgv;
+	for (auto iter = pl.begin(); iter != pl.end(); iter++)
+	{
+		singleArgv = new runtime::ObjectModule<runtime::stringObject>;
+		*singleArgv->mVal = *iter;
+		argvArray->AddSub(singleArgv);
+	}
+	runtime::stringObject *declContent = new runtime::ObjectModule<runtime::stringObject>;
+	*declContent->mVal = "testCScript v1.0";
+
+	scriptAPI::ScriptLibReg les[] =
+	{
+		{ ARGV, argvArray, },
+		{ DECL_TEST_VAR, declContent, },
+		{ TESTCALLBACKNAME, new runtime::ObjectModule<TestCallback>, },
+		{ "SvnTool", new runtime::ObjectModule<tools::svnTools>, },
+		{ "cruntime", new runtime::ObjectModule<tools::CRuntimeExtObj>, },
+	};
+
+	compiler.GetLibRegister().RegistLib("testCScriptRuntime", les, sizeof(les) / sizeof(les[0]));
 
 	int r = 0;
 	HANDLE h = nullptr;
@@ -285,21 +302,7 @@ int ExecuteCode(const std::string &filePathName, const ParamList &pl, const Exec
 
 		scriptAPI::ScriptRuntimeContext *runtimeContext
 			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
-		runtime::arrayObject *argvArray = new runtime::ObjectModule<runtime::arrayObject>;
-		runtime::stringObject *singleArgv;
-		for (auto iter = pl.begin(); iter != pl.end(); iter++)
-		{
-			singleArgv = new runtime::ObjectModule<runtime::stringObject>;
-			*singleArgv->mVal = *iter;
-			argvArray->AddSub(singleArgv);
-		}
-		runtimeContext->PushRuntimeObject(argvArray);
-		runtime::stringObject *declContent = new runtime::ObjectModule<runtime::stringObject>;
-		*declContent->mVal = "testCScript v1.0";
-		runtimeContext->PushRuntimeObject(declContent);
-		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<TestCallback>);
-		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<tools::svnTools>);
-		runtimeContext->PushRuntimeObject(new runtime::ObjectModule<tools::CRuntimeExtObj>);
+		runtimeContext->PushRuntimeObjectInLibs(&compiler.GetLibRegister());
 		int exitCode = 0;
 		int er = runtimeContext->Execute(h, &exitCode);
 		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);

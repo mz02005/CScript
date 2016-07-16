@@ -6,6 +6,7 @@
 #define _NOT_STD_H
 
 #include "config.h"
+
 #include "vcverport.h"
 #include <notstd/stringHelper.h>
 #include <notstd/charconv.h>

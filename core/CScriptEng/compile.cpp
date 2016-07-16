@@ -1114,8 +1114,7 @@ SimpleCScriptEngContext::SimpleCScriptEngContext()
 	, mCompileResult(NULL)
 {
 	mKeywordsTransTable.Init();
-	mTopLevelFunction.RegistNameInContainer("CreateArray", -1);
-	runtime::rtLibHelper::RegistObjNames(&mTopLevelFunction);
+	runtime::rtLibHelper::RegistCScriptRuntimeLib(this);
 }
 
 SimpleCScriptEngContext::~SimpleCScriptEngContext()
@@ -1787,6 +1786,16 @@ int SimpleCScriptEngContext::GetNextSymbol(Symbol &symbol)
 
 HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeStream, bool end)
 {
+	auto libToRegistList = mlibRegister.GetLibList();
+	for (auto iter = libToRegistList.begin(); iter != libToRegistList.end(); iter++)
+	{
+		for (auto iterLib = iter->reg.begin(); iterLib != iter->reg.end(); iterLib++)
+		{
+			if (PushName(iterLib->objName) < 0)
+				return nullptr;
+		}
+	}
+
 	int r = BeginParseSymbol(codeStream);
 	if (r < 0)
 		return NULL;

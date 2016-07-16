@@ -3,6 +3,12 @@
 #include "compile.h"
 
 namespace runtime {
+	class getVersionObj : public baseObjDefault
+	{
+	public:
+		virtual runtimeObjectBase* doCall(doCallContext *context);
+	};
+
 	class sleepObj : public runtime::baseObjDefault
 	{
 	public:
@@ -14,8 +20,7 @@ namespace runtime {
 	class rtLibHelper
 	{
 	public:
-		static bool RegistObjNames(compiler::FunctionStatement *sb);
-		static bool RegistRuntimeObjs(runtimeContext *context);
+		static bool RegistCScriptRuntimeLib(compiler::SimpleCScriptEngContext *sb);
 	};
 
 	// 用于打印对象的对象

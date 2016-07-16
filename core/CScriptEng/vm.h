@@ -281,5 +281,8 @@ namespace runtime {
 		virtual int8_t GetInt8ElemOfArrayParam(uint32_t i, uint32_t e);
 		virtual const char* GetStringElemOfArrayParam(uint32_t i, uint32_t e);
 		virtual runtimeObjectBase* GetObjectOfArrayParam(uint32_t i, uint32_t e);
+
+		virtual uint32_t SaveRuntimeStackPosition();
+		virtual void RestoreRuntimeStackPosition(uint32_t oldPos);
 	};
 }

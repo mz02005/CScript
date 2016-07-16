@@ -177,6 +177,38 @@ void SimpleCScriptEng::Term()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+ScriptLibRegister::ScriptLibRegister()
+	: mLibEntryList(new std::vector<LibEntry>)
+{
+}
+
+ScriptLibRegister::~ScriptLibRegister()
+{
+	for (auto iter = mLibEntryList->begin(); iter != mLibEntryList->end(); iter++)
+	{
+		for (auto libIter = iter->reg.begin(); libIter != iter->reg.end(); libIter++)
+		{
+			libIter->objInst->Release();
+		}
+	}
+	delete mLibEntryList;
+}
+
+int ScriptLibRegister::RegistLib(const std::string &libName, const ScriptLibReg *libReg, size_t c)
+{
+	LibEntry lib;
+	lib.name = libName;
+	for (size_t i = 0; i < c; i++)
+	{
+		libReg[i].objInst->AddRef();
+		lib.reg.push_back(libReg[i]);
+	}
+	mLibEntryList->push_back(lib);
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 ScriptCompiler::ScriptCompiler()
 	: mCompilerContext(new compiler::SimpleCScriptEngContext)
 {
@@ -190,6 +222,11 @@ ScriptCompiler::~ScriptCompiler()
 int ScriptCompiler::PushName(const char *name)
 {
 	return mCompilerContext->PushName(name);
+}
+
+ScriptLibRegister& ScriptCompiler::GetLibRegister()
+{
+	return mCompilerContext->GetLibRegister();
 }
 
 int ScriptCompiler::FindGlobalName(const char *name)
@@ -267,6 +304,21 @@ ScriptRuntimeContext::ScriptRuntimeContext(uint32_t stackSize, uint32_t stackFra
 ScriptRuntimeContext::~ScriptRuntimeContext()
 {
 	delete mContextInner;
+}
+
+int ScriptRuntimeContext::PushRuntimeObjectInLibs(ScriptLibRegister *reg)
+{
+	auto regList = reg->GetLibList();
+	for (auto iter = regList.begin(); iter != regList.end(); iter++)
+	{
+		for (auto iterLib = iter->reg.begin(); iterLib != iter->reg.end(); iterLib++)
+		{
+			int r;
+			if ((r = PushRuntimeObject(iterLib->objInst)) < 0)
+				return r;
+		}
+	}
+	return 0;
 }
 
 int ScriptRuntimeContext::PushRuntimeObject(runtime::runtimeObjectBase *obj)

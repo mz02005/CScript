@@ -3,6 +3,10 @@
 #if defined(PLATFORM_WINDOWS)
 #include <d2d1.h>
 #endif
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xpath.h>
+#include <libxml/xmlsave.h>
 #include "libxml/xmlwriter.h"
 #include "notstd/objbase.h"
 #include "notstd/stringHelper.h"

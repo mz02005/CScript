@@ -6,6 +6,7 @@
 #include <time.h>
 #include "notstd/zipWrapper.h"
 #include "objType.h"
+#include "svnInfo.h"
 
 namespace runtime {
 	///////////////////////////////////////////////////////////////////////////////
@@ -41,53 +42,42 @@ namespace runtime {
 
 
 
-	bool rtLibHelper::RegistObjNames(compiler::FunctionStatement *sb)
+	bool rtLibHelper::RegistCScriptRuntimeLib(compiler::SimpleCScriptEngContext *context)
 	{
-		sb->RegistNameInContainer("null", -1);
-		sb->RegistNameInContainer("sleep", -1);
-		sb->RegistNameInContainer("print", -1);
-		sb->RegistNameInContainer("println", -1);
-		sb->RegistNameInContainer("rand", -1);
-		sb->RegistNameInContainer("srand", -1);
-		sb->RegistNameInContainer("sin", -1);
-		sb->RegistNameInContainer("pow", -1);
-		sb->RegistNameInContainer("time", -1);
-		sb->RegistNameInContainer("system", -1);
-		sb->RegistNameInContainer("unzipFile", -1);
-		sb->RegistNameInContainer("zipFile", -1);
-		sb->RegistNameInContainer("csOpenFile", -1);
-		sb->RegistNameInContainer("DeleteFile", -1);
-		return true;
-	}
-
-	bool rtLibHelper::RegistRuntimeObjs(runtimeContext *context)
-	{
-		context->PushObject(NullTypeObject::CreateNullTypeObject());
-		context->PushObject(new ObjectModule<sleepObj>);
-
-		// printºÍprintln
-		context->PushObject(new ObjectModule<printObj>);
 		printObj *println = new ObjectModule<printObj>;
 		println->SetIsPrintLine(true);
-		context->PushObject(println);
 
-		context->PushObject(new ObjectModule<randObj>);
-		context->PushObject(new ObjectModule<srandObj>);
+		scriptAPI::ScriptLibReg slrs[] =
+		{
+			{ "null", NullTypeObject::CreateNullTypeObject(), },
+			{ "getversion", new ObjectModule<getVersionObj>, },
+			{ "CreateArray", new runtime::ObjectModule<runtime::CreateArrayObj>, },
+			{ "sleep", new ObjectModule<sleepObj>, },
+			{ "print", new ObjectModule<printObj>, },
+			{ "println", println, },
+			{ "rand", new ObjectModule<randObj>, },
+			{ "srand", new ObjectModule<srandObj>, },
+			{ "sin", new ObjectModule<sinObj>, },
+			{ "pow", new ObjectModule<powfObj>, },
+			{ "time", new ObjectModule<timeObj>, },
+			{ "system", new ObjectModule<systemCallObject>, },
+			{ "unzipFile", new ObjectModule<unzipFileObj>, },
+			{ "zipFile", new ObjectModule<zipFilesInDirectoryObj>, },
+			{ "csOpenFile", new ObjectModule<csOpenFile>, },
+			{ "DeleteFile", new ObjectModule<DeleteFileObj>, },
+		};
 
-		context->PushObject(new ObjectModule<sinObj>);
-		context->PushObject(new ObjectModule<powfObj>);
+		return context->GetLibRegister().RegistLib(
+			"cscriptRuntime", slrs, sizeof(slrs) / sizeof(slrs[0])) >= 0;
+	}
 
-		context->PushObject(new ObjectModule<timeObj>);
+	///////////////////////////////////////////////////////////////////////////////
 
-		context->PushObject(new ObjectModule<systemCallObject>);
-
-		context->PushObject(new ObjectModule<unzipFileObj>);
-		context->PushObject(new ObjectModule<zipFilesInDirectoryObj>);
-
-		context->PushObject(new ObjectModule<csOpenFile>);
-		context->PushObject(new ObjectModule<DeleteFileObj>);
-
-		return true;
+	runtimeObjectBase* getVersionObj::doCall(doCallContext *context)
+	{
+		intObject *r = new ObjectModule<intObject>;
+		r->mVal = SVN_VERSION;
+		return r;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////

@@ -404,3 +404,19 @@ runtimeObjectBase* runtimeContext::GetObjectOfArrayParam(uint32_t i, uint32_t e)
 
 	return sub;
 }
+
+uint32_t runtimeContext::SaveRuntimeStackPosition()
+{
+	return mCurrentStack;
+}
+
+void runtimeContext::RestoreRuntimeStackPosition(uint32_t oldPos)
+{
+	// 这种应该是异常了，先不作处理
+	if (oldPos > mCurrentStack)
+		return;
+
+	for (uint32_t i = mCurrentStack - 1; i >= oldPos; i--)
+		mRuntimeStack[i]->Release();
+	mCurrentStack = oldPos;
+}

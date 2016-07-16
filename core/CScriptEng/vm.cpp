@@ -162,9 +162,6 @@ runtimeContext::runtimeContext(VMConfig *config)
 	// 第一个是废弃的
 	mPCFrame.resize(mConfig.stackFrameSize);
 	mPCFrame[0] = std::make_pair((uint32_t*)NULL, (uint32_t*)NULL);
-
-	PushObject(new runtime::ObjectModule<runtime::CreateArrayObj>);
-	rtLibHelper::RegistRuntimeObjs(this);
 }
 
 runtimeContext::~runtimeContext()
@@ -1548,7 +1545,7 @@ int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult,
 		} while (0);
 	}
 
-	if (recoveryStack)
+	if (recoveryStack && mCurrentStack > 0)
 	{
 		// 恢复堆栈，以便下一次运行
 		for (uint32_t x = mCurrentStack - 1; x >= stackPosition; x--)

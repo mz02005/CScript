@@ -106,6 +106,9 @@
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)getSVNVersion.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -123,6 +126,9 @@
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)getSVNVersion.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -145,6 +151,9 @@
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)getSVNVersion.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -167,6 +176,9 @@
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)getSVNVersion.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="arrayType.h" />
@@ -180,6 +192,7 @@
     <ClInclude Include="rtTypes.h" />
     <ClInclude Include="scriptDef.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="svnInfo.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="vm.h" />
@@ -241,6 +254,7 @@
     <ClCompile Include="whileStatement.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\getSVNVersion.bat" />
     <None Include="..\..\Makefile" />
     <None Include="Makefile" />
   </ItemGroup>
