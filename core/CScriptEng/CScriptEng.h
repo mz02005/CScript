@@ -142,10 +142,10 @@ namespace scriptAPI {
 		~ScriptRuntimeContext();
 		int PushRuntimeObject(runtime::runtimeObjectBase *obj);
 		int PushRuntimeObjectInLibs(ScriptLibRegister *reg);
-		int Execute(HANDLE compileResult, int *exitValue = nullptr);
+		int Execute(HANDLE compileResult, bool recoveryStack = true, int *exitValue = nullptr);
 
 		// 执行codeHandle指定的代码，但是使用compileResult指定的符号表
-		int ExecuteCode(HANDLE code, HANDLE compileResult, int *exitValue = nullptr);
+		int ExecuteCode(HANDLE code, HANDLE compileResult, bool recoveryStack = true, int *exitValue = nullptr);
 
 		int ReplaceRuntimeFunc(const char *toReplace, void *runtimeObj, void *cHandle);
 	};

@@ -251,7 +251,7 @@ namespace runtime {
 		~runtimeContext();
 
 		// exitValue表示虚拟机刚刚执行的顶级函数的返回值，如果返回值不为整数，则exitValue返回1
-		int Execute(compiler::CompileResult *compileResult, int *exitValue = nullptr);
+		int Execute(compiler::CompileResult *compileResult, bool recoveryStack = true, int *exitValue = nullptr);
 		int Execute(void *code, compiler::CompileResult *compileResult, bool recoveryStack = false, int *exitValue = nullptr);
 
 		// doCallContext
@@ -268,6 +268,7 @@ namespace runtime {
 		virtual uint8_t GetUint8Param(uint32_t i);
 		virtual int8_t GetInt8Param(uint32_t i);
 		virtual const char* GetStringParam(uint32_t i);
+		virtual const char* GetStringParam(uint32_t i, uint32_t &len);
 		virtual runtimeObjectBase* GetObject(uint32_t i);
 
 		virtual uint32_t GetArrayParamElemCount(uint32_t i);

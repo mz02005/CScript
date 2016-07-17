@@ -153,6 +153,23 @@ const char* runtimeContext::GetStringParam(uint32_t i) {
 	return r->c_str();
 }
 
+const char* runtimeContext::GetStringParam(uint32_t i, uint32_t &len)
+{
+	if (i >= mParamCount || i >= mCurrentStack)
+		THROW_EXECEPTION(std::exception, "runtimeContext::GetInt8Param: out of range\n");
+
+	std::string *r;
+	runtimeObjectBase *o = mRuntimeStack[mCurrentStack - mParamCount + i];
+
+	if (o->GetObjectTypeId() != DT_string)
+		return nullptr;
+
+	r = static_cast<stringObject*>(o)->mVal;
+	len = static_cast<uint32_t>(r->size());
+
+	return r->c_str();
+}
+
 runtimeObjectBase* runtimeContext::GetObject(uint32_t i)
 {
 	if (i >= mParamCount || i >= mCurrentStack)

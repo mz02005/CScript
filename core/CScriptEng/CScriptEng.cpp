@@ -327,12 +327,12 @@ int ScriptRuntimeContext::PushRuntimeObject(runtime::runtimeObjectBase *obj)
 	return 0;
 }
 
-int ScriptRuntimeContext::Execute(HANDLE compileResult, int *exitValue)
+int ScriptRuntimeContext::Execute(HANDLE compileResult, bool recoveryStack, int *exitValue)
 {
-	return mContextInner->Execute(reinterpret_cast<compiler::CompileResult*>(compileResult), exitValue);
+	return mContextInner->Execute(reinterpret_cast<compiler::CompileResult*>(compileResult), recoveryStack, exitValue);
 }
 
-int ScriptRuntimeContext::ExecuteCode(HANDLE code, HANDLE compileResult, int *exitValue)
+int ScriptRuntimeContext::ExecuteCode(HANDLE code, HANDLE compileResult, bool recoveryStack, int *exitValue)
 {
 	assert(0);
 	return 0;

@@ -1556,13 +1556,13 @@ int runtimeContext::Execute(void *code, compiler::CompileResult *compileResult,
 	return r;
 }
 
-int runtimeContext::Execute(compiler::CompileResult *compileResult, int *exitValue)
+int runtimeContext::Execute(compiler::CompileResult *compileResult, bool recoveryStack, int *exitValue)
 {
 	scriptAPI::ScriptCompiler::CompileCode cc;
 	cc.code = &compileResult->GetCode()[0];
 	cc.sizeInUint32 = static_cast<decltype(cc.sizeInUint32)>(compileResult->GetCode().size());
 
-	return Execute(&cc, compileResult, true, exitValue);
+	return Execute(&cc, compileResult, recoveryStack, exitValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

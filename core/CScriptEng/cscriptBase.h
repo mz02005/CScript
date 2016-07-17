@@ -51,6 +51,7 @@ namespace runtime {
 		virtual uint8_t GetUint8Param(uint32_t i) = 0;
 		virtual int8_t GetInt8Param(uint32_t i) = 0;
 		virtual const char* GetStringParam(uint32_t i) = 0;
+		virtual const char* GetStringParam(uint32_t i, uint32_t &len) = 0;
 		virtual runtimeObjectBase* GetObject(uint32_t i) = 0;
 
 		virtual uint32_t GetArrayParamElemCount(uint32_t i) = 0;

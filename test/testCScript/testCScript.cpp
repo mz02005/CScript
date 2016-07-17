@@ -304,7 +304,7 @@ int ExecuteCode(const std::string &filePathName, const ParamList &pl, const Exec
 			= scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext(1024, 512);
 		runtimeContext->PushRuntimeObjectInLibs(&compiler.GetLibRegister());
 		int exitCode = 0;
-		int er = runtimeContext->Execute(h, &exitCode);
+		int er = runtimeContext->Execute(h, true, &exitCode);
 		scriptAPI::ScriptCompiler::ReleaseCompileResult(h);
 		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
 		if (er != runtime::EC_Normal)
