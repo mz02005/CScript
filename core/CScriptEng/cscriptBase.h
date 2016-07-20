@@ -1,6 +1,7 @@
 #pragma once
 #include "config.h"
 #include <string>
+#include <assert.h>
 
 namespace runtime {
 	class runtimeObjectBase;
@@ -117,38 +118,25 @@ namespace runtime {
 	class ContainModule : public T
 	{
 	protected:
-		long mRef;
 		refCounter *mContainer;
 
 	public:
 		ContainModule(refCounter *con)
 			: mContainer(con)
-			, mRef(0)
 		{
 		}
 
 		virtual long AddRef() {
-			mContainer->AddRef();
-			return ++mRef;
+			return mContainer->AddRef();
 		}
 
 		virtual long Release() {
-			mContainer->Release();
-			long r =  --mRef;
-			if (!r) {
-				delete this;
-				return 0;
-			}
-			return r;
+			return mContainer->Release();
 		}
 
 		virtual long ReleaseNotDelete() {
-			mContainer->Release();
-			long r =  --mRef;
-			if (!r) {
-				return 0;
-			}
-			return r;
+			assert(0);
+			return -1;
 		}
 	};
 	

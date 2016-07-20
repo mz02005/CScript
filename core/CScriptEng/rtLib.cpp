@@ -288,7 +288,7 @@ namespace runtime {
 		virtual runtime::runtimeObjectBase* doCall(doCallContext *context);
 	};
 
-	class FileReadLineObject : public runtime::baseObjDefault
+	class ReadFileObject : public runtime::baseObjDefault
 	{
 		friend class FileObject;
 
@@ -324,15 +324,20 @@ namespace runtime {
 		}
 		virtual runtimeObjectBase* GetMember(const char *memName)
 		{
-			if (!strcmp(memName, "WriteFile"))
+			if (!strcmp(memName, "WriteFile") || !strcmp(memName, "Write"))
 			{
 				WriteFileObject *o = new runtime::ContainModule<WriteFileObject>(this);
 				o->mFileObject = this;
 				return o;
 			}
-			if (!strcmp(memName, "ReadLine"))
+			// 原先ReadLine函数废弃了，统一使用Read进行文件的读取
+			// 该函数的第一个参数是读取数据的存放string。如果只有一个参数，则函数会读取一行；
+			// 如果存在第二个参数，则第二个参数必须是一个正整数，表示读取的字节数
+			// 执行后如果返回非空表示执行中没有发生错误，此时，第一个参数指定的string会被返回
+			// 可以通过string.len得到读取数据的实际字节长度
+			if (!strcmp(memName, "Read"))
 			{
-				FileReadLineObject *o = new ContainModule<FileReadLineObject>(this);
+				ReadFileObject *o = new ContainModule<ReadFileObject>(this);
 				o->mFileObject = this;
 				return o;
 			}
@@ -385,24 +390,68 @@ namespace runtime {
 	runtime::runtimeObjectBase* WriteFileObject::doCall(doCallContext *context)
 	{
 		const char *s;
-		if (context->GetParamCount() != 1
+		size_t toWrite;
+		NullTypeObject *nullRet = NullTypeObject::CreateNullTypeObject();
+		if (context->GetParamCount() < 1
 			|| ((s = context->GetStringParam(0)) == nullptr))
-			return nullptr;
-		runtime::intObject *r = new runtime::ObjectModule<runtime::intObject>;
-		r->mVal = fwrite(s, 1, strlen(s), mFileObject->getFileHandle());
+		{
+			SCRIPT_TRACE("file.write(strToWrite[, byte count to write]\n");
+			return nullRet;
+		}
+		if (context->GetParamCount() > 1)
+		{
+			try {
+				toWrite = context->GetUint32Param(1);
+				if (toWrite > static_cast<stringObject*>(context->GetParam(0))->mVal->size())
+				{
+					SCRIPT_TRACE("file.Write: write byte count out of range.\n");
+					return nullRet;
+				}
+			}
+			catch (...)
+			{
+				SCRIPT_TRACE("file.Write: second parameter must be an integer\n");
+				return nullRet;
+			}
+		}
+		else
+			toWrite = strlen(s);
+		uintObject *r = new runtime::ObjectModule<uintObject>;
+		r->mVal = fwrite(s, 1, toWrite, mFileObject->getFileHandle());
+		delete nullRet;
 		return r;
 	}
 
-	runtime::runtimeObjectBase* FileReadLineObject::doCall(doCallContext *context)
+	runtime::runtimeObjectBase* ReadFileObject::doCall(doCallContext *context)
 	{
-		NullTypeObject *retNull = NullTypeObject::CreateNullTypeObject();
-		if (context->GetParamCount() != 1
+		NullTypeObject *nullRet = NullTypeObject::CreateNullTypeObject();
+		if (context->GetParamCount() < 1
 			|| context->GetParam(0)->GetObjectTypeId() != DT_string)
-			return retNull;
+			return nullRet;
+		runtimeObjectBase *o2 = nullptr;
+		uint32_t toRead = 0;
 		stringObject *s = static_cast<stringObject*>(context->GetParam(0));
-		if (!notstd::StringHelper::ReadLine<256>(mFileObject->getFileHandle(), *s->mVal, nullptr))
-			return retNull;
-		delete retNull;
+		if (context->GetParamCount() > 1)
+		{
+			o2 = context->GetParam(1);
+			if (!isIntegerType(o2))
+			{
+				SCRIPT_TRACE("file.read: second parameter must be integer larger than 0.\n");
+				return nullRet;
+			}
+			toRead = getObjectDataOrig<int32_t>(o2);
+		}
+		if (toRead)
+		{
+			s->mVal->resize(toRead);
+			s->mVal->resize(fread(&(*s->mVal)[0], 1, toRead, mFileObject->getFileHandle()));
+		}
+		else
+		{
+			if (!notstd::StringHelper::ReadLine<256>(mFileObject->getFileHandle(), *s->mVal, nullptr))
+				return nullRet;
+		}
+		delete nullRet;
 		return s;
 	}
 

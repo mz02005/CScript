@@ -52,27 +52,31 @@ namespace runtime {
 
 	runtimeObjectBase* stringObject::Mul(const runtimeObjectBase *obj)
 	{
+		NullTypeObject *nullRet = NullTypeObject::CreateNullTypeObject();
 		if (mIsConst)
 		{
 			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("add on const variable");
-			return NULL;
+			return nullRet;
 		}
 
 		runtimeObjectBase *r = NULL;
-		uint32_t typeId = obj->GetObjectTypeId();
-		if (typeId == DT_int32)
+		if (isIntegerType(obj))
 		{
-			// 通过乘法运算，能够迅速的构造重复的字符串
-			stringObject *val = new ObjectModule<stringObject>;
-			int count = static_cast<const intObject*>(obj)->mVal;
-			for (int32_t i = 0; i < count; i++)
-				*val->mVal += *mVal;
-			r = val;
+			int32_t c = getObjectDataOrig<int32_t>(obj);
+			if (c > 0)
+			{
+				// 通过乘法运算，能够迅速的构造重复的字符串
+				stringObject *val = new ObjectModule<stringObject>;
+				int count = static_cast<const intObject*>(obj)->mVal;
+				for (int32_t i = 0; i < count; i++)
+					val->mVal->append(mVal->c_str(), mVal->size());
+				r = val;
+				delete nullRet;
+				return r;
+			}
 		}
-		else
-			return NULL;
-
-		return r;
+		SCRIPT_TRACE("string.*: string count must larger than 0.\n");
+		return nullRet;
 	}
 
 	runtimeObjectBase* stringObject::Div(const runtimeObjectBase *obj)
@@ -182,9 +186,18 @@ namespace runtime {
 
 			StringFormatInfo formatInfo;
 
-			bool flagOK;
-			bool widthOK;
-			bool precisionOK;
+			enum FormatParseStage
+			{
+				FPS_FLAG,
+				FPS_WIDTH,
+				FPS_PRECISION,
+				//FPS_SIZE,
+				FPS_TYPE,
+			};
+			FormatParseStage parseStage;
+			//bool flagOK;
+			//bool widthOK;
+			//bool precisionOK;
 
 			uint32_t paramCount = 1;
 			mStringObj->mVal->clear();
@@ -207,12 +220,10 @@ namespace runtime {
 					memset(&formatInfo, 0, sizeof(formatInfo));
 					formatInfo.fillChar = ' ';
 
-					flagOK = false;
-					widthOK = false;
-					precisionOK = false;
+					parseStage = FPS_FLAG;
 					for (; *p1 != 0;)
 					{
-						if (!flagOK)
+						if (parseStage <= FPS_FLAG)
 						{
 							if (*p1 == '-')
 							{
@@ -235,12 +246,10 @@ namespace runtime {
 								p1++;
 							}
 						}
-						if (!widthOK)
+						if (parseStage <= FPS_WIDTH)
 						{
 							if (*p1 >= '1' && *p1 <= '9')
 							{
-								flagOK = true;
-								widthOK = true;
 								uint32_t width = *p1 - '0';
 								while (*++p1 && *p1 >= '0' && *p1 <= '9')
 								{
@@ -248,36 +257,31 @@ namespace runtime {
 									width += *p1 - '0';
 								}
 								formatInfo.len = width;
-								flagOK = true;
+								parseStage = FPS_PRECISION;
 							}
 							else if (*p1 == '*')
 							{
-								flagOK = true;
-								widthOK = true;
-
 								if (context->GetParamCount() < ++paramCount)
 								{
 									SCRIPT_TRACE("string.format: more information expected.\n");
 									return nullRet;
 								}
 								try {
-									formatInfo.len = context->GetInt32Param(paramCount - 1);
+									formatInfo.len = context->GetInt32Param(paramCount - 2);
 								}
 								catch (...)
 								{
 									SCRIPT_TRACE("string.format: integer parameter expected for item length.\n");
 									return nullRet;
 								}
+								p1++;
+								parseStage = FPS_PRECISION;
 							}
 						}
-						if (!precisionOK)
+						if (parseStage <= FPS_PRECISION)
 						{
 							if (*p1 == '.')
 							{
-								flagOK = true;
-								widthOK = true;
-								precisionOK = true;
-
 								uint32_t prec = 0;
 								while (*++p1 && *p1 >= '0' && *p1 <= '9')
 								{
@@ -285,6 +289,7 @@ namespace runtime {
 									prec += *p1 - '0';
 								}
 								formatInfo.prec = prec;
+								parseStage = FPS_TYPE;
 							}
 						}
 
@@ -292,6 +297,33 @@ namespace runtime {
 						{
 							*mStringObj->mVal += '%';
 							p1++;
+							break;
+						}
+						else if (*p1 == 'c')
+						{
+							runtimeObjectBase *o = context->GetParam(paramCount - 1);
+							uint32_t ot = o->GetObjectTypeId();
+							std::string v;
+							if (ot == DT_string)
+							{
+								v.append(static_cast<stringObject*>(o)->mVal->c_str(), 1);
+							}
+							else if (isIntegerType(o))
+							{
+								int iv = getObjectDataOrig<int>(o);
+								if (iv < 0)
+								{
+									SCRIPT_TRACE("string.format: %%c type switch must use integer parameter larger or equal to 0\n");
+									return nullRet;
+								}
+								v = std::to_string(iv);
+							}
+							else
+							{
+								SCRIPT_TRACE("string.format: %%c type switch muse use integer or string parameter.\n");
+								return nullRet;
+							}
+							AppendString(v, &formatInfo);
 							break;
 						}
 						else if (*p1 == 's')
@@ -333,7 +365,7 @@ namespace runtime {
 							AppendString(v, &formatInfo);
 							break;
 						}
-						else if (*p1 == 'X')
+						else if (*p1 == 'X' || *p1 == 'x')
 						{
 							int v;
 							try
@@ -346,7 +378,7 @@ namespace runtime {
 								return nullRet;
 							}
 							std::string ss;
-							notstd::StringHelper::Format(ss, "%X", v);
+							notstd::StringHelper::Format(ss, *p1 == 'X' ? "%X" : "%x", v);
 							AppendString(ss, &formatInfo);
 							break;
 						}

@@ -4,7 +4,7 @@ svn info > vtemp.txt
 if %errorlevel% NEQ 0 (echo "get svn info fail"&& goto svnError)
 for /f "delims=: tokens=1,2" %%i in (vtemp.txt) do (
  if "%%i" EQU "Revision" (
-  echo Found revision is %%i
+  echo Found revision is %%j
   echo #pragma once > %SVNINFO_PATHNAME%
   echo #define SVN_VERSION %%j >> %SVNINFO_PATHNAME%
   exit 0
