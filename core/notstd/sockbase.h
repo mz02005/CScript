@@ -1,6 +1,7 @@
 #pragma once
 #include "config.h"
 #include "simpleThread.h"
+#include "ioCompletionManager.h"
 
 extern "C"
 {

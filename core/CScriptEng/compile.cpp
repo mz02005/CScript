@@ -577,11 +577,7 @@ void PostfixExpression::AddNode(ExpressionNode *subNode)
 
 void PostfixExpression::ThrowBadcast(const char *s)
 {
-#if defined(PLATFORM_WINDOWS)
-	throw std::bad_cast(s);
-#else
 	throw std::bad_cast();
-#endif
 }
 
 bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
