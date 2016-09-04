@@ -172,6 +172,7 @@ namespace notstd {
 
 	private:
 		IOTimer *mIOTimer;
+		bool mDoNotCreateAgain;
 
 	public:
 		TimerData();
@@ -270,12 +271,8 @@ namespace notstd {
 		UINT mDelay;
 		TimerData mTimeData;
 
-		static void CALLBACK TimeCallBack(UINT timeId, UINT msg, DWORD_PTR user, DWORD_PTR, DWORD_PTR)
-		{
-			IOTimer *ioTimer = reinterpret_cast<IOTimer*>(user);
-			assert(timeId == static_cast<decltype(timeId)>(ioTimer->mMMResult));
-			ioTimer->mIOServer.PostUserEvent(&ioTimer->mTimeData);
-		}
+		static void CALLBACK TimeCallBack(UINT timeId,
+			UINT msg, DWORD_PTR user, DWORD_PTR, DWORD_PTR);
 
 		void CreateTimer();
 

@@ -401,6 +401,7 @@ namespace notstd {
 
 	TimerData::TimerData()
 		: IOServerData(IOS_TIMER)
+		, mDoNotCreateAgain(false)
 	{
 	}
 
@@ -412,7 +413,10 @@ namespace notstd {
 		if (mHandleFunc)
 			mHandleFunc(ioServer, true, data, trans);
 
-		mIOTimer->CreateTimer();
+		// 在mHandleFunc中，可以设置mDoNotCreateAgain标志，控制是否再次启动
+		// 定时器
+		if (!mDoNotCreateAgain)
+			mIOTimer->CreateTimer();
 	}
 
 	IOTimer::IOTimer(IOServer &ioServer)
@@ -434,6 +438,13 @@ namespace notstd {
 			::timeKillEvent(mMMResult);
 			mMMResult = NULL;
 		}
+	}
+
+	void CALLBACK IOTimer::TimeCallBack(UINT timeId, UINT msg, DWORD_PTR user, DWORD_PTR, DWORD_PTR)
+	{
+		IOTimer *ioTimer = reinterpret_cast<IOTimer*>(user);
+		assert(timeId == static_cast<decltype(timeId)>(ioTimer->mMMResult));
+		ioTimer->mIOServer.PostUserEvent(&ioTimer->mTimeData);
 	}
 
 	void IOTimer::CreateTimer(uint32_t delay)
