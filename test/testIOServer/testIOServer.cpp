@@ -6,6 +6,68 @@
 const static char *hostName = "www.cnbeta.com";
 const static char *url = "/";
 
+///通信主标识
+#define	MDM_GP_LOGON					100								///大厅登陆
+
+// -- add by liyuanxing(mz02005@qq.com)
+#define ASS_GP_LOGIN2_BASE				16
+// 通过手机号进行登录
+#define ASS_GP_LOGIN2_BY_MOBILE_NUMBER	(ASS_GP_LOGIN2_BASE + 0)
+// 指定的手机号没有注册
+#define ASS_GP_LOGIN2_MOBILENO_NOT_REG	(ASS_GP_LOGIN2_BASE + 1)
+// 通过微信账号登录
+#define ASS_GP_LOGIN2_BY_WECHAT			(ASS_GP_LOGIN2_BASE + 2)
+// 微信账号没有绑定
+#define ASS_GP_LOGIN2_WECHAT_NOT_BIND	(ASS_GP_LOGIN2_BASE + 3)
+// 通过QQ账号登录
+#define ASS_GP_LOGIN2_BY_QQ				(ASS_GP_LOGIN2_BASE + 4)
+// QQ账号没有绑定
+#define ASS_GP_LOGIN2_QQ_NOT_BIND		(ASS_GP_LOGIN2_BASE + 5)
+// 临时登录
+#define ASS_GP_LOGIN2_TEMP		(ASS_GP_LOGIN2_BASE + 6)
+
+#pragma pack(1)
+///网络数据包结构头
+struct NetMessageHead
+{
+	UINT uMessageSize;						///数据包大小
+	UINT bMainID;							///处理主类型
+	UINT bAssistantID;						///辅助处理类型 ID
+	UINT bHandleCode;						///数据包处理代码
+	UINT bReserve;							///保留字段
+};
+
+///用户登陆（帐号）结构
+struct MSG_GP_S_LogonByNameStruct
+{
+	UINT								uRoomVer;							///大厅版本
+	char								szName[64];							///登陆名字
+	char								TML_SN[128];
+	char								szMD5Pass[52];						///登陆密码
+	char								szMathineCode[64];					///本机机器码 锁定机器
+	char                                szCPUID[24];						//CPU的ID
+	char                                szHardID[24];						//硬盘的ID
+	char								szIDcardNo[64];						//证件号
+	char								szMobileVCode[8];					//手机验证码
+	int									gsqPs;
+	int									iUserID;							//用户ID登录，如果ID>0用ID登录
+};
+
+// ASS_GP_LOGIN2***对应的结构
+struct Login2_LoginByMobileNumber : public MSG_GP_S_LogonByNameStruct
+{
+	char openid[50];
+
+	// 手机号
+	char mobileSN[20];
+
+	// 登录密码（经过md5处理）
+	char password[52];
+};
+
+
+#pragma pack()
+
 class AAA
 {
 public:
@@ -14,15 +76,7 @@ public:
 		if (e)
 			return;
 		notstd::SendIOServerData *sd = static_cast<notstd::SendIOServerData*>(data);
-		if (trans == sd->GetBufferAndSize().second)
-			// 命令发送完了，开始接收
-			mIOSocket.AsyncRecv(&mRecvData, IOSOCKET_MEMBER_BIND(&AAA::OnReceive1, this));
-		else {
-			// 没有发送完成，继续发送
-			sd->mBegin += trans;
-			sd->mLen -= trans;
-			mIOSocket.AsyncSend(static_cast<notstd::SendIOServerData*>(data));
-		}
+		mIOSocket.AsyncRecv(&mRecvData, IOSOCKET_MEMBER_BIND(&AAA::OnReceive1, this));
 	}
 
 	void OnConnect(notstd::IOServer *ioServer, const notstd::IOErrorCode &e, notstd::IOServerData *data, size_t trans)
@@ -46,7 +100,7 @@ public:
 			"Host: ";
 		s += hostName;
 		s += "\r\n\r\n";
-		mSendData.SetSendBuffer(s.c_str(), s.size());
+		mSendData.GetDataBuffer()->SetBufferSize(s.c_str(), s.size());
 		mIOSocket.AsyncSend(&mSendData, IOSOCKET_MEMBER_BIND(&AAA::OnSend, this));
 	}
 
@@ -66,7 +120,7 @@ public:
 
 		std::string s;
 		notstd::ReceiveIOServerData *rd = static_cast<notstd::ReceiveIOServerData*>(data);
-		s.append(rd->mBegin, trans);
+		s.append(rd->GetDataBuffer()->mBegin, trans);
 		std::cout << s;
 		mIOSocket.AsyncRecv(&mRecvData);
 	}
@@ -77,7 +131,7 @@ public:
 			return;
 		std::string s;
 		notstd::ReceiveIOServerData *rd = static_cast<notstd::ReceiveIOServerData*>(data);
-		s.append(rd->mBegin, trans);
+		s.append(rd->GetDataBuffer()->mBegin, trans);
 		std::cout << s;
 		mAcceptSocket.AsyncRecv(&mRecvData1);
 	}
@@ -142,6 +196,22 @@ public:
 			std::cerr << "Connect fail\n";
 			return;
 		}
+
+		std::string sd;
+		NetMessageHead h;
+		h.uMessageSize = sizeof(NetMessageHead) + sizeof(Login2_LoginByMobileNumber);
+		h.bMainID = MDM_GP_LOGON;
+		h.bAssistantID = ASS_GP_LOGIN2_BY_MOBILE_NUMBER;
+		h.bHandleCode = 0;
+		h.bReserve = 0;
+		sd.append(reinterpret_cast<const char*>(&h), sizeof(h));
+		NetMessageHead *p = reinterpret_cast<NetMessageHead*>(&sd[0]);
+		Login2_LoginByMobileNumber zero;
+		memset(&zero, 0, sizeof(zero));
+		strcpy(zero.mobileSN, "2523534");
+		sd.append(reinterpret_cast<const char*>(&zero), sizeof(zero));
+		mSd.GetDataBuffer()->SetBufferSize(sd.c_str(), sd.size());
+		mConnSocket.AsyncSend(&mSd, IOSOCKET_MEMBER_BIND(&TestConnection::OnSend, this));
 	}
 
 	void OnSend(notstd::IOServer *ioServer, const notstd::IOErrorCode &e, notstd::IOServerData *data, size_t trans)
@@ -151,22 +221,12 @@ public:
 			return;
 		}
 
-		notstd::IOServerDataWithCache *d = static_cast<notstd::IOServerDataWithCache*>(data);
-		d->mLen -= trans;
-		if (d->mLen)
-		{
-			d->mBegin += trans;
-			mConnSocket.AsyncSend(&mSd);
-		}
-		else
-		{
-			std::cout << "send over\n";
-		}
+		std::cout << "send over\n";
 	}
 
 	void DoConnect()
 	{
-		mConnSocket.AsyncConnect(notstd::NetAddress("192.168.192.228", 3015), &mCd,
+		mConnSocket.AsyncConnect(notstd::NetAddress("127.0.0.1", 3015), &mCd,
 			IOSOCKET_MEMBER_BIND(&TestConnection::OnConnect, this));
 	}
 };

@@ -352,7 +352,7 @@ namespace notstd {
 #define DECLARE_XMLSERIAL_ELEM(classname) \
 	DECLARE_DYNAMICOBJ(classname) \
 	public: \
-	virtual bool GetXmlFlagItemList(notstd::XmlFlagItem::ItemType type, List<const notstd::XmlFlagItem*> &flagItemList) const; \
+	virtual bool GetXmlFlagItemList(notstd::XmlFlagItem::ItemType type, notstd::List<const notstd::XmlFlagItem*> &flagItemList) const; \
 	public: \
 		std::string mCharacters; \
 	virtual std::string GetTagName() const \
@@ -364,7 +364,7 @@ namespace notstd {
 	IMPLEMENT_DYNAMICOBJ(classname,parentname)
 
 #define BEGIN_XMLSERIAL_FLAG_TABLE(classname) \
-	bool classname::GetXmlFlagItemList(notstd::XmlFlagItem::ItemType type, List<const notstd::XmlFlagItem*> &flagItemList) const { \
+	bool classname::GetXmlFlagItemList(notstd::XmlFlagItem::ItemType type, notstd::List<const notstd::XmlFlagItem*> &flagItemList) const { \
 		typedef classname MyClassName; \
 		static const notstd::XmlFlagItem xmlFlagItemList[] = {
 

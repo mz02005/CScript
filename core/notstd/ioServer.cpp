@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ioServer.h"
 #include <Mswsock.h>
+#include "openssl/ssl.h"
+#include "openssl/err.h"
 
 namespace notstd {
 	///////////////////////////////////////////////////////////////////////////
@@ -74,6 +76,58 @@ namespace notstd {
 
 	///////////////////////////////////////////////////////////////////////////
 
+	SSLContext::SSLContext()
+		: mSSLCtx(nullptr)
+	{
+		OPENSSL_init_ssl(OPENSSL_INIT_SSL_DEFAULT, nullptr);
+		const SSL_METHOD* meth = SSLv23_method();
+		mSSLCtx = SSL_CTX_new(meth);
+		//SSL_CTX_set_verify(mSSLCtx, SSL_VERIFY_NONE, nullptr);
+	}
+
+	SSLContext::~SSLContext()
+	{
+		if (mSSLCtx)
+		{
+			SSL_CTX_free(mSSLCtx);
+			mSSLCtx = nullptr;
+		}
+	}
+
+	SSL_CTX* SSLContext::GetSSLContext()
+	{
+		return mSSLCtx;
+	}
+
+	bool SSLContext::UsePrivateKeyFile(const char *filePathName, char *password)
+	{
+		if (password)
+		{
+			SSL_CTX_set_default_passwd_cb_userdata(mSSLCtx, 
+				reinterpret_cast<void*>(password));
+		}
+		if (SSL_CTX_use_PrivateKey_file(mSSLCtx, filePathName, SSL_FILETYPE_PEM) <= 0
+			|| !SSL_CTX_check_private_key(mSSLCtx))
+			return false;
+		return true;
+	}
+
+	bool SSLContext::UseCertificateFile(const char *filePathName)
+	{
+		if (SSL_CTX_use_certificate_file(mSSLCtx,
+			filePathName, SSL_FILETYPE_PEM) <= 0)
+			return false;
+		return true;
+	}
+
+	bool SSLContext::SetNoVerify()
+	{
+		SSL_CTX_set_verify(mSSLCtx, SSL_VERIFY_NONE, nullptr);
+		return true;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+
 	IOServer::IOServer()
 	{
 	}
@@ -141,7 +195,26 @@ namespace notstd {
 				if (!transferred)
 					ioData->OnFunc(this, false, ioData, 0);
 				else
+				{
+					if (IOServerData::IOS_SEND == ioData->mType)
+					{
+						// 保证只有在用户要求发送的数据全部发送后，才回调用户指定的函数
+						notstd::SendIOServerData *sndData =
+							static_cast<notstd::SendIOServerData*>(ioData);
+						auto buffer = sndData->GetDataBuffer();
+						if (buffer->mLen > transferred)
+						{
+							buffer->mLen -= transferred;
+							buffer->mBegin += transferred;
+							IOSocket ioSocket(*this);
+							ioSocket.GetHandle().Attach(sndData->mSock);
+							ioSocket.AsyncSend(sndData);
+							ioSocket.GetHandle().Detach();
+							return true;
+						}
+					}
 					ioData->OnFunc(this, ec, ioData, transferred);
+				}
 				break;
 
 			case IOServerData::IOS_ACCEPT:
@@ -187,85 +260,6 @@ namespace notstd {
 	
 	///////////////////////////////////////////////////////////////////////////
 
-	IOSocket::IOSocket(IOServer &ioServer)
-		: mIOServer(ioServer)
-	{
-	}
-
-	SOCKET IOSocket::Create(SocketType sockType, ProtocolType protocolType, DWORD flags)
-	{
-		SOCKET r = mSock.Create(sockType, protocolType, flags);
-		if (r != INVALID_SOCKET)
-		{
-			mIOServer.BindToHandle((HANDLE)mSock.GetHandle());
-		}
-		return r;
-	}
-
-	int IOSocket::Close()
-	{
-		return mSock.Close();
-	}
-
-	void IOSocket::AsyncConnect(const NetAddress &addr, ConnectIOServerData *data)
-	{
-		mSock.Bind(notstd::NetAddress("0.0.0.0", 0));
-		data->mSock = mSock.GetHandle();
-		BOOL r = (*NetEnviroment::ConnectEx)(mSock.GetHandle(),
-			reinterpret_cast<const sockaddr*>(&addr), sizeof(addr),
-			nullptr, 0L, nullptr, static_cast<LPOVERLAPPED>(data));
-		if (!r && ::GetLastError() != WSA_IO_PENDING)
-			throw notstd::winSystemError();
-	}
-
-	void IOSocket::AsyncRecv(ReceiveIOServerData *data)
-	{
-		WSABUF buf;
-		buf.buf = data->GetBufferAndCap().first;
-		buf.len = data->GetBufferAndCap().second;
-		DWORD flag = 0;
-		int r = ::WSARecv(mSock.GetHandle(), &buf, 1, nullptr, &flag,
-			static_cast<LPOVERLAPPED>(data), nullptr);
-		if (r && ::GetLastError() != WSA_IO_PENDING)
-			throw notstd::winSystemError();
-	}
-
-	void IOSocket::AsyncSend(SendIOServerData *data)
-	{
-		DWORD flag = 0;
-		WSABUF buf;
-		auto x = data->GetBufferAndSize();
-		buf.buf = x.first;
-		buf.len = x.second;
-		int r = ::WSASend(mSock.GetHandle(), &buf, 1, nullptr, flag,
-			static_cast<LPWSAOVERLAPPED>(data), nullptr);
-		if (r && ::GetLastError() != WSA_IO_PENDING)
-			throw notstd::winSystemError();
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-
-	AcceptSocket::AcceptSocket(IOServer &ioServer)
-		: IOSocket(ioServer)
-	{
-	}
-
-	void AcceptSocket::AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket)
-	{
-		DWORD recved;
-		data->mSock = mSock.GetHandle();
-		data->mServerSocket = listenSocket->GetHandle().GetHandle();
-		if (!(*NetEnviroment::AcceptEx)(listenSocket->GetHandle().GetHandle(),
-			mSock.GetHandle(),
-			reinterpret_cast<PVOID>(data->mSockAddr), 0,
-			sizeof(NetAddress) + 16,
-			sizeof(NetAddress) + 16,
-			&recved, static_cast<LPOVERLAPPED>(data)) && ::GetLastError() != ERROR_IO_PENDING)
-			throw notstd::winSystemError();
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-
 	IOErrorCode::IOErrorCode(bool succeeded)
 		: mSucceeded(succeeded)
 		, mErrorCode(::GetLastError())
@@ -306,28 +300,57 @@ namespace notstd {
 
 	///////////////////////////////////////////////////////////////////////////
 
-	IOServerDataWithCache::IOServerDataWithCache(uint32_t t)
-		: IOServerData(t)
-		, mBegin(mBuf)
+	IOServerDataBuffer::IOServerDataBuffer()
+		: mBegin(mBuf)
 		, mData(nullptr)
 		, mLen(0)
 		, mCap(sizeof(mBuf))
 	{
 	}
 
-	IOServerDataWithCache::~IOServerDataWithCache()
+	IOServerDataBuffer::~IOServerDataBuffer()
 	{
-		if (mData)
-			free(mData);
+		Clear();
+		mLen = 0;
+		mCap = sizeof(mBuf);
 	}
 
-	void IOServerDataWithCache::SetSendBuffer(const void *d, size_t len)
+	void IOServerDataBuffer::Clear()
 	{
-		if (len > mCap)
+		if (mData)
+		{
+			free(mData);
+			mData = nullptr;
+		}
+	}
+
+	void IOServerDataBuffer::CopyData(const IOServerDataBuffer *other)
+	{
+		Clear();
+		if (other->mData)
+		{
+			mData = reinterpret_cast<char*>(other->mCap);
+			memcpy(mData, other->mData, other->mCap);
+			mLen = other->mLen;
+			mCap = other->mCap;
+			mBegin = mData + (other->mBegin - other->mData);
+		}
+		else
+		{
+			memcpy(mBuf, other->mBuf, other->mLen);
+			mLen = other->mLen;
+			mCap = other->mCap;
+			mBegin = mData + (other->mBegin - other->mBuf);
+		}
+	}
+
+	void IOServerDataBuffer::SetBufferCap(size_t size)
+	{
+		if (size > mCap)
 		{
 			if (mData)
 				free(mData);
-			mCap = (len + 7) / 8 * 8;
+			mCap = (size + 7) / 8 * 8;
 			mData = (char*)malloc(mCap);
 			mBegin = mData;
 		}
@@ -335,29 +358,41 @@ namespace notstd {
 		{
 			mBegin = mData ? mData : mBuf;
 		}
-		memcpy(mBegin, d, len);
-		mLen = len;
+		mLen = 0;
 	}
 
-	std::pair<char*, size_t> IOServerDataWithCache::GetBufferAndSize()
+	void IOServerDataBuffer::SetBufferSize(const void *buf, size_t size)
 	{
-		return std::make_pair(mBuf, mLen);
-	}
-
-	std::pair<char*, size_t> IOServerDataWithCache::GetBufferAndCap()
-	{
-		return std::make_pair(mBuf, mCap);
+		if (size > mCap)
+		{
+			if (mData)
+				free(mData);
+			mCap = (size + 7) / 8 * 8;
+			mData = (char*)malloc(mCap);
+			mBegin = mData;
+		}
+		else
+		{
+			mBegin = mData ? mData : mBuf;
+		}
+		memcpy(mBegin, buf, size);
+		mLen = size;
 	}
 
 	///////////////////////////////////////////////////////////////////////////
 
 	SocketIOServerData::SocketIOServerData(uint32_t type)
-		: IOServerDataWithCache(type)
+		: IOServerData(type)
+	{
+	}
+
+	SocketIOServerData::~SocketIOServerData()
 	{
 	}
 
 	void SocketIOServerData::OnFunc(IOServer *ioServer, const IOErrorCode &e, IOServerData *data, size_t trans)
 	{
+		assert(data == static_cast<IOServerData*>(this));
 		if (mHandleFunc)
 			mHandleFunc(ioServer, e, data, trans);
 	}
@@ -365,14 +400,7 @@ namespace notstd {
 	///////////////////////////////////////////////////////////////////////////
 
 	IOServerQuitMessageData::IOServerQuitMessageData()
-		: SocketIOServerData(IOS_QUIT)
-	{
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-
-	ConnectIOServerData::ConnectIOServerData()
-		: SocketIOServerData(IOS_CONNECT)
+		: IOServerData(IOS_QUIT)
 	{
 	}
 
@@ -399,9 +427,122 @@ namespace notstd {
 
 	///////////////////////////////////////////////////////////////////////////
 
+	ConnectIOServerData::ConnectIOServerData()
+		: SocketIOServerData(IOS_CONNECT)
+	{
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+
+	IOSocket::IOSocket(IOServer &ioServer)
+		: mIOServer(ioServer)
+	{
+	}
+
+	SOCKET IOSocket::Create(SocketType sockType,
+		ProtocolType protocolType, DWORD flags)
+	{
+		SOCKET r = mSock.Create(sockType, protocolType, flags | WSA_FLAG_OVERLAPPED);
+		if (r != INVALID_SOCKET)
+		{
+			mIOServer.BindToHandle((HANDLE)mSock.GetHandle());
+		}
+		return r;
+	}
+
+	int IOSocket::Close()
+	{
+		return mSock.Close();
+	}
+
+	void IOSocket::AsyncConnect(const NetAddress &addr, 
+		ConnectIOServerData *data, notstd::HandleType proc)
+	{
+		data->SetHandle(proc);
+		AsyncConnect(addr, data);
+	}
+
+	void IOSocket::AsyncConnect(const NetAddress &addr, ConnectIOServerData *data)
+	{
+		setsockopt(mSock.GetHandle(), SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
+		mSock.Bind(notstd::NetAddress("0.0.0.0", 0));
+		data->mSock = mSock.GetHandle();
+		BOOL r = (*NetEnviroment::ConnectEx)(mSock.GetHandle(),
+			reinterpret_cast<const sockaddr*>(&addr), sizeof(addr),
+			nullptr, 0L, nullptr, static_cast<LPOVERLAPPED>(data));
+		if (!r && ::GetLastError() != WSA_IO_PENDING)
+			throw notstd::winSystemError();
+	}
+
+	void IOSocket::AsyncRecv(ReceiveIOServerData *data, notstd::HandleType proc)
+	{
+		data->SetHandle(proc);
+		AsyncRecv(data);
+	}
+
+	void IOSocket::AsyncRecv(ReceiveIOServerData *data)
+	{
+		WSABUF buf;
+		buf.buf = data->GetDataBuffer()->mBegin;
+		buf.len = data->GetDataBuffer()->mCap;
+		DWORD flag = 0;
+		int r = ::WSARecv(mSock.GetHandle(), &buf, 1, nullptr, &flag,
+			static_cast<LPOVERLAPPED>(data), nullptr);
+		if (r && ::GetLastError() != WSA_IO_PENDING)
+			throw notstd::winSystemError();
+	}
+
+	void IOSocket::AsyncSend(SendIOServerData *data, notstd::HandleType proc)
+	{
+		data->SetHandle(proc);
+		AsyncSend(data);
+	}
+
+	void IOSocket::AsyncSend(SendIOServerData *data)
+	{
+		DWORD flag = 0;
+		WSABUF buf;
+		auto x = data->GetDataBuffer();
+		buf.buf = x->mBegin;
+		buf.len = x->mLen;
+		int r = ::WSASend(mSock.GetHandle(), &buf, 1, nullptr, flag,
+			static_cast<LPWSAOVERLAPPED>(data), nullptr);
+		if (r && ::GetLastError() != WSA_IO_PENDING)
+			throw notstd::winSystemError();
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+
+	AcceptSocket::AcceptSocket(IOServer &ioServer)
+		: IOSocket(ioServer)
+	{
+	}
+
+	void AcceptSocket::AsyncAccept(AcceptIOServerData *data, 
+		IOSocket *listenSocket, notstd::HandleType proc)
+	{
+		data->SetHandle(proc);
+		AsyncAccept(data, listenSocket);
+	}
+
+	void AcceptSocket::AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket)
+	{
+		DWORD recved;
+		data->mSock = mSock.GetHandle();
+		data->mServerSocket = listenSocket->GetHandle().GetHandle();
+		if (!(*NetEnviroment::AcceptEx)(listenSocket->GetHandle().GetHandle(),
+			mSock.GetHandle(),
+			reinterpret_cast<PVOID>(data->mSockAddr), 0,
+			sizeof(NetAddress) + 16,
+			sizeof(NetAddress) + 16,
+			&recved, static_cast<LPOVERLAPPED>(data)) && ::GetLastError() != ERROR_IO_PENDING)
+			throw notstd::winSystemError();
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+
 	TimerData::TimerData()
 		: IOServerData(IOS_TIMER)
-		, mDoNotCreateAgain(false)
 	{
 	}
 
@@ -413,10 +554,7 @@ namespace notstd {
 		if (mHandleFunc)
 			mHandleFunc(ioServer, true, data, trans);
 
-		// 在mHandleFunc中，可以设置mDoNotCreateAgain标志，控制是否再次启动
-		// 定时器
-		if (!mDoNotCreateAgain)
-			mIOTimer->CreateTimer();
+		mIOTimer->CreateTimer();
 	}
 
 	IOTimer::IOTimer(IOServer &ioServer)
@@ -431,6 +569,13 @@ namespace notstd {
 		CloseTimer();
 	}
 
+	void CALLBACK IOTimer::TimeCallBack(UINT timeId, UINT msg, DWORD_PTR user, DWORD_PTR, DWORD_PTR)
+	{
+		IOTimer *ioTimer = reinterpret_cast<IOTimer*>(user);
+		assert(timeId == static_cast<decltype(timeId)>(ioTimer->mMMResult));
+		ioTimer->mIOServer.PostUserEvent(&ioTimer->mTimeData);
+	}
+
 	void IOTimer::CloseTimer()
 	{
 		if (mMMResult)
@@ -440,11 +585,10 @@ namespace notstd {
 		}
 	}
 
-	void CALLBACK IOTimer::TimeCallBack(UINT timeId, UINT msg, DWORD_PTR user, DWORD_PTR, DWORD_PTR)
+	void IOTimer::CreateTimer(uint32_t delay, notstd::HandleType proc)
 	{
-		IOTimer *ioTimer = reinterpret_cast<IOTimer*>(user);
-		assert(timeId == static_cast<decltype(timeId)>(ioTimer->mMMResult));
-		ioTimer->mIOServer.PostUserEvent(&ioTimer->mTimeData);
+		mTimeData.SetHandle(proc);
+		CreateTimer(delay);
 	}
 
 	void IOTimer::CreateTimer(uint32_t delay)

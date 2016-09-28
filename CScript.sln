@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "base", "base", "{6E6A8E96-15AF-493B-855E-07A1101C9FB3}"
 EndProject
@@ -47,6 +47,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libiconv", "thirdparty\libiconv\libiconv.vcxproj", "{755C7A04-BA07-4EF7-A8DE-AE768800031E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testIOServer", "test\testIOServer\testIOServer.vcxproj", "{737E1621-A1B4-4E94-A77A-B0D61FBB9ED4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0063FFFB-B55A-405C-8B5A-8F0D1D7E31E4} = {0063FFFB-B55A-405C-8B5A-8F0D1D7E31E4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testSSLServer", "test\testSSLServer\testSSLServer.vcxproj", "{1D8D6638-823E-4298-A61F-26F43A9335D2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0063FFFB-B55A-405C-8B5A-8F0D1D7E31E4} = {0063FFFB-B55A-405C-8B5A-8F0D1D7E31E4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testSSLClient", "test\testSSLClient\testSSLClient.vcxproj", "{3D1D78C1-2676-4D6F-90AA-C60708BC766A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0063FFFB-B55A-405C-8B5A-8F0D1D7E31E4} = {0063FFFB-B55A-405C-8B5A-8F0D1D7E31E4}
 	EndProjectSection
@@ -121,6 +131,22 @@ Global
 		{737E1621-A1B4-4E94-A77A-B0D61FBB9ED4}.Release|Win32.ActiveCfg = Release|Win32
 		{737E1621-A1B4-4E94-A77A-B0D61FBB9ED4}.Release|Win32.Build.0 = Release|Win32
 		{737E1621-A1B4-4E94-A77A-B0D61FBB9ED4}.Release|x64.ActiveCfg = Release|Win32
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Debug|Win32.Build.0 = Debug|Win32
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Debug|x64.ActiveCfg = Debug|x64
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Debug|x64.Build.0 = Debug|x64
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Release|Win32.ActiveCfg = Release|Win32
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Release|Win32.Build.0 = Release|Win32
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Release|x64.ActiveCfg = Release|x64
+		{1D8D6638-823E-4298-A61F-26F43A9335D2}.Release|x64.Build.0 = Release|x64
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Debug|Win32.Build.0 = Debug|Win32
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Debug|x64.ActiveCfg = Debug|x64
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Debug|x64.Build.0 = Debug|x64
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Release|Win32.ActiveCfg = Release|Win32
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Release|Win32.Build.0 = Release|Win32
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Release|x64.ActiveCfg = Release|x64
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,6 +160,8 @@ Global
 		{1D6039F6-5078-416F-A3AF-A36EFC7E6A1C} = {6E6A8E96-15AF-493B-855E-07A1101C9FB3}
 		{755C7A04-BA07-4EF7-A8DE-AE768800031E} = {6E6A8E96-15AF-493B-855E-07A1101C9FB3}
 		{737E1621-A1B4-4E94-A77A-B0D61FBB9ED4} = {BFE84BDE-401A-4F27-89B4-E6317DB73BEF}
+		{1D8D6638-823E-4298-A61F-26F43A9335D2} = {BFE84BDE-401A-4F27-89B4-E6317DB73BEF}
+		{3D1D78C1-2676-4D6F-90AA-C60708BC766A} = {BFE84BDE-401A-4F27-89B4-E6317DB73BEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		VisualSVNWorkingCopyRoot = .

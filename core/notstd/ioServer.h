@@ -1,12 +1,43 @@
 #pragma once
 #include "simpleTool.h"
 #include "sockbase.h"
+#include "objbase.h"
+
+inline void OutputDebugStringHelper(const char *format, ...)
+{
+	char buf[1024];
+	char *tempBuf = nullptr;
+
+	va_list valist;
+	va_start(valist, format);
+	int r = vsnprintf(buf, sizeof(buf), format, valist);
+	if (r >= sizeof(buf))
+	{
+		tempBuf = reinterpret_cast<char*>(malloc(r));
+		vsnprintf(tempBuf, r, format, valist);
+	}
+	va_end(valist);
+
+	OutputDebugStringA(tempBuf ? tempBuf : buf);
+	if (tempBuf)
+		free(tempBuf);
+}
+
+struct ssl_ctx_st;
+typedef struct ssl_ctx_st SSL_CTX;
+
+struct ssl_st;
+typedef struct ssl_st SSL;
+
+struct bio_set;
+typedef struct bio_st BIO;
 
 namespace notstd {
 	class IOServer;
 
 	///////////////////////////////////////////////////////////////////////////
 
+	class NOTSTD_API std::exception;
 	class NOTSTD_API notstdException : public std::exception
 	{
 	protected:
@@ -65,7 +96,24 @@ namespace notstd {
 
 	///////////////////////////////////////////////////////////////////////////
 
-	template struct NOTSTD_API std::pair<char*, size_t>;
+	class NOTSTD_API SSLContext
+	{
+	private:
+		SSL_CTX *mSSLCtx;
+
+	public:
+		SSLContext();
+		~SSLContext();
+
+		SSL_CTX* GetSSLContext();
+		bool UsePrivateKeyFile(const char *filePathName, char *password = nullptr);
+		bool UseCertificateFile(const char *filePathName);
+
+		bool SetNoVerify();
+	};
+
+	///////////////////////////////////////////////////////////////////////////
+
 	class NOTSTD_API IOServerData : public OVERLAPPED
 	{
 		friend class IOServer;
@@ -90,10 +138,11 @@ namespace notstd {
 		virtual ~IOServerData();
 
 		void SetHandle(HandleType h);
+		HandleType GetHandle() const { return mHandleFunc; }
 		virtual void OnFunc(IOServer *ioServer, const IOErrorCode &e, IOServerData *data, size_t trans);
 	};
 
-	class NOTSTD_API IOServerDataWithCache: public IOServerData
+	struct NOTSTD_API IOServerDataBuffer
 	{
 	public:
 		char mBuf[1400];
@@ -104,27 +153,46 @@ namespace notstd {
 		size_t mCap, mLen;
 
 	public:
-		IOServerDataWithCache(uint32_t t);
-		virtual ~IOServerDataWithCache();
+		IOServerDataBuffer();
+		~IOServerDataBuffer();
 
-		void SetSendBuffer(const void *d, size_t len);
+		void Clear();
+		void CopyData(const IOServerDataBuffer *other);
 
-		std::pair<char*, size_t> GetBufferAndSize();
-		std::pair<char*, size_t> GetBufferAndCap();
+		void SetBufferSize(const void *buf, size_t size);
+		void SetBufferCap(size_t size);
+		size_t GetCap() const { return mCap; }
+		size_t GetSize() const { return mLen; }
 	};
 
-	class NOTSTD_API SocketIOServerData : public IOServerDataWithCache
+	class SocketIOServerData;
+	class ConnectIOServerData;
+	class SendIOServerData;
+	class ReceiveIOServerData;
+	class AcceptIOServerData;
+
+	// 说明：这里采用成员的方式，并通过构造函数来决定事件处理和缓存的
+	// 创建，是为了不使用模板
+	class NOTSTD_API SocketIOServerData : public IOServerData
 	{
 		friend class IOSocket;
+		friend class IOServer;
+
 	protected:
+		IOServerDataBuffer mDataBuffer;
 		SOCKET mSock;
 
 	public:
 		SocketIOServerData(uint32_t type);
-		virtual void OnFunc(IOServer *ioServer, const IOErrorCode &e, IOServerData *data, size_t trans);
-	};
+		virtual ~SocketIOServerData();
 
-	class NOTSTD_API IOServerQuitMessageData : public SocketIOServerData
+		virtual void OnFunc(IOServer *ioServer, 
+			const IOErrorCode &e, IOServerData *data, size_t trans);
+
+		IOServerDataBuffer* GetDataBuffer() { return &mDataBuffer; }
+	};
+	
+	class NOTSTD_API IOServerQuitMessageData : public IOServerData
 	{
 	public:
 		IOServerQuitMessageData();
@@ -163,6 +231,9 @@ namespace notstd {
 
 	public:
 		AcceptIOServerData();
+
+		const notstd::NetAddress& GetClientAddr() const { return mClient; }
+		const notstd::NetAddress& GetServerAddr() const { return mServer; }
 	};
 
 	class IOTimer;
@@ -172,7 +243,6 @@ namespace notstd {
 
 	private:
 		IOTimer *mIOTimer;
-		bool mDoNotCreateAgain;
 
 	public:
 		TimerData();
@@ -190,36 +260,23 @@ namespace notstd {
 
 	public:
 		IOSocket(IOServer &ioServer);
+
 		SocketHandle& GetHandle() { return mSock; }
 
 		SOCKET Create(SocketType sockType = Stream,
 			ProtocolType protocolType = Tcp, DWORD flags = 0);
+
 		int Close();
 
-		template <typename HandleProc>
-		void AsyncConnect(const NetAddress &addr, ConnectIOServerData *data, HandleProc proc)
-		{
-			data->SetHandle(proc);
-			AsyncConnect(addr, data);
-		}
+		void AsyncConnect(const NetAddress &addr, ConnectIOServerData *data, notstd::HandleType proc);
 		void AsyncConnect(const NetAddress &addr, ConnectIOServerData *data);
 		int Connect();
 
-		template <typename HandleProc>
-		void AsyncRecv(ReceiveIOServerData *data, HandleProc proc)
-		{
-			data->SetHandle(proc);
-			AsyncRecv(data);
-		}
+		void AsyncRecv(ReceiveIOServerData *data, notstd::HandleType proc);
 		void AsyncRecv(ReceiveIOServerData *data);
 		int Recv();
 
-		template <typename HandleProc>
-		void AsyncSend(SendIOServerData *data, HandleProc proc)
-		{
-			data->SetHandle(proc);
-			AsyncSend(data);
-		}
+		void AsyncSend(SendIOServerData *data, notstd::HandleType proc);
 		void AsyncSend(SendIOServerData *data);
 		int Send();
 	};
@@ -229,12 +286,8 @@ namespace notstd {
 	public:
 		AcceptSocket(IOServer &ioServer);
 
-		template <typename HandleProc>
-		void AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket, HandleProc proc)
-		{
-			data->SetHandle(proc);
-			AsyncAccept(data, listenSocket);
-		}
+		void AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket, 
+			notstd::HandleType proc);
 		void AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket);
 	};
 
@@ -271,9 +324,8 @@ namespace notstd {
 		UINT mDelay;
 		TimerData mTimeData;
 
-		static void CALLBACK TimeCallBack(UINT timeId,
-			UINT msg, DWORD_PTR user, DWORD_PTR, DWORD_PTR);
-
+		static void CALLBACK TimeCallBack(UINT timeId, UINT msg, 
+			DWORD_PTR user, DWORD_PTR, DWORD_PTR);
 		void CreateTimer();
 
 	public:
@@ -282,18 +334,81 @@ namespace notstd {
 
 		void CloseTimer();
 
-		template <typename HandleProc>
-		void CreateTimer(uint32_t delay, HandleProc proc)
-		{
-			mTimeData.SetHandle(proc);
-			CreateTimer(delay);
-		}
+		void CreateTimer(uint32_t delay, notstd::HandleType proc);
 		void CreateTimer(uint32_t delay);
 	};
 
 	///////////////////////////////////////////////////////////////////////////
 
 #define IOSOCKET_MEMBER_BIND(addr,obj) std::bind(addr, obj, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+
+	///////////////////////////////////////////////////////////////////////////
+	// For ssl
+
+	class SSLSocket;
+
+	class NOTSTD_API SSLReceiveIOServerData : public notstd::ReceiveIOServerData
+	{
+		friend class SSLSocket;
+
+	private:
+		notstd::HandleType mUserCallback;
+	};
+
+	class NOTSTD_API SSLSendIOServerData : public notstd::SendIOServerData
+	{
+		friend class SSLSocket;
+
+	private:
+		notstd::HandleType mUserCallback;
+	};
+
+	class NOTSTD_API SSLSocket : public notstd::AcceptSocket
+	{
+	private:
+		bool mHasHandShake;
+		bool mMoreRead;
+
+		// SSL相关
+		SSL_CTX *mSSLContext;
+		SSL *mSSL;
+		enum { RECV, SEND };
+		BIO *mBIO[2];
+
+		notstd::SendIOServerData mSendDataForSSLHandShake;
+		notstd::ReceiveIOServerData mRecvDataForSSLHandShake;
+		char mRecvBuffer[1024];
+		char mSendBuffer[1024];
+
+		notstd::HandleType mUserOnHandShake;
+		notstd::HandleType mUserOnAcceptOrUserOnConnect;
+
+	private:
+		void OnSSLReceive(notstd::IOServer *ioServer, const notstd::IOErrorCode &e,
+			notstd::IOServerData *data, size_t trans);
+		void OnSSLSend(notstd::IOServer *ioServer, const notstd::IOErrorCode &e,
+			notstd::IOServerData *data, size_t trans);
+		void OnSSLConnect(notstd::IOServer *ioServer, const notstd::IOErrorCode &e,
+			notstd::IOServerData *data, size_t trans);
+		void OnSSLAccept(notstd::IOServer *ioServer, const notstd::IOErrorCode &e,
+			notstd::IOServerData *data, size_t trans);
+		void OnSendAfterHandShake(notstd::IOServer *ioServer, const notstd::IOErrorCode &e,
+			notstd::IOServerData *data, size_t trans);
+		void OnRecvAfterHandShake(notstd::IOServer *ioServer, const notstd::IOErrorCode &e,
+			notstd::IOServerData *data, size_t trans);
+		bool ReadFromSSLStream(const char *o, size_t s, std::string &data);
+		bool WriteToSSLStream(const char *toWrite, size_t s, std::string &data);
+
+	public:
+		SSLSocket(notstd::IOServer &ioServer, SSL_CTX *sslctx, 
+			notstd::HandleType onHandShake = nullptr);
+		virtual ~SSLSocket();
+		void SSL_AsyncSend(SSLSendIOServerData *data, notstd::HandleType h = nullptr);
+		void SSL_AsyncRecv(SSLReceiveIOServerData *data, notstd::HandleType h = nullptr);
+		void SSL_AsyncAccept(notstd::AcceptIOServerData *data, 
+			IOSocket *listenSocket, notstd::HandleType h = nullptr);
+		void SSL_AsyncConnect(const NetAddress &addr, notstd::ConnectIOServerData *data, notstd::HandleType h = nullptr);
+	};
 
 	///////////////////////////////////////////////////////////////////////////
 }
