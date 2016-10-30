@@ -190,6 +190,8 @@ namespace notstd {
 			const IOErrorCode &e, IOServerData *data, size_t trans);
 
 		IOServerDataBuffer* GetDataBuffer() { return &mDataBuffer; }
+
+		SOCKET GetSocket() { return mSock; }
 	};
 	
 	class NOTSTD_API IOServerQuitMessageData : public IOServerData
@@ -268,16 +270,16 @@ namespace notstd {
 
 		int Close();
 
-		void AsyncConnect(const NetAddress &addr, ConnectIOServerData *data, notstd::HandleType proc);
-		void AsyncConnect(const NetAddress &addr, ConnectIOServerData *data);
+		bool AsyncConnect(const NetAddress &addr, ConnectIOServerData *data, notstd::HandleType proc);
+		bool AsyncConnect(const NetAddress &addr, ConnectIOServerData *data);
 		int Connect();
 
-		void AsyncRecv(ReceiveIOServerData *data, notstd::HandleType proc);
-		void AsyncRecv(ReceiveIOServerData *data);
+		bool AsyncRecv(ReceiveIOServerData *data, notstd::HandleType proc);
+		bool AsyncRecv(ReceiveIOServerData *data);
 		int Recv();
 
-		void AsyncSend(SendIOServerData *data, notstd::HandleType proc);
-		void AsyncSend(SendIOServerData *data);
+		bool AsyncSend(SendIOServerData *data, notstd::HandleType proc);
+		bool AsyncSend(SendIOServerData *data);
 		int Send();
 	};
 
@@ -286,9 +288,9 @@ namespace notstd {
 	public:
 		AcceptSocket(IOServer &ioServer);
 
-		void AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket, 
+		bool AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket,
 			notstd::HandleType proc);
-		void AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket);
+		bool AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket);
 	};
 
 	///////////////////////////////////////////////////////////////////////////
@@ -319,14 +321,16 @@ namespace notstd {
 		friend class TimerData;
 
 	private:
-		MMRESULT mMMResult;
+		HANDLE mTimeQueueTimer;
 		IOServer &mIOServer;
 		UINT mDelay;
-		TimerData mTimeData;
+		//TimerData mTimeData;
+		TimerData *mTimerData;
+		// 是否仅激发一次
+		bool mOnce;
 
-		static void CALLBACK TimeCallBack(UINT timeId, UINT msg, 
-			DWORD_PTR user, DWORD_PTR, DWORD_PTR);
-		void CreateTimer();
+		static void CALLBACK TimeCallBack(PVOID parameter, BOOLEAN timerOrWaitFired);
+		bool CreateTimer();
 
 	public:
 		IOTimer(IOServer &ioServer);
@@ -334,8 +338,8 @@ namespace notstd {
 
 		void CloseTimer();
 
-		void CreateTimer(uint32_t delay, notstd::HandleType proc);
-		void CreateTimer(uint32_t delay);
+		bool CreateTimer(uint32_t delay, TimerData *timeData, notstd::HandleType proc, bool once = false);
+		bool CreateTimer(uint32_t delay, bool once = false);
 	};
 
 	///////////////////////////////////////////////////////////////////////////

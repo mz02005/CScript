@@ -455,14 +455,14 @@ namespace notstd {
 		return mSock.Close();
 	}
 
-	void IOSocket::AsyncConnect(const NetAddress &addr, 
+	bool IOSocket::AsyncConnect(const NetAddress &addr, 
 		ConnectIOServerData *data, notstd::HandleType proc)
 	{
 		data->SetHandle(proc);
-		AsyncConnect(addr, data);
+		return AsyncConnect(addr, data);
 	}
 
-	void IOSocket::AsyncConnect(const NetAddress &addr, ConnectIOServerData *data)
+	bool IOSocket::AsyncConnect(const NetAddress &addr, ConnectIOServerData *data)
 	{
 		setsockopt(mSock.GetHandle(), SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
 		mSock.Bind(notstd::NetAddress("0.0.0.0", 0));
@@ -471,16 +471,18 @@ namespace notstd {
 			reinterpret_cast<const sockaddr*>(&addr), sizeof(addr),
 			nullptr, 0L, nullptr, static_cast<LPOVERLAPPED>(data));
 		if (!r && ::GetLastError() != WSA_IO_PENDING)
-			throw notstd::winSystemError();
+			return false;
+
+		return true;
 	}
 
-	void IOSocket::AsyncRecv(ReceiveIOServerData *data, notstd::HandleType proc)
+	bool IOSocket::AsyncRecv(ReceiveIOServerData *data, notstd::HandleType proc)
 	{
 		data->SetHandle(proc);
-		AsyncRecv(data);
+		return AsyncRecv(data);
 	}
 
-	void IOSocket::AsyncRecv(ReceiveIOServerData *data)
+	bool IOSocket::AsyncRecv(ReceiveIOServerData *data)
 	{
 		WSABUF buf;
 		buf.buf = data->GetDataBuffer()->mBegin;
@@ -489,16 +491,17 @@ namespace notstd {
 		int r = ::WSARecv(mSock.GetHandle(), &buf, 1, nullptr, &flag,
 			static_cast<LPOVERLAPPED>(data), nullptr);
 		if (r && ::GetLastError() != WSA_IO_PENDING)
-			throw notstd::winSystemError();
+			return false;
+		return true;
 	}
 
-	void IOSocket::AsyncSend(SendIOServerData *data, notstd::HandleType proc)
+	bool IOSocket::AsyncSend(SendIOServerData *data, notstd::HandleType proc)
 	{
 		data->SetHandle(proc);
-		AsyncSend(data);
+		return AsyncSend(data);
 	}
 
-	void IOSocket::AsyncSend(SendIOServerData *data)
+	bool IOSocket::AsyncSend(SendIOServerData *data)
 	{
 		DWORD flag = 0;
 		WSABUF buf;
@@ -508,7 +511,9 @@ namespace notstd {
 		int r = ::WSASend(mSock.GetHandle(), &buf, 1, nullptr, flag,
 			static_cast<LPWSAOVERLAPPED>(data), nullptr);
 		if (r && ::GetLastError() != WSA_IO_PENDING)
-			throw notstd::winSystemError();
+			return false;
+
+		return true;
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -518,14 +523,14 @@ namespace notstd {
 	{
 	}
 
-	void AcceptSocket::AsyncAccept(AcceptIOServerData *data, 
+	bool AcceptSocket::AsyncAccept(AcceptIOServerData *data, 
 		IOSocket *listenSocket, notstd::HandleType proc)
 	{
 		data->SetHandle(proc);
-		AsyncAccept(data, listenSocket);
+		return AsyncAccept(data, listenSocket);
 	}
 
-	void AcceptSocket::AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket)
+	bool AcceptSocket::AsyncAccept(AcceptIOServerData *data, IOSocket *listenSocket)
 	{
 		DWORD recved;
 		data->mSock = mSock.GetHandle();
@@ -536,7 +541,8 @@ namespace notstd {
 			sizeof(NetAddress) + 16,
 			sizeof(NetAddress) + 16,
 			&recved, static_cast<LPOVERLAPPED>(data)) && ::GetLastError() != ERROR_IO_PENDING)
-			throw notstd::winSystemError();
+			return false;
+		return true;
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -554,13 +560,21 @@ namespace notstd {
 		if (mHandleFunc)
 			mHandleFunc(ioServer, true, data, trans);
 
-		mIOTimer->CreateTimer();
+		if (!mIOTimer->mOnce)
+		{
+			if (!mIOTimer->CreateTimer())
+			{
+				if (mHandleFunc)
+					mHandleFunc(ioServer, false, data, trans);
+			}
+		}
 	}
 
 	IOTimer::IOTimer(IOServer &ioServer)
 		: mIOServer(ioServer)
-		, mMMResult(NULL)
+		, mTimeQueueTimer(NULL)
 		, mDelay(1000)
+		, mTimerData(nullptr)
 	{
 	}
 
@@ -569,40 +583,61 @@ namespace notstd {
 		CloseTimer();
 	}
 
-	void CALLBACK IOTimer::TimeCallBack(UINT timeId, UINT msg, DWORD_PTR user, DWORD_PTR, DWORD_PTR)
+	void CALLBACK IOTimer::TimeCallBack(PVOID parameter, BOOLEAN timerOrWaitFired)
 	{
-		IOTimer *ioTimer = reinterpret_cast<IOTimer*>(user);
-		assert(timeId == static_cast<decltype(timeId)>(ioTimer->mMMResult));
-		ioTimer->mIOServer.PostUserEvent(&ioTimer->mTimeData);
+		IOTimer *ioTimer = reinterpret_cast<IOTimer*>(parameter);
+		ioTimer->mIOServer.PostUserEvent(ioTimer->mTimerData);
+	}
+
+	INT OnCloseTimerException(DWORD code)
+	{
+		INT r = EXCEPTION_CONTINUE_SEARCH;
+		if (code == EXCEPTION_INVALID_HANDLE
+			|| code == STATUS_INVALID_PARAMETER)
+			return EXCEPTION_EXECUTE_HANDLER;
+		return r;
 	}
 
 	void IOTimer::CloseTimer()
 	{
-		if (mMMResult)
+		if (mTimeQueueTimer)
 		{
-			::timeKillEvent(mMMResult);
-			mMMResult = NULL;
+			__try
+			{
+				::DeleteTimerQueueTimer(NULL, mTimeQueueTimer, INVALID_HANDLE_VALUE);
+			}
+			__except (OnCloseTimerException(GetExceptionCode()))
+			{
+			}
+			mTimeQueueTimer = NULL;
 		}
 	}
 
-	void IOTimer::CreateTimer(uint32_t delay, notstd::HandleType proc)
+	bool IOTimer::CreateTimer(uint32_t delay, TimerData *timeData, 
+		notstd::HandleType proc, bool once)
 	{
-		mTimeData.SetHandle(proc);
-		CreateTimer(delay);
+		mOnce = once;
+		mTimerData = timeData;
+		mTimerData->SetHandle(proc);
+		return CreateTimer(delay, once);
 	}
 
-	void IOTimer::CreateTimer(uint32_t delay)
+	bool IOTimer::CreateTimer(uint32_t delay, bool once)
 	{
+		assert(mTimerData);
+		mOnce = once;
 		mDelay = delay;
-		mTimeData.mIOTimer = this;
-		mMMResult = ::timeSetEvent(delay, 10, &IOTimer::TimeCallBack,
-			reinterpret_cast<DWORD_PTR>(this), TIME_ONESHOT | TIME_KILL_SYNCHRONOUS);
+		mTimerData->mIOTimer = this;
+		BOOL r = ::CreateTimerQueueTimer(&mTimeQueueTimer, NULL,
+			&IOTimer::TimeCallBack, reinterpret_cast<PVOID>(this), delay, 0, WT_EXECUTEDEFAULT);
+		return r && mTimeQueueTimer;
 	}
 
-	void IOTimer::CreateTimer()
+	bool IOTimer::CreateTimer()
 	{
-		mMMResult = ::timeSetEvent(mDelay, 10, &IOTimer::TimeCallBack,
-			reinterpret_cast<DWORD_PTR>(this), TIME_ONESHOT | TIME_KILL_SYNCHRONOUS);
+		BOOL r = ::CreateTimerQueueTimer(&mTimeQueueTimer, NULL,
+			&IOTimer::TimeCallBack, reinterpret_cast<PVOID>(this), mDelay, mDelay, WT_EXECUTEDEFAULT);
+		return r && mTimeQueueTimer;
 	}
 
 	///////////////////////////////////////////////////////////////////////////
