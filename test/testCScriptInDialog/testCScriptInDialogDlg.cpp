@@ -233,24 +233,36 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 	HANDLE compileResult = NULL;
 	scriptAPI::ScriptRuntimeContext *rc = NULL;
 
+	std::string appDir = notstd::AppHelper::GetAppDir();
+
 	do {
 		scriptAPI::SimpleCScriptEng::Init();
 		
 		scriptAPI::ScriptCompiler comp;
-		comp.PushName("println2");
-		comp.PushName("printInListBox");
+		
+		println = new runtime::ObjectModule<println2>;
+		print = new runtime::ObjectModule<printInListBox>;
+		println->mDlg = this;
+		print->mDlg = this;
+
+		scriptAPI::ScriptLibReg les[] =
+		{
+			{ "println2", println, },
+			{ "print2", print, },
+			{ TESTCALLBACKNAME, new runtime::ObjectModule<TestCallback>, },
+		};
+		comp.GetLibRegister().RegistLib("testCScriptRuntime", les, sizeof(les) / sizeof(les[0]));
 
 		scriptAPI::FileStream fs(CW2A(mSourcePath).m_psz);
 
 		if (!mLoadCodeExists)
 		{
-			comp.PushName(TESTCALLBACKNAME);
 			if ((compileResult = comp.Compile(&fs, true)) == NULL)
 			{
 				MessageBox(L"±‡“Î¥ÌŒÛ");
 				break;
 			}
-			if (fopen_s(&file, "c:\\work\\codeoutput.txt", "wb"))
+			if (fopen_s(&file, (appDir + "codeoutput.txt").c_str(), "wb"))
 				break;
 			if (comp.SaveCodeToFile(compileResult, file) < 0)
 			{
@@ -265,7 +277,7 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 		}
 		else
 		{
-			if (fopen_s(&file, "c:\\work\\codeoutput.txt", "rb"))
+			if (fopen_s(&file, (appDir + "codeoutput.txt").c_str(), "rb"))
 				break;
 
 			compileResult = scriptAPI::ScriptCompiler::CreateCompileResult();
@@ -280,15 +292,9 @@ void CtestCScriptInDialogDlg::ExecuteThreadInner(void *param)
 		rc = scriptAPI::ScriptRuntimeContext::CreateScriptRuntimeContext();
 		if (!rc)
 			break;
-		println = new runtime::ObjectModule<println2>;
-		print = new runtime::ObjectModule<printInListBox>;
-		println->mDlg = this;
-		print->mDlg = this;
-		rc->PushRuntimeObject(println);
-		rc->PushRuntimeObject(print);
+		rc->PushRuntimeObjectInLibs(&comp.GetLibRegister());
 		rc->ReplaceRuntimeFunc("println", println, &comp);
 		rc->ReplaceRuntimeFunc("print", print, &comp);
-		rc->PushRuntimeObject(new runtime::ObjectModule<TestCallback>);
 		if (rc->Execute(compileResult) < 0)
 			break;
 		scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(rc);

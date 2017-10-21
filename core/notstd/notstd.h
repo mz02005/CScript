@@ -18,6 +18,8 @@
 #include <notstd/objbase.h>
 #include <notstd/filesystem.h>
 #include <notstd/simpleTool.h>
+#include <notstd/notstdString.h>
+#include <notstd/notstdArray.h>
 
 #if defined(PLATFORM_WINDOWS)
 #include <notstd/cmdline.h>

@@ -199,6 +199,13 @@ namespace runtime {
 		mData->push_back(o);
 	}
 
+	runtime::runtimeObjectBase* arrayObject::GetSub(uint32_t i)
+	{
+		if (i >= mData->size())
+			return NullTypeObject::CreateNullTypeObject();
+		return (*mData)[i];
+	}
+
 	///////////////////////////////////////////////////////////////////////////////
 
 	runtimeObjectBase* CreateArrayObj::doCall(runtime::doCallContext *context)

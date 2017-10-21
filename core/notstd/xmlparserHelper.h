@@ -341,13 +341,13 @@ namespace notstd {
 #define DECLARE_XMLSERIAL_ELEM_A(classname,alias) \
 	DECLARE_DYNAMICOBJ(classname) \
 	public: \
-	virtual bool GetXmlFlagItemList(notstd::XmlFlagItem::ItemType type, List<const notstd::XmlFlagItem*> &flagItemList) const; \
+	virtual bool GetXmlFlagItemList(notstd::XmlFlagItem::ItemType type, notstd::List<const notstd::XmlFlagItem*> &flagItemList) const; \
 	public: \
 		std::string mCharacters; \
 	virtual std::string GetTagName() const \
-		{ \
+			{ \
 		return alias; \
-		} 
+			} 
 
 #define DECLARE_XMLSERIAL_ELEM(classname) \
 	DECLARE_DYNAMICOBJ(classname) \
@@ -356,16 +356,17 @@ namespace notstd {
 	public: \
 		std::string mCharacters; \
 	virtual std::string GetTagName() const \
-		{ \
+			{ \
 	return GetThisObjInfo()->className; \
-		}
+			}
 
 #define IMPLEMENT_XMLSERIAL_ELEM(classname,parentname) \
 	IMPLEMENT_DYNAMICOBJ(classname,parentname)
 
-#define BEGIN_XMLSERIAL_FLAG_TABLE(classname) \
+#define BEGIN_XMLSERIAL_FLAG_TABLE(classname,parentclassname) \
 	bool classname::GetXmlFlagItemList(notstd::XmlFlagItem::ItemType type, notstd::List<const notstd::XmlFlagItem*> &flagItemList) const { \
 		typedef classname MyClassName; \
+		typedef parentclassname ParentClassName; \
 		static const notstd::XmlFlagItem xmlFlagItemList[] = {
 
 #define XMLSERIAL_PROP_ENTRY(propname,memname) \
@@ -386,7 +387,7 @@ namespace notstd {
 #define END_XMLSERIAL_FLAG_TABLE() \
 			notstd::XmlFlagItem(notstd::XmlFlagItem::NullType, NULL, 0), \
 			}; \
-		__super::GetXmlFlagItemList(type, flagItemList); \
+		ParentClassName::GetXmlFlagItemList(type, flagItemList); \
 		const notstd::XmlFlagItem *lastFlag = xmlFlagItemList + sizeof(xmlFlagItemList) / sizeof(xmlFlagItemList[0]) - 1; \
 		for (const notstd::XmlFlagItem *flag = xmlFlagItemList; flag != lastFlag; flag++) { \
 			if (type == notstd::XmlFlagItem::NullType || flag->itemType == type) \
@@ -479,7 +480,7 @@ namespace notstd {
 	};
 
 #if defined(PLATFORM_WINDOWS)
-	template class NOTSTD_API List<const notstd::XmlFlagItem*>;
+	template class NOTSTD_API notstd::List<const notstd::XmlFlagItem*>;
 #endif
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -499,7 +500,7 @@ namespace notstd {
 	};
 
 #if defined(PLATFORM_WINDOWS)
-	template class NOTSTD_API List<XmlElemSerializerBase*>;
+	template class NOTSTD_API notstd::List<XmlElemSerializerBase*>;
 #endif
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -509,7 +510,7 @@ namespace notstd {
 		DECLARE_OBJINFO(SubElementList)
 
 	public:
-		typedef List<XmlElemSerializerBase*> XmlSubElementListType;
+		typedef notstd::List<XmlElemSerializerBase*> XmlSubElementListType;
 		XmlSubElementListType mSubElemList;
 
 	public:
@@ -535,7 +536,7 @@ namespace notstd {
 		bool WriteElemPropList(XmlElemSerializerBase *elem, xmlTextWriterPtr tWriter);
 		bool WriteElemStart(XmlElemSerializerBase *elem, xmlTextWriterPtr tWriter);
 		bool WriteElemEnd(XmlElemSerializerBase *elem, xmlTextWriterPtr tWriter);
-		void AddSubNodeHelper(List<xmlSavingTreeNode> &tnList, XmlElemSerializerBase *elem);
+		void AddSubNodeHelper(notstd::List<xmlSavingTreeNode> &tnList, XmlElemSerializerBase *elem);
 
 	public:
 		XmlElemSerializer(const std::string &path);

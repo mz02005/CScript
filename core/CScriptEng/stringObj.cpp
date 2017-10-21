@@ -3,6 +3,7 @@
 #include <regex>
 #include "arrayType.h"
 #include "notstd/stringHelper.h"
+#include "BufferObject.h"
 
 namespace runtime {
 
@@ -38,6 +39,10 @@ namespace runtime {
 			stringObject *val = new ObjectModule<stringObject>;
 			*val->mVal = *mVal + *static_cast<const stringObject*>(obj)->mVal;
 			r = val;
+		}
+		else if (typeId == DT_null)
+		{
+			return this;
 		}
 		else
 			return NULL;
@@ -382,6 +387,21 @@ namespace runtime {
 							AppendString(ss, &formatInfo);
 							break;
 						}
+						else if (*p1 == 'u')
+						{
+							int v;
+							try
+							{
+								v = context->GetUint32Param(paramCount - 1);
+							}
+							catch (...)
+							{
+								SCRIPT_TRACE("string.format: unsigned integer parameter expected at position %u.\n", paramCount - 1);
+								return nullRet;
+							}
+							AppendString(notstd::StringHelper::Format("%u", v), &formatInfo);
+							break;
+						}
 						else
 						{
 							SCRIPT_TRACE("string.format: invalid format type %c\n", *p1);
@@ -500,6 +520,69 @@ namespace runtime {
 		}
 	};
 
+	class StringCodecObj : public runtime::baseObjDefault
+	{
+		friend class stringObject;
+
+	private:
+		enum {
+			CC_NULL,
+			CC_MBCS2UNICODE,
+			CC_UNICODE2MBCS,
+			CC_UTF82UNICODE,
+			CC_UNICODE2UTF8,
+		} mConvType;
+		stringObject *mStringObj;
+
+	public:
+		StringCodecObj()
+			: mStringObj(nullptr)
+			, mConvType(CC_NULL)
+		{
+		}
+
+		virtual ~StringCodecObj()
+		{
+			if (mStringObj)
+				mStringObj->Release();
+		}
+
+		virtual runtimeObjectBase* doCall(doCallContext *context) override
+		{
+			do {
+				if (context->GetParamCount() != 0)
+					break;
+				std::string rr;
+				if (CC_MBCS2UNICODE == mConvType)
+				{
+					auto temp = notstd::ICONVext::mbcsToUnicode(*mStringObj->mVal);
+					rr.append(reinterpret_cast<const char*>(temp.c_str()), temp.size() * 2);
+				}
+				else if (CC_UNICODE2MBCS == mConvType)
+				{
+					std::wstring temp(reinterpret_cast<const wchar_t*>(mStringObj->mVal->c_str()), mStringObj->mVal->size() / 2);
+					rr = notstd::ICONVext::unicodeToMbcs(temp);
+				}
+				else if (CC_UTF82UNICODE == mConvType)
+				{
+					auto temp = notstd::ICONVext::utf8ToUnicode(*mStringObj->mVal);
+					rr.append(reinterpret_cast<const char*>(temp.c_str()), temp.size() * 2);
+				}
+				else if (CC_UNICODE2UTF8 == mConvType)
+				{
+					std::wstring temp(reinterpret_cast<const wchar_t*>(mStringObj->mVal->c_str()), mStringObj->mVal->size() / 2);
+					rr = notstd::ICONVext::unicodeToUtf8(temp);
+				}
+				else
+					break;
+				auto bo = new runtime::ObjectModule<BufferObject>;
+				bo->mBuffer = rr;
+				return bo;
+			} while (0);
+			return runtime::NullTypeObject::CreateNullTypeObject();
+		}
+	};
+
 	class String_replaceObj : public runtime::baseObjDefault
 	{
 		friend class stringObject;
@@ -565,6 +648,38 @@ namespace runtime {
 			String_replaceObj *o = new ContainModule<String_replaceObj>(this);
 			o->mStringObj = this;
 			return o;
+		}
+		else if (!strcmp(memName, "mbcs2unicode"))
+		{
+			auto sc = new ObjectModule<StringCodecObj>;
+			sc->mStringObj = this;
+			sc->mConvType = StringCodecObj::CC_MBCS2UNICODE;
+			AddRef();
+			return sc;
+		}
+		else if (!strcmp(memName, "unicode2mbcs"))
+		{
+			auto sc = new ObjectModule<StringCodecObj>;
+			sc->mStringObj = this;
+			sc->mConvType = StringCodecObj::CC_UNICODE2MBCS;
+			AddRef();
+			return sc;
+		}
+		else if (!strcmp(memName, "unicode2utf8"))
+		{
+			auto sc = new ObjectModule<StringCodecObj>;
+			sc->mStringObj = this;
+			sc->mConvType = StringCodecObj::CC_UNICODE2UTF8;
+			AddRef();
+			return sc;
+		}
+		else if (!strcmp(memName, "utf82unicode"))
+		{
+			auto sc = new ObjectModule<StringCodecObj>;
+			sc->mStringObj = this;
+			sc->mConvType = StringCodecObj::CC_UTF82UNICODE;
+			AddRef();
+			return sc;
 		}
 		return baseTypeObject::GetMember(memName);
 	}

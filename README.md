@@ -44,6 +44,13 @@ println(v[0]);
 ```c++
 arr.add(-1, v+0);
 ```
+数组元素是基于对象引用的，但是数组本身赋值是采用复制方式的
+```c++
+array a1 = CreateArray("1","notuse");
+array a2 = a1;
+a2[0] = "0";
+```
+此时，a1[0] != a2[0]。a1[0]还是"1"，而a2[0]的值为"0"
 
 ##可以在引用之前的任意位置声明变量，这同C++有点相似
 如下这些代码都是可以编译通过的：<br>
@@ -61,7 +68,7 @@ int b = a + 1;
 int year = time()[0];
 ```
 * srand和rand也保留了C运行库中同名函数的意义。其中srand也可以没有参数，这种情况下就相当于在标准C中用srand((unsigned)time(NULL));。而rand返回的是[0, 1]之间的浮点数
-* println和print用来向终端控制台输出文本，println带换行标志，print没有。目前没有实现格式化文本的操作。
+* println和print用来向终端控制台输出文本，println带换行标志，print没有。如果需要格式化输出的字串，可以用string.format（string类型的成员函数）。
 * sin函数的意义和C运行库中的一样，可以
 ```c++
 sin(3.1415926 / 2);

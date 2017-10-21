@@ -32,6 +32,7 @@ namespace runtime {
 		virtual stringObject* toString();
 
 		void AddSub(runtime::runtimeObjectBase *o);
+		runtime::runtimeObjectBase* GetSub(uint32_t i);
 	};
 
 	class CreateArrayObj : public runtime::baseObjDefault

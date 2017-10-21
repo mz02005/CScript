@@ -15,6 +15,18 @@ using namespace runtime;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+ScriptSourceCodeStream::~ScriptSourceCodeStream()
+{
+}
+
+uint64_t ScriptSourceCodeStream::GetBaseLine()
+{
+	// 行号位于低32位，列号位于高32位
+	return (static_cast<uint64_t>(1) << 32) | 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 StringStream::StringStream(const char *str, size_t size)
 	: mBuf(new char[size+1])
 	, mSize(size)
@@ -48,6 +60,29 @@ int StringStream::Read(uint8_t *data, int offset, int count)
 
 int64_t StringStream::Seek(int64_t offset, int origPosition)
 {
+	if (ScriptSourceCodeStream::End == origPosition)
+	{
+		if (offset > 0)
+			offset = 0;
+
+		offset = abs(offset);
+		if (offset > mSize)
+			offset = mSize;
+		else
+			offset = mSize - offset;
+
+		mCur = mBuf + offset;
+		return offset;
+	}
+	else if (ScriptSourceCodeStream::Begin == origPosition)
+	{
+		if (offset < 0)
+			offset = 0;
+		if (offset > mSize)
+			offset = mSize;
+		mCur = mBuf + offset;
+		return offset;
+	}
 	assert(0);
 	return 0;
 }

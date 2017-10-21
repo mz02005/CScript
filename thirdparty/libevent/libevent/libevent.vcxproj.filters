@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="coreobjs">
+      <UniqueIdentifier>{0c0c543c-9599-4084-bbba-6074645f7fa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="winobjs">
+      <UniqueIdentifier>{dd7aa7aa-c163-4871-b04a-9ca4a49ce947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="extraobjs">
+      <UniqueIdentifier>{ee19e5b6-63ec-4451-aa33-3aac8637bcbe}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\libevent-2.0.22-stable\event.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\evutil_rand.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\listener.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\log.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\signal.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\strlcpy.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\buffer.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\bufferevent.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\bufferevent_filter.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\bufferevent_pair.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\bufferevent_ratelim.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\bufferevent_sock.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\evmap.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\evthread.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\evutil.c">
+      <Filter>coreobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\bufferevent_async.c">
+      <Filter>winobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\event_iocp.c">
+      <Filter>winobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\evthread_win32.c">
+      <Filter>winobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\win32select.c">
+      <Filter>winobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\buffer_iocp.c">
+      <Filter>winobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\evrpc.c">
+      <Filter>extraobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\http.c">
+      <Filter>extraobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\evdns.c">
+      <Filter>extraobjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.0.22-stable\event_tagging.c">
+      <Filter>extraobjs</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

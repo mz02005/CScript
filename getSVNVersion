@@ -1,0 +1,16 @@
+#!/bin/sh
+
+svnInfoPath=core/CScriptEng/svnInfo.h
+
+new_svn_version=`svn info | grep Revision | awk '{print $2}'`
+old_version=0
+
+if [ -f $svnInfoPath ]; then
+ old_version=`cat $svnInfoPath | grep SVN_VERSION | awk '{print $3}'`
+fi
+
+if [ $old_version -lt $new_svn_version ]; then
+ echo "#pragma once" > $svnInfoPath
+ echo "#define SVN_VERSION $new_svn_version" >> $svnInfoPath
+fi
+

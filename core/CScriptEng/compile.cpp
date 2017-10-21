@@ -157,8 +157,9 @@ IMPLEMENT_OBJINFO(SymbolExpressionNode, ExpressionNode)
 
 SymbolExpressionNode::SymbolExpressionNode(const Symbol &symbol)
 {
-	mSymbol.type = symbol.type;
-	mSymbol.symbolOrig = symbol.symbolOrig;
+	//mSymbol.type = symbol.type;
+	//mSymbol.symbolOrig = symbol.symbolOrig;
+	mSymbol = symbol;
 }
 
 int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResult *compileResult)
@@ -194,7 +195,8 @@ int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResul
 			if (!statement->FindName(mSymbol.symbolOrig.c_str(), l, i)
 				|| !statement->CheckValidLayer(l))
 			{
-				SCRIPT_TRACE("variable or symbol [%s] not defined.\n", mSymbol.symbolOrig.c_str());
+				SCRIPT_TRACE("variable or symbol [%s] not defined [%u:%u].\n", 
+					mSymbol.symbolOrig.c_str(), mSymbol.codePos.line, mSymbol.codePos.column);
 				return -13;
 			}
 			if (l >= 65536)
@@ -1163,7 +1165,9 @@ bool SimpleCScriptEngContext::mayFollowWithEqual(char c) const
 
 int SimpleCScriptEngContext::BeginParseSymbol(scriptAPI::ScriptSourceCodeStream *codeStream)
 {
-	mCodePosition.column = mCodePosition.line = 1;
+	uint64_t blInfo = codeStream->GetBaseLine();
+	mCodePosition.column = static_cast<uint32_t>(blInfo >> 32);
+	mCodePosition.line = static_cast<uint32_t>(blInfo);
 
 	mCodeStream = codeStream;
 	uint64_t codeSize = mCodeStream->Seek(0, scriptAPI::ScriptSourceCodeStream::End);
@@ -1532,7 +1536,7 @@ bool SimpleCScriptEngContext::GetNextSymbolMustBe(Symbol &symbol, const std::str
 	return true;
 }
 
-int SimpleCScriptEngContext::GetNextSymbol(Symbol &symbol)
+int SimpleCScriptEngContext::GetNextSymbolInner(Symbol &symbol)
 {
 	symbol.symbolOrig.clear();
 	symbol.type = Symbol::CommonSymbol;
@@ -1780,6 +1784,13 @@ int SimpleCScriptEngContext::GetNextSymbol(Symbol &symbol)
 	return 1;
 }
 
+int SimpleCScriptEngContext::GetNextSymbol(Symbol &symbol)
+{
+	int rr = GetNextSymbolInner(symbol);
+	symbol.codePos = mCodePosition;
+	return rr;
+}
+
 HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeStream, bool end)
 {
 	auto libToRegistList = mlibRegister.GetLibList();
@@ -1800,7 +1811,7 @@ HANDLE SimpleCScriptEngContext::Compile(scriptAPI::ScriptSourceCodeStream *codeS
 	do {
 		if ((r = mTopLevelFunction.Compile(NULL, this)) < 0)
 		{
-			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Compile fail [%d].\n", r);
+			SCRIPT_TRACE_(scriptLog::LogTool::TraceException)("Compile fail [%d] at(%u,%u).\n", r, mCodePosition.line, mCodePosition.column);
 			break;
 		}
 		GenerateInstructionHelper gih(mCompileResult);

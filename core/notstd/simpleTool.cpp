@@ -6,6 +6,179 @@
 #include <assert.h>
 #include "notstd/stringHelper.h"
 
+#ifdef PLATFORM_WINDOWS
+#include <Mmsystem.h>
+#pragma comment(lib, "winmm.lib")
+#else
+#include <time.h>
+#include <dlfcn.h>
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace notstd {
+	NOTSTD_API uint32_t GetCurrentTick()
+	{
+#ifdef PLATFORM_WINDOWS
+		return ::timeGetTime();
+#else
+		timespec ts;
+		if (clock_gettime(CLOCK_MONOTONIC, &ts) < 0)
+			return (uint32_t)-1;
+		return (uint32_t)(
+			(uint64_t)ts.tv_sec * 1000 +
+			ts.tv_nsec / 1000000);
+#endif
+	}
+
+	NOTSTD_API void* loadlibrary(const char *module)
+	{
+#if defined(PLATFORM_WINDOWS)
+		return (void*)::LoadLibraryA(module);
+#else
+		void *p = ::dlopen(module, RTLD_LAZY);
+		if (!p) {
+			printf("%s\n", dlerror());
+		}
+		return p;
+#endif
+	}
+
+	NOTSTD_API void* getprocaddress(void *module, const char *name)
+	{
+#if defined(PLATFORM_WINDOWS)
+		return (void*)::GetProcAddress((HMODULE)module, name);
+#else
+		void *p = ::dlsym(module, name);
+		if (!p) {
+			printf("%s\n", dlerror());
+		}
+		return p;
+#endif
+	}
+
+	NOTSTD_API bool freelibrary(void *module)
+	{
+#if defined(PLATFORM_WINDOWS)
+		return (::FreeLibrary((HMODULE)module) != FALSE);
+#else
+		return (::dlclose(module) == 0);
+#endif
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+	
+	struct WinProfileInnerInfo
+	{
+		std::map<std::string, std::map<std::string, std::string>> info;
+	};
+
+	WinProfile::WinProfile()
+		: mInnerInfo(new WinProfileInnerInfo)
+	{
+	}
+
+	WinProfile::~WinProfile()
+	{
+		CloseProfile();
+		delete mInnerInfo;
+	}
+
+	int WinProfile::OpenProfile(const char *profileName)
+	{
+		Handle<STDCFILEHandle> file = ::fopen(profileName, "rb");
+		if (!file)
+			return -E_FERROR;
+
+		WinProfileInnerInfo *info = reinterpret_cast<WinProfileInnerInfo*>(mInnerInfo);
+		std::map<std::string, std::string> *curSec = nullptr;
+
+		std::string content;
+		notstd::StringHelper::ReadLineContextT<4096> cc;
+		while (notstd::StringHelper::ReadLine(file, content, &cc))
+		{
+			auto f = content.find('#');
+			if (f != content.npos)
+				content = content.substr(0, f);
+
+			notstd::StringHelper::Trim(content, " \t");
+			if (content.empty())
+				continue;
+
+			if (content.substr(0, 1) == "[")
+			{
+				if (content.substr(content.size() - 1) == "]")
+				{
+					auto secName = content.substr(1, content.size() - 2);
+					if (secName.empty())
+						return -E_INVALID_SECFORMAT;
+					
+					auto rr = info->info.insert(std::make_pair(secName, std::map<std::string, std::string>()));
+					if (rr.second)
+						curSec = &(rr.first->second);
+					else
+						return -E_SEC_DUMP;
+				}
+				else
+				{
+					return -E_INVALID_SECFORMAT;
+				}
+			}
+			else
+			{
+				if (!curSec)
+					return -E_EMPTY_SECTION;
+
+				auto f = content.find('=');
+				if (f == content.npos)
+					return -E_INVALID_VALUE;
+
+				auto left = content.substr(0, f);
+				if (!curSec->insert(std::make_pair(left, content.substr(f + 1))).second)
+					return -E_VALUE_DUMP;
+			}
+		}
+
+		return 0;
+	}
+
+	void WinProfile::CloseProfile()
+	{
+		reinterpret_cast<WinProfileInnerInfo*>(mInnerInfo)->info.clear();
+	}
+
+	std::string WinProfile::_GetProfileString(const char *secName, const char *keyName, const std::string &defVal)
+	{
+		if (!secName || !secName[0]
+			|| !keyName || !keyName[0])
+			return defVal;
+
+		auto &info = reinterpret_cast<WinProfileInnerInfo*>(mInnerInfo)->info;
+		auto secIter = info.find(secName);
+		if (secIter == info.end())
+			return defVal;
+
+		auto keyIter = secIter->second.find(keyName);
+		if (keyIter == secIter->second.end())
+			return defVal;
+
+		return keyIter->second;
+	}
+
+	int32_t WinProfile::_GetProfileInt32(const char *secName, const char *keyName, int32_t defVal)
+	{
+		auto r = _GetProfileString(secName, keyName, std::to_string(defVal));
+		return static_cast<int>(atoi(r.c_str()));
+	}
+
+	uint32_t WinProfile::_GetProfileUint32(const char *secName, const char *keyName, uint32_t defVal)
+	{
+		auto r = _GetProfileString(secName, keyName, std::to_string(defVal));
+		char *endPtr = nullptr;
+		return static_cast<uint32_t>(strtoul(r.c_str(), &endPtr, 10));
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 bool STDCFILEHandle::IsNullHandle(HandleType h)
@@ -437,11 +610,34 @@ Time Time::GetCurrentTime()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int File::GetFileAttribute(const std::wstring &filePathName, FileAttribute *fileAttributes)
+FileAttribute::FileAttribute()
+{
+	memset(this, 0, sizeof(*this));
+}
+
+bool FileAttribute::isDir() const
+{
+#if defined(PLATFORM_WINDOWS)
+	return !!(fileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+#else
+	return !!S_ISDIR(fileAttributes);
+#endif
+}
+
+bool FileAttribute::isFile() const
+{
+#if defined(PLATFORM_WINDOWS)
+	return !isDir();
+#else
+	return !!S_ISREG(fileAttributes);
+#endif
+}
+
+int File::GetFileAttribute(const std::string &filePathName, FileAttribute *fileAttributes)
 {
 #if defined(PLATFORM_WINDOWS)
 	WIN32_FILE_ATTRIBUTE_DATA win32FileAttributeData;
-	if (!::GetFileAttributesExW(filePathName.c_str(), GetFileExInfoStandard, &win32FileAttributeData))
+	if (!::GetFileAttributesExA(filePathName.c_str(), GetFileExInfoStandard, &win32FileAttributeData))
 		return -1;
 	fileAttributes->fileAttributes = win32FileAttributeData.dwFileAttributes;
 	fileAttributes->creationTime = Time(&win32FileAttributeData.ftCreationTime);
@@ -451,6 +647,15 @@ int File::GetFileAttribute(const std::wstring &filePathName, FileAttribute *file
 		+ win32FileAttributeData.nFileSizeLow;
 	return 0;
 #else
-	return -1;
+	int rr;
+	struct stat buf;
+	if ((rr = ::stat(filePathName.c_str(), &buf)) < 0)
+		return rr;
+	fileAttributes->fileAttributes = buf.st_mode;
+	fileAttributes->creationTime = Time(buf.st_ctime);
+	fileAttributes->lastAccessTime = Time(buf.st_atime);
+	fileAttributes->lastWrittenTime = Time(buf.st_mtime);
+	fileAttributes->fileSize = buf.st_size;
+	return rr;
 #endif
 }

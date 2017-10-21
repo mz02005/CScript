@@ -9,12 +9,18 @@ TARGET=libnotstd.so
 CPPS= \
 	charconv.cpp \
 	crc.cpp \
+	event-posix.cpp \
+	eventbase.cpp \
 	filesystem.cpp \
+	ioServer.cpp \
+	ioServer-posix.cpp \
 	md5.cpp \
 	notstd.cpp \
 	nslist.cpp \
 	objbase.cpp \
 	simpleTool.cpp \
+	sockbase.cpp \
+	sockbase-posix.cpp \
 	stringHelper.cpp \
 	vcverport.cpp \
 	xmlparserHelper.cpp \
@@ -31,7 +37,13 @@ endif
 ifeq ($(DEBUG),y)
 	CFLAGS += -D_DEBUG -DDEBUG -g -fPIC -std=c++0x
 else
-	CFLAGS += -O3 -fPIC -std=c++0x
+	CFLAGS += -O3 -fPIC -std=c++11
+endif
+
+EXTLIB=
+ifeq ($(MACOS),y)
+	CFLAGS += -DPLATFORM_MACOS
+	EXTLIB += -L../../thirdparty/libzlib/zlib-1.2.8 -lzlib -liconv -lxml2
 endif
 
 COMPILE_CC=$(CROSS_COMPILE)cc
@@ -42,7 +54,7 @@ COMPILE_CXX=$(CROSS_COMPILE)g++
 	
 all: $(OBJS)
 	echo $(OBJS)
-	$(COMPILE_CXX) -fPIC -shared -o $(TARGET) $(OBJS)
+	$(COMPILE_CXX) -fPIC -shared -o $(TARGET) $(OBJS) $(EXTLIB)
 
 clean:
 	@echo $(TARGET): Do cleaning...

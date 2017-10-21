@@ -22,7 +22,7 @@ namespace notstd {
 		AddItem(task);
 	}
 
-	void AsyncTaskManager::DoTask(DWORD timeout)
+	void AsyncTaskManager::DoTask(long long timeout)
 	{
 		JustDoIt(timeout);
 	}

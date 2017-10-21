@@ -4,7 +4,7 @@
 #include "AsynTask.h"
 
 namespace notstd {
-
+#if defined(PLATFORM_WINDOWS)
 	class NOTSTD_API SimpleThread
 	{
 	public:
@@ -75,4 +75,5 @@ namespace notstd {
 
 		void AddTask(Task *task) { mTaskManager.AddItem(task); }
 	};
+#endif
 }

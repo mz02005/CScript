@@ -3,6 +3,26 @@
 #include "openssl/ssl.h"
 #include "openssl/err.h"
 
+inline void OutputDebugStringHelper(const char *format, ...)
+{
+	char buf[1024];
+	char *tempBuf = nullptr;
+
+	va_list valist;
+	va_start(valist, format);
+	int r = vsnprintf(buf, sizeof(buf), format, valist);
+	if (r >= sizeof(buf))
+	{
+		tempBuf = reinterpret_cast<char*>(malloc(r));
+		vsnprintf(tempBuf, r, format, valist);
+	}
+	va_end(valist);
+
+	OutputDebugStringA(tempBuf ? tempBuf : buf);
+	if (tempBuf)
+		free(tempBuf);
+}
+
 namespace notstd {
 
 	void SSLSocket::OnSSLReceive(notstd::IOServer *ioServer, const notstd::IOErrorCode &e,

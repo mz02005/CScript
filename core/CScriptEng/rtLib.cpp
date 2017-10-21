@@ -7,6 +7,13 @@
 #include "notstd/zipWrapper.h"
 #include "objType.h"
 #include "svnInfo.h"
+#include "BufferObject.h"
+#include <algorithm>
+#include "netLib.h"
+
+#ifdef min
+#undef min
+#endif
 
 namespace runtime {
 	///////////////////////////////////////////////////////////////////////////////
@@ -61,10 +68,25 @@ namespace runtime {
 			{ "pow", new ObjectModule<powfObj>, },
 			{ "time", new ObjectModule<timeObj>, },
 			{ "system", new ObjectModule<systemCallObject>, },
+			{ "ParseInt32", new ObjectModule<ParseInt32Obj>, },
+			{ "ParseUint32", new ObjectModule<ParseUint32Obj>, },
 			{ "unzipFile", new ObjectModule<unzipFileObj>, },
 			{ "zipFile", new ObjectModule<zipFilesInDirectoryObj>, },
 			{ "csOpenFile", new ObjectModule<csOpenFile>, },
 			{ "DeleteFile", new ObjectModule<DeleteFileObj>, },
+			{ "CreateBuffer", new ObjectModule<CreateBufferObj>, },
+			{ "GetCurrentTick", new ObjectModule<GetTickCountObj>, },
+			{ "tcpConnect", new ObjectModule<tcpConnectObj>, },
+			{ "AddressToString", new ObjectModule<inet_ntoaObj>, },
+			{ "AddressFromHostname", new ObjectModule<AddressFromHostnameObj>, },
+
+			{ "NetworkByteOrderToHostByteOrderS", 
+			NetworkByteOrderToHostByteOrderObj::Create(NetworkByteOrderToHostByteOrderObj::BO_UINT16), },
+
+			{ "NetworkByteOrderToHostByteOrderL",
+			NetworkByteOrderToHostByteOrderObj::Create(NetworkByteOrderToHostByteOrderObj::BO_UINT32), },
+
+			{ "HttpRequest", new ObjectModule<SimpleHttpConnectionObj >, },
 		};
 
 		return context->GetLibRegister().RegistLib(
@@ -481,5 +503,74 @@ namespace runtime {
 		return r;
 	}
 
+	///////////////////////////////////////////////////////////////////////////////
+
+	runtimeObjectBase* CreateBufferObj::doCall(doCallContext *context)
+	{
+		const char *str;
+		uint32_t strLen = 0;
+		auto paramCount = context->GetParamCount();
+
+		auto *r = new runtime::ObjectModule<BufferObject>;
+		do {
+			uint32_t offset = 0, size = -1;
+
+			if (paramCount > 0) {
+				str = context->GetStringParam(0, strLen);
+				if (!str)
+					break;
+			}
+			if (paramCount > 1) {
+				offset = context->GetUint32Param(1);
+			}
+			if (paramCount > 2) {
+				size = context->GetUint32Param(2);
+			}
+
+			if (!str)
+				return r;
+
+			if (offset >= strLen)
+				return r;
+
+			uint32_t actSize = std::min(strLen - offset, size);
+			r->mBuffer.append(str + offset, actSize);
+			return r;
+		} while (0);
+		delete r;
+		return runtime::NullTypeObject::CreateNullTypeObject();
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	runtimeObjectBase* GetTickCountObj::doCall(doCallContext *context)
+	{
+		return uintObject::CreateUintObject(notstd::GetCurrentTick());
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	runtimeObjectBase* ParseInt32Obj::doCall(doCallContext *context)
+	{
+		const char *str;
+		auto paramCount = context->GetParamCount();
+		if (paramCount != 1
+			|| !(str = context->GetStringParam(0)))
+			return intObject::CreateIntObject(0);
+		return intObject::CreateIntObject(atoi(str));
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	runtimeObjectBase* ParseUint32Obj::doCall(doCallContext *context)
+	{
+		const char *str;
+		auto paramCount = context->GetParamCount();
+		if (paramCount != 1
+			|| !(str = context->GetStringParam(0)))
+			return uintObject::CreateUintObject(0);
+		return uintObject::CreateUintObject(strtoul(str, nullptr, 10));
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////
 }

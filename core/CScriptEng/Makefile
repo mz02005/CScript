@@ -9,6 +9,7 @@ TARGET=libCScriptEng.so
 CPPS= \
 	breakContinueSupport.cpp \
 	BreakStatement.cpp \
+	BufferObject.cpp \
 	compile.cpp \
 	ContinueStatement.cpp \
 	DebugBreakStatement.cpp \
@@ -17,6 +18,7 @@ CPPS= \
 	forStatement.cpp \
 	functionStatement.cpp \
 	FuncImpl.cpp \
+	netLib.cpp \
 	IfCondStatement.cpp \
 	PureExpStatement.cpp \
 	returnStatement.cpp \
@@ -55,6 +57,11 @@ else
 	CFLAGS += -O3 -fPIC -std=c++11
 endif
 
+EXTLIB=
+ifeq ($(MACOS),y)
+	EXTLIB += -L../notstd/ -lnotstd
+endif
+
 COMPILE_CC=$(CROSS_COMPILE)cc
 COMPILE_CXX=$(CROSS_COMPILE)g++
 
@@ -62,7 +69,7 @@ COMPILE_CXX=$(CROSS_COMPILE)g++
 	$(COMPILE_CXX) $(INCLUDE_OPTIONS) $(CFLAGS) -o $@ $*.cpp
 	
 all: $(OBJS)
-	$(COMPILE_CXX) -fPIC -shared -o $(TARGET) $(OBJS)
+	$(COMPILE_CXX) -fPIC -shared -o $(TARGET) $(OBJS) $(EXTLIB)
 
 clean:
 	@echo $(TARGET): Do cleaning...

@@ -104,6 +104,8 @@ namespace runtime {
 		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
+
+		static uintObject* CreateUintObject(uint32_t v);
 	};
 
 	class CSCRIPTENG_API shortObject : public baseTypeObject

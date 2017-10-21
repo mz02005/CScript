@@ -1,6 +1,10 @@
 #pragma once
 #include "config.h"
 
+namespace notstd {
+	NOTSTD_API uint32_t GetCurrentTick();
+}
+
 template <typename T>
 class Help
 {
@@ -184,6 +188,14 @@ public:
 #endif
 
 	static bool CreateDirectoryRecursion(const std::string &path);
+	inline static char GetSplashCharacter()
+	{
+#if defined(PLATFORM_WINDOWS)
+		return '\\';
+#else
+		return '/';
+#endif
+	}
 
 	typedef void (*OnPathName)(void *userData, const std::string &pathName, bool isDir);
 	static void TraverseDirectory(const std::string &dirName, void *userData, OnPathName onPathName);
@@ -219,17 +231,79 @@ public:
 	static Time GetCurrentTime();
 };
 
-struct FileAttribute
+struct NOTSTD_API FileAttribute
 {
+#if defined(PLATFORM_WINDOWS)
 	uint64_t fileAttributes;
+#else
+	mode_t fileAttributes;
+#endif
 	Time creationTime;
 	Time lastAccessTime;
 	Time lastWrittenTime;
 	uint64_t fileSize;
+
+	FileAttribute();
+
+	bool isDir() const;
+	bool isFile() const;
 };
 
 class NOTSTD_API File
 {
 public:
-	static int GetFileAttribute(const std::wstring &filePathName, FileAttribute *fileAttributes);
+	static int GetFileAttribute(const std::string &filePathName, FileAttribute *fileAttributes);
 };
+
+#ifndef PLATFORM_WINDOWS
+#define _TRUNCATE -1
+inline int pi_ncpy_s(char *strDest, size_t numberOfElements, const char *strSource, size_t count)
+{
+	char *r = strncpy(strDest, strSource, numberOfElements);
+	if (!r)
+	{
+		if (strDest)
+			strDest[0] = 0;
+		return EINVAL;
+	}
+	strDest[numberOfElements - 1] = 0;
+	return 0;
+}
+#else
+inline errno_t pi_ncpy_s(char *strDest, size_t numberOfElements, const char *strSource, size_t count)
+{
+	return strncpy_s(strDest, numberOfElements, strSource, count);
+}
+#endif
+
+namespace notstd {
+	NOTSTD_API void* loadlibrary(const char *module);
+	NOTSTD_API void* getprocaddress(void *module, const char *name);
+	NOTSTD_API bool freelibrary(void *module);
+
+	class NOTSTD_API WinProfile
+	{
+	private:
+		HANDLE mInnerInfo;
+
+	public:
+		enum {
+			E_FERROR = 1,
+			E_INVALID_SECFORMAT,
+			E_SEC_DUMP,
+			E_INVALID_VALUE,
+			E_EMPTY_SECTION,
+			E_VALUE_DUMP,
+		};
+
+		WinProfile();
+		virtual ~WinProfile();
+
+		int OpenProfile(const char *profileName);
+		void CloseProfile();
+
+		std::string _GetProfileString(const char *secName, const char *keyName, const std::string &defVal);
+		int32_t _GetProfileInt32(const char *secName, const char *keyName, int32_t defVal);
+		uint32_t _GetProfileUint32(const char *secName, const char *keyName, uint32_t defVal);
+	};
+}

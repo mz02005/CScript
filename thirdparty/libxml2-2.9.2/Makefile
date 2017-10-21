@@ -62,6 +62,11 @@ else
 	CFLAGS += -O3 -fPIC -DLIBXML_THREAD_ENABLED
 endif
 
+EXTLIBS=
+ifeq ($(MACOS),y)
+	EXTLIBS += -liconv
+endif
+
 COMPILE_CC=$(CROSS_COMPILE)cc
 COMPILE_CXX=$(CROSS_COMPILE)g++
 
@@ -69,7 +74,7 @@ COMPILE_CXX=$(CROSS_COMPILE)g++
 	$(COMPILE_CC) $(INCLUDE_OPTIONS) $(CFLAGS) -o $@ $*.c
 	
 all: $(OBJS)
-	$(COMPILE_CC) -fPIC -shared -o $(TARGET) $(OBJS)
+	$(COMPILE_CC) -fPIC -shared -o $(TARGET) $(OBJS) $(EXTLIBS)
 
 clean:
 	@echo $(TARGET): Do cleaning...

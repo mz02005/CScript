@@ -26,6 +26,15 @@ COMPILE_STRIP=$(CROSS_COMPILE)strip
 CFLAGS=-O3 -fPIC -std=c++0x
 LDFLAGS=-fPIC
 
+LIBRT=
+STRIP_FLAGS=
+REGCONF=
+ifneq ($(MACOS),y)
+	LIBRT += -lrt
+	STRIP_FLAGS += -g
+	REGCONF += cd $(SolutionDir)Output && chmod +x ../ldtool && ../ldtool && cd -
+endif
+
 %.o: %.cpp
 	@echo Compiling $< ...
 	@echo $(INCLUDES)
@@ -38,19 +47,20 @@ OutputDir:
 
 $(TargetPath):
 	@echo Linking ...
-	@$(COMPILE_CXX) $(LDFLAGS) $(OBJS) -o $(TargetPath) -lCScriptEng -lnotstd -lxml2 -liconv -lzlib -ldl -lm -lpthread -lrt \
+	@$(COMPILE_CXX) $(LDFLAGS) $(OBJS) -o $(TargetPath) -lCScriptEng -lnotstd -lxml2 -liconv -lzlib -ldl -lm -lpthread $(LIBRT) \
 		-L../../thirdparty/libiconv/iconv/ \
 		-L../../thirdparty/libzlib/zlib-1.2.8/ \
 		-L../../thirdparty/libxml2-2.9.2/ \
 		-L../../core/notstd/ \
 		-L../../core/CScriptEng/
 	@echo Stripping ...
-	@$(COMPILE_STRIP) -g $(TargetPath)
+	@$(COMPILE_STRIP) $(STRIP_FLAGS) $(TargetPath)
 	cp ../../thirdparty/libiconv/iconv/*.so $(TargetDir)
 	cp ../../thirdparty/libzlib/zlib-1.2.8/*.so $(TargetDir)
 	cp ../../thirdparty/libxml2-2.9.2/*.so $(TargetDir)
 	cp ../../core/notstd/*.so $(TargetDir)
 	cp ../../core/CScriptEng/*.so $(TargetDir)
+	$(REGCONF)
 
 clean:
 	@echo Cleaning ...

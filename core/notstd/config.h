@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 
 #if defined(WIN32) || defined(_WINDOWS) || defined(_WINNT_) || defined(_WINDOWS_)
 #ifndef PLATFORM_WINDOWS
@@ -74,13 +75,35 @@ typedef void* POSITION;
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef PLATFORM_WINDOWS
+#ifdef _STATIC_LIB
+#define NOTSTD_API
+#else
 # ifdef NOTSTD_EXPORTS
 #  define NOTSTD_API __declspec(dllexport)
 # else
 #  define NOTSTD_API __declspec(dllimport)
 # endif
+#endif
 #else
 #define NOTSTD_API
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+#include <assert.h>
+#include <string.h>
+#if defined(_DEBUG) || defined(DEBUG)
+#define NOTSTD_ASSERT assert
+#else
+#define NOTSTD_ASSERT
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef PLATFORM_WINDOWS
+#define STDCALL_API __stdcall
+#else
+#define STDCALL_API
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

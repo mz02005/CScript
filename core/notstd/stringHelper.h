@@ -64,9 +64,12 @@ namespace notstd {
 					}
 				}
 				size_t readed = fread(context->mBuf, 1, ReadLineContextT<bufSize>::BufferSize, file);
-				p = context->mBuf;
 				if (readed)
+				{
+					p = context->mBuf;
+					context->mBuf[readed] = 0;
 					e = context->mBuf + readed;
+				}
 				else
 				{
 					return !line.empty();
@@ -99,6 +102,20 @@ namespace notstd {
 			std::size_t s1 = s.size() - start;
 			std::size_t theSize = s1 > count ? count : s1;
 			return s.substr(start, theSize);
+		}
+
+		template <typename T>
+		static T& ToLower(T &s)
+		{
+			std::transform(s.begin(), s.end(), s.begin(), &tolower);
+			return s;
+		}
+
+		template <typename T>
+		static T ToLower(const T &s)
+		{
+			T temp = s;
+			return ToLower(temp);
 		}
 
 		static StringArray SplitString(const std::string &str, const std::string &splitChars)
@@ -228,10 +245,11 @@ namespace notstd {
 		}
 #endif
 
-		static std::string& Format(std::string &str, const char *szFormat, ...)
+		static std::string Format(const char *szFormat, ...)
 		{
+			std::string str;
+
 			va_list argList;
-			va_start(argList, szFormat);
 
 			//str.clear();
 
@@ -240,7 +258,9 @@ namespace notstd {
 			//if (!buffer)
 			//	return str;
 			str.resize(size);
+			va_start(argList, szFormat);
 			int n = vsnprintf(&str[0], size - 1, szFormat, argList);
+			va_end(argList);
 
 			//int n = vsnprintf(buffer, size - 1, szFormat, argList);
 			do {
@@ -255,7 +275,9 @@ namespace notstd {
 					//if (!buffer)
 					//	return str;
 					str.resize(size);
+					va_start(argList, szFormat);
 					n = vsnprintf(&str[0], size - 1, szFormat, argList);
+					va_end(argList);
 				}
 #else
 				if (n < 0)
@@ -264,11 +286,69 @@ namespace notstd {
 				{
 					size = n * 2;
 					str.resize(size);
+					va_start(argList, szFormat);
 					n = vsnprintf(&str[0], size - 1, szFormat, argList);
-				}
+					va_end(argList);
+			}
 #endif
 			} while (0);
+
+			if (n >= 0)
+			{
+				//buffer[n] = 0;
+				//str = buffer;
+				//free(buffer);
+				str.resize(n);
+			}
+			return str;
+		}
+
+		static std::string& Format(std::string &str, const char *szFormat, ...)
+		{
+			va_list argList;
+
+			//str.clear();
+
+			std::string::size_type size = 64;
+			//char *buffer = reinterpret_cast<char*>(malloc(size));
+			//if (!buffer)
+			//	return str;
+			str.resize(size);
+
+			va_start(argList, szFormat);
+			int n = vsnprintf(&str[0], size - 1, szFormat, argList);
 			va_end(argList);
+
+			//int n = vsnprintf(buffer, size - 1, szFormat, argList);
+			do {
+#if defined(PLATFORM_WINDOWS)
+				while (n == -1)
+				{
+					if (size > 1024)
+						size += 1024;
+					else
+						size *= 2;
+					//buffer = reinterpret_cast<char*>(realloc(buffer, size));
+					//if (!buffer)
+					//	return str;
+					str.resize(size);
+					va_start(argList, szFormat);
+					n = vsnprintf(&str[0], size - 1, szFormat, argList);
+					va_end(argList);
+				}
+#else
+				if (n < 0)
+					return str;
+				if (n >= size)
+				{
+					size = n * 2;
+					str.resize(size);
+					va_start(argList, szFormat);
+					n = vsnprintf(&str[0], size - 1, szFormat, argList);
+					va_end(argList);
+			}
+#endif
+			} while (0);
 
 			if (n >= 0)
 			{

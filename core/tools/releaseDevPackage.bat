@@ -26,6 +26,7 @@ if exist %SolutionDir%x64\Release\testCScript.exe (
 :startProg
 %exePath% /sf makeDevPackage.c %SolutionDir% win32 debug
 %exePath% /sf makeDevPackage.c %SolutionDir% win32 release
+%exePath% /sf makeDevPackage.c %SolutionDir% win32 StaticRelease
 %exePath% /sf makeDevPackage.c %SolutionDir% x64 debug
 %exePath% /sf makeDevPackage.c %SolutionDir% x64 release
 

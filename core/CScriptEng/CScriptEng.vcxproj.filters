@@ -69,6 +69,12 @@
     <ClInclude Include="svnInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BufferObject.h">
+      <Filter>inner\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="netLib.h">
+      <Filter>inner\vm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BreakStatement.cpp">
@@ -179,9 +185,14 @@
     <ClCompile Include="FuncImpl.cpp">
       <Filter>inner\vm</Filter>
     </ClCompile>
+    <ClCompile Include="BufferObject.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="netLib.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Makefile" />
     <None Include="Makefile" />
     <None Include="..\..\getSVNVersion.bat">
       <Filter>源文件</Filter>

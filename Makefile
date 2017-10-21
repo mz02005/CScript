@@ -4,14 +4,26 @@
 SolutionDir=./
 
 TargetDir=$(SolutionDir)Output/
-all: libiconv.so libxml2.so libzlib.so libnotstd.so libCScriptEng.so testCScript
+
+DEP_LDTOOL=
+ifeq ($(MACOS),y)
+	DEP_LDTOOL = ldtool
+endif
+
+all: someHeader libiconv.so libxml2.so libzlib.so libnotstd.so libCScriptEng.so testCScript $(DEP_LDTOOL)
 	cp $(SolutionDir)thirdparty/libzlib/zlib-1.2.8/libzlib.so $(TargetDir)
 	cp $(SolutionDir)thirdparty/libxml2-2.9.2/libxml2.so $(TargetDir)
 	cp $(SolutionDir)thirdparty/libiconv/iconv/libiconv.so $(TargetDir)
 	cp $(SolutionDir)core/notstd/libnotstd.so $(TargetDir)
 	cp $(SolutionDir)core/CScriptEng/libCScriptEng.so $(TargetDir)
+	
+ldtool:
 	chmod +x ./ldtool
 	./ldtool
+	
+someHeader:
+	chmod +x ./getSVNVersion
+	./getSVNVersion
 
 testCScript: libCScriptEng.so
 	make -C $(SolutionDir)test/testCScript

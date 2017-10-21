@@ -3,8 +3,13 @@
 #include "config.h"
 #include <notstd/task.h>
 #include <notstd/nslist.h>
+#include <mutex>
+#include <chrono>
+
+#if defined(PLATFORM_WINDOWS)
 #include <Mmsystem.h>
 #pragma comment(lib, "winmm.lib")
+#endif
 
 namespace notstd {
 
@@ -22,25 +27,27 @@ namespace notstd {
 		List<ListType*> mList1, mList2;
 		List<ListType*> *mAddList, *mDoList;
 
-		CRITICAL_SECTION mCSForAddTask;
+		//CRITICAL_SECTION mCSForAddTask;
+		std::mutex mCSForAddTask;
 
 	public:
 		DoubleCacheList()
 			: mAddList(&mList1)
 			, mDoList(&mList2)
 		{
-			::InitializeCriticalSection(&mCSForAddTask);
+			//::InitializeCriticalSection(&mCSForAddTask);
 		}
 
 		virtual ~DoubleCacheList()
 		{
 			Release();
-			::DeleteCriticalSection(&mCSForAddTask);
+			//::DeleteCriticalSection(&mCSForAddTask);
 		}
 
 		void Release(bool doLeft = false)
 		{
-			::EnterCriticalSection(&mCSForAddTask);
+			//::EnterCriticalSection(&mCSForAddTask);
+			std::lock_guard<std::mutex> locker(mCSForAddTask);
 			while (!mList2.IsEmpty()) {
 				ListType* v = mList2.RemoveHead();
 				T *t = static_cast<T*>(this);
@@ -56,24 +63,21 @@ namespace notstd {
 					t->OnDo(v);
 				t->OnRelease(v);
 			}
-			::LeaveCriticalSection(&mCSForAddTask);
 		}
 
 		void AddItem(ListType *v)
 		{
-			::EnterCriticalSection(&mCSForAddTask);
+			std::lock_guard<std::mutex> locker(mCSForAddTask);
 			mAddList->AddTail(v);
-			::LeaveCriticalSection(&mCSForAddTask);
 		}
 
-		void JustDoIt(DWORD timeout)
+		void JustDoIt(long long timeout)
 		{
 			T *t = static_cast<T*>(this);
 			if (mDoList->IsEmpty())
 			{
-				::EnterCriticalSection(&mCSForAddTask);
+				std::lock_guard<std::mutex> locker(mCSForAddTask);
 				std::swap(mDoList, mAddList);
-				::LeaveCriticalSection(&mCSForAddTask);
 			}
 			if (!timeout)
 			{
@@ -86,21 +90,27 @@ namespace notstd {
 			}
 			else
 			{
-				DWORD b = ::timeGetTime();
+				//DWORD b = ::timeGetTime();
+				std::chrono::system_clock::time_point b = std::chrono::system_clock::now();
 				while (!mDoList->IsEmpty())
 				{
 					ListType *listType = mDoList->RemoveHead();
 					t->OnDo(listType);
 					t->OnRelease(listType);
 
-					DWORD e = ::timeGetTime();
-					if (e - b >= timeout)
+					//DWORD e = ::timeGetTime();
+					std::chrono::system_clock::time_point e = std::chrono::system_clock::now();
+					//if (e - b >= timeout)
+					if (std::chrono::duration_cast<std::chrono::microseconds>(e - b).count() >= timeout)
 						break;
 				}
 			}
 		}
 	};
 
+#if defined(PLATFORM_WINDOWS)
+	class NOTSTD_API std::mutex;
+#endif
 	class NOTSTD_API AsyncTaskManager
 		: public DoubleCacheList<Task, AsyncTaskManager>
 	{
@@ -111,7 +121,7 @@ namespace notstd {
 		void OnRelease(Task *task);
 
 		void PostTask(Task *task);
-		void DoTask(DWORD timeout = 0);
+		void DoTask(long long time = 0);
 	};
 
 }

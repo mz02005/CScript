@@ -787,6 +787,8 @@ namespace compiler
 			std::list<Operator*> *operList, 
 			bool &lastIsOperatorOrFirstInLocal, Operator *oper);
 
+		int GetNextSymbolInner(Symbol &symbol);
+
 	public:
 		static void Init();
 		static void Term();

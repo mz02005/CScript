@@ -194,7 +194,11 @@ namespace notstd {
 		std::string buf;
 		buf.resize(len);
 		fseek(file, 0, SEEK_SET);
-		fread(&buf[0], 1, len, file);
+		if (fread(&buf[0], 1, len, file) != len)
+		{
+			delete r;
+			return nullptr;
+		}
 		if (!r->LoadFromBuffer(&buf[0], len))
 		{
 			delete r;

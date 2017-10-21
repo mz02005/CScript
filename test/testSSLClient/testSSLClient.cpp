@@ -20,7 +20,7 @@ public:
 
 IMPLEMENT_XMLSERIAL_ELEM(ClientProfile, notstd::XmlElemSerializerBase)
 
-BEGIN_XMLSERIAL_FLAG_TABLE(ClientProfile)
+BEGIN_XMLSERIAL_FLAG_TABLE(ClientProfile, notstd::XmlElemSerializerBase)
 	XMLSERIAL_PROP_ENTRY_V("url",mUrl,"github.com")
 	XMLSERIAL_PROP_ENTRY_V("port",mPort,"443")
 	XMLSERIAL_PROP_ENTRY_V("threadCount",mThreadCount,"1")

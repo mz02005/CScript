@@ -72,6 +72,7 @@ namespace notstd {
 
 			CListNode();
 			CListNode(const T &t);
+			CListNode(T &&t);
 		};
 
 	private:
@@ -82,9 +83,11 @@ namespace notstd {
 
 		CListNode* NewNode();
 		CListNode* NewNode(const T &t);
+		CListNode* NewNode(T &&t);
 		void DeleteNode(CListNode *node);
 
 	protected:
+		inline CListNode* CreateNodeInternal(T &&t);
 		inline CListNode* CreateNodeInternal(const T &t);
 		inline CListNode* CreateNodeInternal();
 		inline void DestroyNodeInternal(CListNode *pNode);
@@ -97,8 +100,10 @@ namespace notstd {
 		List& operator = (const List &other);
 
 		POSITION AddHead(const T &t);
+		POSITION AddHead(T &&t);
 		void AddHead(List *newlist);
 		POSITION AddTail(const T &t);
+		POSITION AddTail(T &&t);
 		void AddTail(List *newlist);
 		void AddTail(const List *newlist);
 
@@ -148,6 +153,13 @@ namespace notstd {
 	}
 
 	template <class T, int PreAllocCount>
+	typename List<T, PreAllocCount>::CListNode* List<T, PreAllocCount>::NewNode(T &&t)
+	{
+		void *nl = m_pAlloc->malloc();
+		return new(nl)CListNode(t);
+	}
+
+	template <class T, int PreAllocCount>
 	void List<T, PreAllocCount>::DeleteNode(CListNode *node)
 	{
 		node->~CListNode();
@@ -170,7 +182,20 @@ namespace notstd {
 	}
 
 	template <class T, int PreAllocCount>
+	List<T, PreAllocCount>::CListNode::CListNode(T &&t)
+	{
+		m_val = std::move(t);
+	}
+
+	template <class T, int PreAllocCount>
 	typename List<T, PreAllocCount>::CListNode* List<T, PreAllocCount>::CreateNodeInternal(const T &t)
+	{
+		CListNode *pRet = NewNode(t);
+		return pRet;
+	}
+
+	template <class T, int PreAllocCount>
+	typename List<T, PreAllocCount>::CListNode* List<T, PreAllocCount>::CreateNodeInternal(T &&t)
 	{
 		CListNode *pRet = NewNode(t);
 		return pRet;
@@ -247,6 +272,19 @@ namespace notstd {
 	}
 
 	template <class T, int PreAllocCount>
+	POSITION List<T, PreAllocCount>::AddHead(T &&t)
+	{
+		CListNode *pNode = CreateNodeInternal(t);
+		pNode->m_pNext = m_pHead->m_pNext;
+		pNode->m_pPrev = m_pHead;
+		m_pHead->m_pNext->m_pPrev = pNode;
+		m_pHead->m_pNext = pNode;
+		m_count++;
+
+		return(POSITION)pNode;
+	}
+
+	template <class T, int PreAllocCount>
 	void List<T, PreAllocCount>::AddHead(List *newlist)
 	{
 		POSITION pos = newlist->GetTailPosition();
@@ -268,6 +306,18 @@ namespace notstd {
 		return(POSITION)pNode;
 	}
 
+	template <class T, int PreAllocCount>
+	POSITION List<T, PreAllocCount>::AddTail(T &&t)
+	{
+		CListNode *pNode = CreateNodeInternal(t);
+		pNode->m_pNext = m_pTail;
+		pNode->m_pPrev = m_pTail->m_pPrev;
+		m_pTail->m_pPrev->m_pNext = pNode;
+		m_pTail->m_pPrev = pNode;
+		m_count++;
+		return(POSITION)pNode;
+	}
+	
 	template <class T, int PreAllocCount>
 	void List<T, PreAllocCount>::AddTail(List *newlist)
 	{
@@ -398,7 +448,7 @@ namespace notstd {
 	{
 		assert(pos);
 		CListNode *pNode = (CListNode*)pos;
-		pos = pNode->m_pPrev != m_pHead ? pNode->m_pPrev : NULL;
+		pos = pNode->m_pPrev != m_pHead ? (POSITION)pNode->m_pPrev : NULL;
 		return pNode->m_val;
 	}
 

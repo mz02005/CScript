@@ -29,6 +29,7 @@ namespace runtime {
 		DT_array,
 		DT_function,
 		DT_object,
+		DT_buffer,
 		DT_null,
 
 		DT_UserTypeBegin,

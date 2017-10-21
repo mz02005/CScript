@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{35044b5b-6fd4-46d7-8d88-4056c05bf315}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\libevent-2.1.8-stable\win32select.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\buffer.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\buffer_iocp.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\bufferevent.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\bufferevent_async.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\bufferevent_filter.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\bufferevent_openssl.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\bufferevent_pair.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\bufferevent_ratelim.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\bufferevent_sock.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\devpoll.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evdns.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\event.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\event_iocp.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\event_tagging.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evmap.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evport.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evrpc.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evthread.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evthread_win32.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evutil.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evutil_rand.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\evutil_time.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\http.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\kqueue.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\listener.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\log.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\poll.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\select.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\signal.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libevent-2.1.8-stable\strlcpy.c">
+      <Filter>core</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -31,8 +31,21 @@ namespace notstd {
 			return "";
 		appDir.resize(c);
 		return appDir;
-}
+	}
 #endif
+
+	std::string AppHelper::GetAppDir()
+	{
+#ifdef PLATFORM_MACOS
+		return "./";
+#else
+		std::string appPath = GetAppPath();
+		auto f = appPath.rfind(splash);
+		if (f == appPath.npos)
+			return appPath;
+		return appPath.substr(0, f + 1);
+#endif
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 

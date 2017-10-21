@@ -456,6 +456,15 @@ int runtimeContext::OnInst_createInt(Instruction *inst, uint8_t *moreData, uint3
 	return 0;
 }
 
+int runtimeContext::OnInst_createUint(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	bool isConst = !!inst->extCode;
+	if (PushObject(baseTypeObject::CreateBaseTypeObject<uintObject>(isConst)) < 0)
+		return -1;
+	static_cast<uintObject*>(mRuntimeStack[mCurrentStack - 1])->mVal = *reinterpret_cast<uint32_t*>(moreData);
+	return 0;
+}
+
 int runtimeContext::OnInst_createFloat(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
 {
 	bool isConst = !!inst->extCode;
@@ -1197,7 +1206,7 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInst_createInt, 4, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_createUint, 4, },
 
 	// 31
 	{ &runtimeContext::OnInst_createFloat, 4, },

@@ -17,6 +17,7 @@ public:
 #endif
 
 	static std::string GetAppPath();
+	static std::string GetAppDir();
 };
 
 class NOTSTD_API CFindResult

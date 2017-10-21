@@ -70,11 +70,15 @@
 #undef INSTALLPREFIX
 
 #ifdef WIN32
+#ifdef _STATIC_LIB
+#define LIBICONV_API
+#else
 # ifdef LIBICONV_EXPORTS
 #  define LIBICONV_API __declspec(dllexport)
 # else
 #  define LIBICONV_API __declspec(dllimport)
 # endif
+#endif
 #else
 # define LIBICONV_API
 #endif

@@ -87,7 +87,10 @@ runtimeObjectBase* uintObject::Div(const runtimeObjectBase *obj)
 
 runtimeObjectBase* uintObject::SetValue(runtimeObjectBase *obj)
 {
-	return NULL;
+	if (!isNumberType(obj))
+		return NULL;
+	mVal = getObjectDataOrig<uint32_t>(obj);
+	return this;
 }
 
 runtimeObjectBase* uintObject::GetMember(const char *memName)
@@ -125,6 +128,13 @@ bool uintObject::isEqual(runtimeObjectBase *obj)
 {
 	return isNumberType(obj)
 		&& (mVal == getObjectData<uintObject>(obj));
+}
+
+uintObject* uintObject::CreateUintObject(uint32_t v)
+{
+	auto *r = new ObjectModule<uintObject>;
+	r->mVal = v;
+	return r;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

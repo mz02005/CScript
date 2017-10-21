@@ -70,7 +70,8 @@ namespace notstd {
 
 	IMPLEMENT_XMLSERIAL_ELEM(XmlElemSerializerBase, objBase)
 
-		bool XmlElemSerializerBase::GetXmlFlagItemList(XmlFlagItem::ItemType type, List<const XmlFlagItem*> &flagItemList) const
+	bool XmlElemSerializerBase::GetXmlFlagItemList(XmlFlagItem::ItemType type,
+		notstd::List<const XmlFlagItem*> &flagItemList) const
 	{
 		return true;
 	}
@@ -84,11 +85,11 @@ namespace notstd {
 
 	IMPLEMENT_OBJINFO(SubElementList, objBase)
 
-		///////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
 
-		bool XmlElemSerializer::WriteElemPropList(XmlElemSerializerBase *elem, xmlTextWriterPtr tWriter)
+	bool XmlElemSerializer::WriteElemPropList(XmlElemSerializerBase *elem, xmlTextWriterPtr tWriter)
 	{
-		List<const XmlFlagItem*> xmlFlagItemList;
+		notstd::List<const XmlFlagItem*> xmlFlagItemList;
 		size_t count = 0;
 
 		if (!elem->GetXmlFlagItemList(XmlFlagItem::PropertyItem, xmlFlagItemList))
@@ -120,9 +121,9 @@ namespace notstd {
 		return true;
 	}
 
-	void XmlElemSerializer::AddSubNodeHelper(List<xmlSavingTreeNode> &tnList, XmlElemSerializerBase *elem)
+	void XmlElemSerializer::AddSubNodeHelper(notstd::List<xmlSavingTreeNode> &tnList, XmlElemSerializerBase *elem)
 	{
-		List<const XmlFlagItem*> xmlFlagItemList;
+		notstd::List<const XmlFlagItem*> xmlFlagItemList;
 
 		if (!elem->GetXmlFlagItemList(XmlFlagItem::SubElementItem, xmlFlagItemList))
 			return;
@@ -174,7 +175,7 @@ namespace notstd {
 				break;
 			hasDoc = true;
 
-			List<xmlSavingTreeNode> tnList;
+			notstd::List<xmlSavingTreeNode> tnList;
 			AddSubNodeHelper(tnList, root);
 
 			// ¿ªÊ¼root
@@ -220,6 +221,7 @@ namespace notstd {
 		};
 		bool mHasStartRoot;
 		std::list<LevelInfo> mParseQueue;
+		XmlElemSerializer *mXmlSerializer;
 
 		void ThrowExeception(const char *err)
 		{
@@ -233,7 +235,7 @@ namespace notstd {
 	protected:
 		virtual void OnStartElement(const char *name, const char **atts)
 		{
-			List<const XmlFlagItem*> flags;
+			notstd::List<const XmlFlagItem*> flags;
 
 			if (!mHasStartRoot)
 			{
@@ -267,6 +269,7 @@ namespace notstd {
 						objBase *obj = objBase::CreateObject(theBase->name);
 						if (!obj->isInheritFrom(OBJECT_INFO(XmlElemSerializerBase)))
 							throw std::bad_cast();
+						mXmlSerializer->InitializeDOMTree(static_cast<XmlElemSerializerBase*>(obj));
 						elemList->GetList().AddTail(static_cast<XmlElemSerializerBase*>(obj));
 						mParseQueue.push_front(LevelInfo(true, static_cast<XmlElemSerializerBase*>(obj)));
 						break;
@@ -279,7 +282,7 @@ namespace notstd {
 				flags.RemoveAll();
 				XmlElemSerializerBase *elemBase = mParseQueue.front().base;
 				elemBase->GetXmlFlagItemList(XmlFlagItem::PropertyItem, flags);
-				for (const char **v = atts; *v != '\0'; v += 2)
+				for (const char **v = atts; *v != nullptr; v += 2)
 				{
 					auto iter = flags.GetHeadPosition();
 					while (iter)
@@ -319,7 +322,7 @@ namespace notstd {
 		}
 
 	public:
-		XmlReader(XmlElemSerializerBase *root)
+		XmlReader(XmlElemSerializer *serializer, XmlElemSerializerBase *root)
 			: mHasStartRoot(false)
 		{
 			mParseQueue.push_front(LevelInfo(false, root));
@@ -329,7 +332,7 @@ namespace notstd {
 	void XmlElemSerializer::Load(XmlElemSerializerBase *root) throw()
 	{
 		InitializeDOMTree(root);
-		XmlReader reader(root);
+		XmlReader reader(this, root);
 		xmlKeepBlanksDefault(0);
 		reader.ParseFile(mPath);
 	}
@@ -385,7 +388,7 @@ namespace notstd {
 				}
 				else
 				{
-					List<const XmlFlagItem *> flagList;
+					notstd::List<const XmlFlagItem *> flagList;
 					r.base->GetXmlFlagItemList(XmlFlagItem::NullType, flagList);
 					POSITION flagPos = flagList.GetHeadPosition();
 					while (flagPos)
@@ -446,7 +449,7 @@ namespace notstd {
 			if (!func(p))
 				continue;
 
-			List<const XmlFlagItem*> xmlFlagItemList;
+			notstd::List<const XmlFlagItem*> xmlFlagItemList;
 			p->GetXmlFlagItemList(XmlFlagItem::NullType, xmlFlagItemList);
 			POSITION pos = xmlFlagItemList.GetHeadPosition();
 			while (pos)
@@ -491,7 +494,6 @@ namespace notstd {
 
 	void XmlElemSerializer::ReleaseXmlDomTree(XmlElemSerializerBase *root)
 	{
-#if defined(PLATFORM_WINDOWS)
 		DFSTheElemTree(root, [](notstd::SubElementList *sl)
 		{
 			POSITION pos = sl->GetList().GetHeadPosition();
@@ -503,14 +505,10 @@ namespace notstd {
 			sl->GetList().RemoveAll();
 		}, [](notstd::XmlElemSerializerBase *elem)->bool
 		{ return true; }, [](notstd::XmlPropSerializerBase *prop, const XmlFlagItem *flag){});
-#else
-		assert(0);
-#endif
 	}
 
 	void XmlElemSerializer::InitializeDOMTree(XmlElemSerializerBase *base)
 	{
-#if defined(PLATFORM_WINDOWS)
 		DFSTheElemTree(base,
 			[](notstd::SubElementList *sl)
 		{
@@ -530,8 +528,5 @@ namespace notstd {
 				prop->FromString(flag->defValue);
 		}
 		);
-#else
-		assert(0);
-#endif
 	}
 }

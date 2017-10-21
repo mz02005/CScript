@@ -169,6 +169,7 @@ namespace runtime {
 		int OnInvalidInstruction(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 		int OnInst_createInt(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_createUint(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createFloat(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createString(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createArray(Instruction *inst, uint8_t *moreData, uint32_t moreSize);

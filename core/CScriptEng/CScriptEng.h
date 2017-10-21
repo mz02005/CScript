@@ -12,7 +12,7 @@ namespace compiler {
 }
 
 namespace scriptAPI {
-	class ScriptSourceCodeStream
+	class CSCRIPTENG_API ScriptSourceCodeStream
 	{
 	public:
 		enum {
@@ -21,6 +21,9 @@ namespace scriptAPI {
 			Current = SEEK_CUR,
 		};
 	public:
+		virtual ~ScriptSourceCodeStream();
+		// 得到开始的行数和列数
+		virtual uint64_t GetBaseLine();
 		virtual void Close() = 0;
 		virtual int Flush() = 0;
 		virtual int Read(uint8_t *data, int offset, int count) = 0;

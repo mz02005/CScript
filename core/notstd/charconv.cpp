@@ -67,7 +67,7 @@ std::string ICONVext::utf8ToMbcs(const std::string &str)
 	if (str.empty())
 		return r;
 
-	IConvHandle cd = iconv_open("gb2312", "utf-8");
+	IConvHandle cd = iconv_open("gb18030", "utf-8");
 	if (cd == (iconv_t)-1)
 		return r;
 
@@ -92,7 +92,7 @@ std::string ICONVext::mbcsToUtf8(const std::string &str)
 	if (str.empty())
 		return r;
 
-	IConvHandle cd = iconv_open("utf-8", "gb2312");
+	IConvHandle cd = iconv_open("utf-8", "gb18030");
 	if (cd == (iconv_t)-1)
 		return r;
 
@@ -113,7 +113,7 @@ std::string ICONVext::mbcsToUtf8(const std::string &str)
 std::wstring ICONVext::mbcsToUnicode(const std::string &str)
 {
 	std::wstring r;
-	IConvHandle cd = iconv_open(UNICODE_CODEC, "gb2312");
+	IConvHandle cd = iconv_open(UNICODE_CODEC, "gb18030");
 	if (cd == iconv_t(-1))
 		return r;
 	std::size_t iIn = str.size();
@@ -133,7 +133,7 @@ std::wstring ICONVext::mbcsToUnicode(const std::string &str)
 std::string ICONVext::unicodeToMbcs(const std::wstring &str)
 {
 	std::string r;
-	IConvHandle cd = iconv_open("gb2312", UNICODE_CODEC);
+	IConvHandle cd = iconv_open("gb18030", UNICODE_CODEC);
 	if (cd == iconv_t(-1))
 		return r;
 	std::size_t iIn = str.size() * 2;

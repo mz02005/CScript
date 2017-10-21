@@ -174,7 +174,7 @@ namespace compiler {
 			break;
 
 			// 对于压入的参数，无需理会
-		case -1:
+		case (uint32_t)-1:
 			break;
 
 		default:

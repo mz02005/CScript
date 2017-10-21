@@ -258,7 +258,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	notstd::IOTimer theTimer(ioServer);
 	notstd::TimerData td;
 
-	theTimer.CreateTimer(1000, &td, IOSOCKET_MEMBER_BIND(&AAA::OnTimer, &aaa));
+	theTimer.CreateTimer(1000,1000, &td, IOSOCKET_MEMBER_BIND(&AAA::OnTimer, &aaa));
 
 	as.Create();
 	as.AsyncAccept(&aiod, &sockListen,

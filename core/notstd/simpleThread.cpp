@@ -2,6 +2,8 @@
 #include "simpleThread.h"
 #include <process.h>
 
+#if defined(PLATFORM_WINDOWS)
+
 namespace notstd {
 	SimpleThread::SimpleThread()
 	{
@@ -95,7 +97,7 @@ namespace notstd {
 	{
 		while (!mThread.shouldIStop(50))
 		{
-			OnIdle(::timeGetTime());
+			OnIdle(notstd::GetCurrentTick());
 			mTaskManager.DoTask();
 		}
 	}
@@ -104,3 +106,5 @@ namespace notstd {
 	{
 	}
 }
+
+#endif
