@@ -141,7 +141,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libevent-2.1.8_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>notstd_$(Configuration)_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(TargetDir)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
@@ -186,7 +186,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libevent-2.1.8_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>notstd_$(Configuration)_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(TargetDir)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
@@ -329,6 +329,7 @@
     <ClCompile Include="IfCondStatement.cpp" />
     <ClCompile Include="int16Obj.cpp" />
     <ClCompile Include="int32Obj.cpp" />
+    <ClCompile Include="int64Obj.cpp" />
     <ClCompile Include="int8Obj.cpp" />
     <ClCompile Include="netLib.cpp" />
     <ClCompile Include="objType.cpp" />
@@ -350,6 +351,7 @@
     <ClCompile Include="Trace.cpp" />
     <ClCompile Include="uint16Obj.cpp" />
     <ClCompile Include="uint32Obj.cpp" />
+    <ClCompile Include="uint64Obj.cpp" />
     <ClCompile Include="uint8Obj.cpp" />
     <ClCompile Include="varContainer.cpp" />
     <ClCompile Include="vm.cpp" />

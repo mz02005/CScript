@@ -314,10 +314,11 @@ int runtimeContext::OnInst_add(Instruction *inst, uint8_t *moreData, uint32_t mo
 		return -1;
 	}
 
+	// 这句必须放在这里，否则诸如字串对象加法可能返回自身，则在下句Release掉后会造成崩溃
+	r->AddRef();
 	mRuntimeStack[mCurrentStack - 2]->Release();
 	mRuntimeStack[mCurrentStack - 1]->Release();
 	mRuntimeStack[mCurrentStack - 2] = r;
-	r->AddRef();
 	mCurrentStack--;
 	return 0;
 }
@@ -494,6 +495,64 @@ int runtimeContext::OnInst_createObject(Instruction *inst, uint8_t *moreData, ui
 {
 	if (PushObject(baseTypeObject::CreateBaseTypeObject<objTypeObject>(false)) < 0)
 		return -1;
+	return 0;
+}
+
+int runtimeContext::OnInst_createMap(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	uint32_t dataCount = *reinterpret_cast<uint32_t*>(moreData);
+	dataCount *= 2;
+	if (mCurrentStack < dataCount)
+	{
+		SCRIPT_TRACE("OnInst_createMap: not enough stack space\r\n");
+		return -1;
+	}
+	typedef runtimeObjectBase* objPtr;
+	objPtr *p = &mRuntimeStack[mCurrentStack - dataCount];
+	objPtr *end = &mRuntimeStack[mCurrentStack];
+	auto mapObj = new ObjectModule<MapObject>;
+	for (; p != end; p++)
+	{
+		stringObject *so = (*p)->toString();
+		if (!so) {
+			mapObj->AddRef();
+			mapObj->Release();
+			SCRIPT_TRACE("OnInst_createMap: object can't convert to string object\r\n");
+			return -1;
+		}
+		auto addResult = mapObj->mMapData.insert(std::make_pair(*so->mVal, *(++p)));
+		if (addResult.second)
+			addResult.first->second->AddRef();
+		else {
+			SCRIPT_TRACE("OnInst_createMap: create map object fail, duplicated element\r\n");
+			return -1;
+		}
+	}
+	for (p = &mRuntimeStack[mCurrentStack - dataCount]; p != end; p++)
+		(*p)->Release();
+	mCurrentStack -= dataCount;
+	return PushObject(mapObj);
+}
+
+int runtimeContext::OnInst_createInt64(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	bool isConst = !!inst->extCode;
+	uint64_t v = *reinterpret_cast<uint32_t*>(moreData)+(static_cast<uint64_t>(*reinterpret_cast<uint32_t*>(moreData + 4)) << 32);
+	int64_t realV = *reinterpret_cast<int64_t*>(&v);
+
+	if (PushObject(baseTypeObject::CreateBaseTypeObject<int64Object>(isConst)) < 0)
+		return -1;
+	static_cast<int64Object*>(mRuntimeStack[mCurrentStack - 1])->mVal = realV;
+	return 0;
+}
+
+int runtimeContext::OnInst_createUint64(Instruction *inst, uint8_t *moreData, uint32_t moreSize)
+{
+	bool isConst = !!inst->extCode;
+	uint64_t v = *reinterpret_cast<uint32_t*>(moreData)+(static_cast<uint64_t>(*reinterpret_cast<uint32_t*>(moreData + 4)) << 32);
+	if (PushObject(baseTypeObject::CreateBaseTypeObject<uint64Object>(isConst)) < 0)
+		return -1;
+	static_cast<uint64Object*>(mRuntimeStack[mCurrentStack - 1])->mVal = v;
 	return 0;
 }
 
@@ -1236,9 +1295,9 @@ const runtimeContext::InstructionEntry runtimeContext::mIES[256] =
 	{ &runtimeContext::OnInst_leaveBlock, 0, },
 	{ &runtimeContext::OnInst_saveToA, 0, },
 	{ &runtimeContext::OnInst_createObject, 4, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
-	{ &runtimeContext::OnInvalidInstruction, 0, },
+	{ &runtimeContext::OnInst_createMap, 4, },
+	{ &runtimeContext::OnInst_createInt64, 8, },
+	{ &runtimeContext::OnInst_createUint64, 8, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },
 	{ &runtimeContext::OnInvalidInstruction, 0, },

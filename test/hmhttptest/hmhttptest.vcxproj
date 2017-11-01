@@ -77,12 +77,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;HMHTTPTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)core\;$(SolutionDir)thirdparty\libxml2-2.9.2\include\;$(SolutionDir)thirdparty;$(SolutionDir)libs\mysqlHelper;$(SolutionDir)thirdparty\MySQL\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)core\;$(SolutionDir)thirdparty\libxml2-2.9.2\include\;$(SolutionDir)thirdparty;$(SolutionDir)libs\mysqlHelper;$(SolutionDir)thirdparty\MySQL\include;$(SolutionDir)thirdparty\redis\deps\hiredis</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Advapi32.lib;libevent-2.1.8_$(Configuration)_$(Platform).lib;CScriptEng_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;libzlib_$(Configuration)_$(Platform).lib;libxml2_$(Configuration)_$(Platform).lib;libiconv_$(Configuration)_$(Platform).lib;mysqlHelper.lib;</AdditionalDependencies>
+      <AdditionalDependencies>Win32_Interop.lib;hiredis.lib;Advapi32.lib;libevent-2.1.8_$(Configuration)_$(Platform).lib;CScriptEng_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;libzlib_$(Configuration)_$(Platform).lib;libxml2_$(Configuration)_$(Platform).lib;libiconv_$(Configuration)_$(Platform).lib;mysqlHelper.lib;;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(TargetDir);$(SolutionDir)thirdparty\MySQL\lib</AdditionalLibraryDirectories>
       <OptimizeReferences>false</OptimizeReferences>
       <ModuleDefinitionFile>hmhttptest.def</ModuleDefinitionFile>
@@ -96,14 +96,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HMHTTPTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)core\;$(SolutionDir)thirdparty\libxml2-2.9.2\include\;$(SolutionDir)thirdparty;$(SolutionDir)libs\mysqlHelper;$(SolutionDir)thirdparty\MySQL\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)core\;$(SolutionDir)thirdparty\libxml2-2.9.2\include\;$(SolutionDir)thirdparty;$(SolutionDir)libs\mysqlHelper;$(SolutionDir)thirdparty\MySQL\include;$(SolutionDir)thirdparty\redis\deps\hiredis</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>Advapi32.lib;libevent-2.1.8_$(Configuration)_$(Platform).lib;CScriptEng_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;libzlib_$(Configuration)_$(Platform).lib;libxml2_$(Configuration)_$(Platform).lib;libiconv_$(Configuration)_$(Platform).lib;mysqlHelper.lib;</AdditionalDependencies>
+      <AdditionalDependencies>Win32_Interop.lib;hiredis.lib;Advapi32.lib;libevent-2.1.8_$(Configuration)_$(Platform).lib;CScriptEng_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;libzlib_$(Configuration)_$(Platform).lib;libxml2_$(Configuration)_$(Platform).lib;libiconv_$(Configuration)_$(Platform).lib;mysqlHelper.lib;;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(TargetDir);$(SolutionDir)thirdparty\MySQL\lib</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>hmhttptest.def</ModuleDefinitionFile>
     </Link>
@@ -116,14 +116,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_STATIC_LIB;WIN32;NDEBUG;_WINDOWS;_USRDLL;HMHTTPTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)core\;$(SolutionDir)thirdparty\libxml2-2.9.2\include\;$(SolutionDir)thirdparty;$(SolutionDir)libs\mysqlHelper;$(SolutionDir)thirdparty\MySQL\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)core\;$(SolutionDir)thirdparty\libxml2-2.9.2\include\;$(SolutionDir)thirdparty;$(SolutionDir)libs\mysqlHelper;$(SolutionDir)thirdparty\MySQL\include;$(SolutionDir)thirdparty\redis\deps\hiredis</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalDependencies>Advapi32.lib;libevent-2.1.8_$(Configuration)_$(Platform).lib;CScriptEng_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;libzlib_$(Configuration)_$(Platform).lib;libxml2_$(Configuration)_$(Platform).lib;libiconv_$(Configuration)_$(Platform).lib;mysqlHelper.lib;libmysql.lib</AdditionalDependencies>
+      <AdditionalDependencies>Win32_Interop.lib;hiredis.lib;Advapi32.lib;libevent-2.1.8_$(Configuration)_$(Platform).lib;CScriptEng_$(Configuration)_$(Platform).lib;notstd_$(Configuration)_$(Platform).lib;libzlib_$(Configuration)_$(Platform).lib;libxml2_$(Configuration)_$(Platform).lib;libiconv_$(Configuration)_$(Platform).lib;mysqlHelper.lib;libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(TargetDir);$(SolutionDir)thirdparty\MySQL\lib</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>hmhttptest.def</ModuleDefinitionFile>
     </Link>
@@ -133,6 +133,7 @@
     <ClInclude Include="mzchtml.h" />
     <ClInclude Include="mzcLibHttpConnection.h" />
     <ClInclude Include="mzcLibMysql.h" />
+    <ClInclude Include="mzcLibRedis.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -154,6 +155,7 @@
     <ClCompile Include="mzchtml.cpp" />
     <ClCompile Include="mzcLibHttpConnection.cpp" />
     <ClCompile Include="mzcLibMysql.cpp" />
+    <ClCompile Include="mzcLibRedis.cpp" />
     <ClCompile Include="PathIndex.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

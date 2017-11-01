@@ -122,6 +122,17 @@ namespace runtime
 		VM_saveToA,
 
 		VM_createObject,
+
+		// 创建映射表对象，4字节的额外数据表明了堆栈内有多少对象
+		// 对象数应该是映射项数*2，序号为偶数的（从0开始）的项计算结果
+		// 必须为string类型或者可以转为string类型
+		// 本指令如果执行成功，则弹出堆栈中的那些对象，然后压入新创建的
+		// map对象；如果失败，比如存在同名项，则在堆栈中压入一个
+		// null对象
+		VM_createMap,
+
+		VM_createInt64,
+		VM_createUint64,
 	};
 
 #pragma pack(push,1)
@@ -402,6 +413,15 @@ namespace compiler
 			mCode.push_back(v);
 		}
 
+		void Insert_createRealInt_Instruction(int64_t v)
+		{
+			if (v > (int64_t)INT32_MAX
+				|| v < (int64_t)INT32_MIN)
+				Insert_createInt64_Instruction(v);
+			else
+				Insert_createInt_Instruction(int32_t(v));
+		}
+
 		void Insert_createInt_Instruction(int v)
 		{
 			mCode.push_back(runtime::VM_createInt);
@@ -412,6 +432,20 @@ namespace compiler
 		{
 			mCode.push_back(runtime::VM_createUint);
 			mCode.push_back(v);
+		}
+
+		void Insert_createInt64_Instruction(int64_t v)
+		{
+			mCode.push_back(runtime::VM_createInt64);
+			mCode.push_back((uint32_t)v);
+			mCode.push_back(uint32_t((*reinterpret_cast<uint64_t*>(&v)) >> 32));
+		}
+
+		void Insert_createUint64_Instruction(uint64_t v)
+		{
+			mCode.push_back(runtime::VM_createUint64);
+			mCode.push_back(uint32_t(v));
+			mCode.push_back(uint32_t(v >> 32));
 		}
 
 		void Insert_createFloat_Instruction(float v)
@@ -448,6 +482,12 @@ namespace compiler
 		{
 			mCode.push_back(runtime::VM_createObject);
 			mCode.push_back(0);
+		}
+
+		void Insert_createMap_Instruction(uint32_t itemCount)
+		{
+			mCode.push_back(runtime::VM_createMap);
+			mCode.push_back(itemCount);
 		}
 
 		void Insert_push_Instruction(uint16_t off)

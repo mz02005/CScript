@@ -149,6 +149,13 @@ namespace compiler {
 			giHelper->Insert_createUint_Instruction(0);
 			break;
 
+		case KeywordsTransTable::CK_INT64:
+			giHelper->Insert_createInt64_Instruction(0);
+			break;
+
+		case KeywordsTransTable::CK_UINT64:
+			giHelper->Insert_createUint64_Instruction(0);
+
 		case KeywordsTransTable::CK_FLOAT:
 			giHelper->Insert_createFloat_Instruction(0.f);
 			break;
@@ -348,5 +355,87 @@ namespace compiler {
 	{
 		mFuncStatement->mParentBlock = parent;
 		return mFuncStatement->GenerateInstruction(compileResult);
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+	// ÊµÏÖMapExpress
+
+	IMPLEMENT_OBJINFO(MapExpress,ExpressionNode)
+
+	MapExpress::MapExpress()
+	{
+	}
+
+	MapExpress::~MapExpress()
+	{
+		for (auto &ss : mItemList)
+		{
+			delete ss.first;
+			delete ss.second;
+		}
+		mItemList.clear();
+	}
+
+	int MapExpress::Compile(SimpleCScriptEngContext *context)
+	{
+		char c;
+		Symbol symbol;
+		int parseResult = 0;
+
+		if ((parseResult = context->GetNextSymbol(symbol)) < 0)
+			return parseResult;
+		if (symbol.symbolOrig == "$")
+			return 0;
+		
+		context->GoBack();
+		PostfixExpression *e1 = nullptr, *e2 = nullptr;
+		while (1)
+		{
+			e1 = new PostfixExpression;
+			e2 = new PostfixExpression;
+			parseResult = context->ParseExpressionEndWith(c, e1, ":");
+			if (parseResult < 0)
+				break;
+
+			parseResult = context->ParseExpressionEndWith(c, e2, ",$");
+			if (parseResult < 0)
+				break;
+
+			mItemList.push_back(std::make_pair(e1, e2));
+			e1 = e2 = nullptr;
+
+			if (c == '$')
+				break;
+		}
+		if (e1)
+			delete e1;
+		if (e2)
+			delete e2;
+		return parseResult;
+	}
+
+	int MapExpress::GenerateInstruction(Statement *parent, CompileResult *compileResult)
+	{
+		int r = 0;
+		GenerateInstructionHelper gih(compileResult);
+
+		for (const auto &ss : mItemList)
+		{
+			const auto &s1 = ss.first;
+			const auto &s2 = ss.second;
+
+			if ((r = s1->CreateExpressionTree()) < 0)
+				return r;
+			if ((r = s1->GenerateInstruction(parent, compileResult)) < 0)
+				return r;
+
+			if ((r = s2->CreateExpressionTree()) < 0)
+				return r;
+			if ((r = s2->GenerateInstruction(parent, compileResult)) < 0)
+				return r;
+		}
+		gih.Insert_createMap_Instruction(mItemList.size());
+
+		return r;
 	}
 }

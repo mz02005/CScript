@@ -191,6 +191,12 @@
     <ClCompile Include="netLib.cpp">
       <Filter>inner\vm</Filter>
     </ClCompile>
+    <ClCompile Include="int64Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="uint64Obj.cpp">
+      <Filter>inner\vm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />

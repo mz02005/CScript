@@ -36,6 +36,9 @@
     <ClInclude Include="mzcLibHttpConnection.h">
       <Filter>mzcLib</Filter>
     </ClInclude>
+    <ClInclude Include="mzcLibRedis.h">
+      <Filter>mzcLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -64,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="PathIndex.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mzcLibRedis.cpp">
+      <Filter>mzcLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

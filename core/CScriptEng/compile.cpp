@@ -19,6 +19,8 @@ const KeywordsTransTable::KeywordsEntry KeywordsTransTable::mKeywords[] =
 	{ "uchar", CK_UCHAR, },
 	{ "short", CK_SHORT, },
 	{ "ushort", CK_USHORT, },
+	{ "int64", CK_INT64, },
+	{ "uint64", CK_UINT64, },
 	{ "if", CK_IF, },
 	{ "else", CK_ELSE, },
 	{ "while", CK_WHILE, },
@@ -172,6 +174,9 @@ int SymbolExpressionNode::GenerateInstruction(Statement *statement, CompileResul
 		gih.Insert_createInt_Instruction(
 			atoi(mSymbol.symbolOrig.c_str()));
 		break;
+
+	case Symbol::constInt64:
+		gih.Insert_createInt64_Instruction(strtoll(mSymbol.symbolOrig.c_str(), nullptr, 10));
 
 	case Symbol::constFloat:
 		gih.Insert_createFloat_Instruction((float)atof(mSymbol.symbolOrig.c_str()));
@@ -582,11 +587,11 @@ void PostfixExpression::ThrowBadcast(const char *s)
 	throw std::bad_cast();
 }
 
-bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
+bool PostfixExpression::CalcNode(ExpressionNode *n, int64_t &val)
 {
 	if (n->isInheritFrom(OBJECT_INFO(OperatorExpressionNode)))
 	{
-		int val1, val2;
+		int64_t val1, val2;
 		OperatorExpressionNode *p = static_cast<OperatorExpressionNode*>(n);
 		if (!p->mOperatorEntry->CalcIntConst)
 			return false;
@@ -621,8 +626,9 @@ bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
 
 	SymbolExpressionNode *sn = static_cast<SymbolExpressionNode*>(n);
 	int type = sn->GetSymbol().type;
-	if (type == Symbol::constInt)
-		val = atoi(sn->GetSymbol().symbolOrig.c_str());
+	if (type == Symbol::constInt
+		|| type == Symbol::constInt64)
+		val = strtoll(sn->GetSymbol().symbolOrig.c_str(), nullptr, 10);
 	else if (type == Symbol::SingleChar)
 		val = (int)sn->GetSymbol().symbolOrig[0];
 	else
@@ -630,7 +636,7 @@ bool PostfixExpression::CalcNode(ExpressionNode *n, int &val)
 	return true;
 }
 
-bool PostfixExpression::IsConstIntergerExpression(int &val)
+bool PostfixExpression::IsConstIntergerExpression(int64_t &val)
 {
 	if (CreateExpressionTree() < 0)
 		return false;
@@ -706,7 +712,8 @@ int PostfixExpression::GenerateInstruction(ExpressionNode *root, Statement *stat
 
 int PostfixExpression::GenerateInstruction(Statement *statement, CompileResult *compileResult)
 {
-	int val, parseResult;
+	int64_t val;
+	int parseResult;
 
 	if (!mGrammaTreeRoot)
 	{
@@ -718,7 +725,7 @@ int PostfixExpression::GenerateInstruction(Statement *statement, CompileResult *
 		if (IsConstIntergerExpression(val))
 		{
 			GenerateInstructionHelper gih(compileResult);
-			gih.Insert_createInt_Instruction(val);
+			gih.Insert_createRealInt_Instruction(val);
 			return 0;
 		}
 	}
@@ -858,26 +865,26 @@ std::map<std::string, const OperatorHelper::OperatorTableEntry*> OperatorHelper:
 class ConstIntegerCalucator
 {
 public:
-	static bool mod(int &a, int l, int r) { if (!r) { SCRIPT_TRACE("mod by zero!\n"); return false; } a = l % r; return true; }
-	static bool bitwise_xor(int &a, int l, int r) { a = l ^ r; return true; }
-	static bool bitwise_and(int &a, int l, int r) { a = l & r; return true; }
-	static bool bitwise_not(int &a, int l, int r) { a = ~l; return true; }
-	static bool bitwise_or(int &a, int l, int r) { a = l | r; return true; }
-	static bool mul(int &a, int l, int r) { a = l * r; return true; }
-	static bool sub(int &a, int l, int r) { a = l - r; return true; }
-	static bool add(int &a, int l, int r) { a = l + r; return true; }
-	static bool div(int &a, int l, int r) { if (!r) { SCRIPT_TRACE("divided by zero!\n"); return false; } a = l / r; return true; }
-	static bool lessthan(int &a, int l, int r) { a = l < r; return true; }
-	static bool greaterthan(int &a, int l, int r) { a = l > r; return true; }
-	static bool isnotequal(int &a, int l, int r) { a = l != r; return true; }
-	static bool iseuqal(int &a, int l, int r) { a = l == r; return true; }
-	static bool lessthan_equalto(int &a, int l, int r) { a = l <= r; return true; }
-	static bool greaterthan_equalto(int &a, int l, int r) { a = l >= r; return true; }
-	static bool logic_not(int &a, int l, int r) { a = !l; return true; }
-	static bool logic_and(int &a, int l, int r) { a = l && r; return true; }
-	static bool logic_or(int &a, int l, int r) { a = l || r; return true; }
-	static bool commas(int &a, int l, int r) { a = r; return true; }
-	static bool neg(int &a, int l, int r) { a = -l; return true; }
+	static bool mod(int64_t &a, int64_t l, int64_t r) { if (!r) { SCRIPT_TRACE("mod by zero!\n"); return false; } a = l % r; return true; }
+	static bool bitwise_xor(int64_t &a, int64_t l, int64_t r) { a = l ^ r; return true; }
+	static bool bitwise_and(int64_t &a, int64_t l, int64_t r) { a = l & r; return true; }
+	static bool bitwise_not(int64_t &a, int64_t l, int64_t r) { a = ~l; return true; }
+	static bool bitwise_or(int64_t &a, int64_t l, int64_t r) { a = l | r; return true; }
+	static bool mul(int64_t &a, int64_t l, int64_t r) { a = l * r; return true; }
+	static bool sub(int64_t &a, int64_t l, int64_t r) { a = l - r; return true; }
+	static bool add(int64_t &a, int64_t l, int64_t r) { a = l + r; return true; }
+	static bool div(int64_t &a, int64_t l, int64_t r) { if (!r) { SCRIPT_TRACE("divided by zero!\n"); return false; } a = l / r; return true; }
+	static bool lessthan(int64_t &a, int64_t l, int64_t r) { a = l < r; return true; }
+	static bool greaterthan(int64_t &a, int64_t l, int64_t r) { a = l > r; return true; }
+	static bool isnotequal(int64_t &a, int64_t l, int64_t r) { a = l != r; return true; }
+	static bool iseuqal(int64_t &a, int64_t l, int64_t r) { a = l == r; return true; }
+	static bool lessthan_equalto(int64_t &a, int64_t l, int64_t r) { a = l <= r; return true; }
+	static bool greaterthan_equalto(int64_t &a, int64_t l, int64_t r) { a = l >= r; return true; }
+	static bool logic_not(int64_t &a, int64_t l, int64_t r) { a = !l; return true; }
+	static bool logic_and(int64_t &a, int64_t l, int64_t r) { a = l && r; return true; }
+	static bool logic_or(int64_t &a, int64_t l, int64_t r) { a = l || r; return true; }
+	static bool commas(int64_t &a, int64_t l, int64_t r) { a = r; return true; }
+	static bool neg(int64_t &a, int64_t l, int64_t r) { a = -l; return true; }
 };
 
 const OperatorHelper::OperatorTableEntry OperatorHelper::mOperTable[] =
@@ -1088,6 +1095,7 @@ const char SimpleCScriptEngContext::mTerminalAlpha[] =
 	'-', '+', '=', '|', '\\', '.', '<', '>', '/', '?', ':', '[', ']',
 	'{', '}',
 	'\r', '\n',
+	'`', '$',
 	0,
 };
 
@@ -1307,6 +1315,15 @@ inline bool is16char(char c)
 		|| ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 }
 
+inline void SetSymbolIntType(Symbol &symbol)
+{
+	uint64_t tempVal = strtoull(symbol.symbolOrig.c_str(), nullptr, 10);
+	if (tempVal > (uint64_t)0xFFFFFFFF)
+		symbol.type = Symbol::constInt64;
+	else
+		symbol.type = Symbol::constInt;
+}
+
 // 返回0表示成功
 // 返回>0的值表示没有成功解析为数值，且已经回退到了合适的字符位置，应按照原来的方式继续解析
 // 返回<0的值表示解析失败
@@ -1338,9 +1355,8 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 					return -1;
 
 				// 返回整数
-				symbol.type = Symbol::constInt;
-				//symbol.symbolOrig.pop_back();
 				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
+				SetSymbolIntType(symbol);
 				p--;
 				return 0;
 			}
@@ -1370,13 +1386,20 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				{
 					return -1;
 				}
-				symbol.type = Symbol::constInt;
-				// 看看是不是十六进制数
+				// 看看是不是8进制数
 				if (first == '0')
 				{
 					symbol.symbolOrig.erase(0, 1);
-					uint32_t v = strtoul(symbol.symbolOrig.c_str(), NULL, 8);
-					notstd::StringHelper::Format(symbol.symbolOrig, "%u", v);
+					uint64_t v = strtoull(symbol.symbolOrig.c_str(), NULL, 8);
+					notstd::StringHelper::Format(symbol.symbolOrig, "%llu", v);
+					if (v > (uint64_t)0xFFFFFFFF)
+						symbol.type = Symbol::constInt64;
+					else
+						symbol.type = Symbol::constInt;
+				}
+				else
+				{
+					SetSymbolIntType(symbol);
 				}
 				return 0;
 			}
@@ -1461,7 +1484,7 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				p--;
 				//symbol.symbolOrig.pop_back();
 				symbol.symbolOrig.erase(symbol.symbolOrig.end() - 1);
-				symbol.type = Symbol::constInt;
+				SetSymbolIntType(symbol);
 				return 0;
 			}
 			break;
@@ -1485,9 +1508,12 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				// 删除‘0x两个字符’
 				symbol.symbolOrig.erase(0, 2);
 
-				uint32_t v = strtoul(symbol.symbolOrig.c_str(), NULL, 16);
-				notstd::StringHelper::Format(symbol.symbolOrig, "%u", v);
-				symbol.type = Symbol::constInt;
+				uint64_t v = strtoull(symbol.symbolOrig.c_str(), NULL, 16);
+				notstd::StringHelper::Format(symbol.symbolOrig, "%llu", v);
+				if (v > (uint64_t)0xFFFFFFFF)
+					symbol.type = Symbol::constInt64;
+				else
+					symbol.type = Symbol::constInt;
 				return 0;
 			}
 			break;
@@ -1513,9 +1539,12 @@ inline int TryGetFloatSymbol(Symbol &symbol, char first, const char *&p, const c
 				// 去掉头部的那个0
 				symbol.symbolOrig.erase(0, 1);
 
-				uint32_t v = strtoul(symbol.symbolOrig.c_str(), NULL, 8);
-				notstd::StringHelper::Format(symbol.symbolOrig, "%u", v);
-				symbol.type = Symbol::constInt;
+				uint64_t v = strtoull(symbol.symbolOrig.c_str(), NULL, 8);
+				notstd::StringHelper::Format(symbol.symbolOrig, "%llu", v);
+				if (v > (uint64_t)0xFFFFFFFF)
+					symbol.type = Symbol::constInt64;
+				else
+					symbol.type = Symbol::constInt;
 				return 0;
 			}
 			break;
@@ -1995,6 +2024,7 @@ int SimpleCScriptEngContext::ParseExpressionEndWith(char &c,
 		{
 		case Symbol::CommonSymbol:
 		case Symbol::constInt:
+		case Symbol::constInt64:
 		case Symbol::constFloat:
 		case Symbol::String:
 		case Symbol::SingleChar:
@@ -2058,6 +2088,18 @@ int SimpleCScriptEngContext::ParseExpressionEndWith(char &c,
 				return parseResult;
 			}
 			pe->AddNode(fde);
+			lastIsOperatorOrFirstInLocal = false;
+		}
+		else if (symbol.symbolOrig == "`")
+		{
+			// 增加新的表达式，用来描述映射表
+			MapExpress *me = new MapExpress;
+			if ((parseResult = me->Compile(this)) < 0)
+			{
+				delete me;
+				return parseResult;
+			}
+			pe->AddNode(me);
 			lastIsOperatorOrFirstInLocal = false;
 		}
 		else

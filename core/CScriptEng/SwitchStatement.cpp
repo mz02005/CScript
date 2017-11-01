@@ -263,7 +263,7 @@ int SwitchStatement::GenerateInstruction(CompileResult *compileResult)
 			}
 			// TODO: 这条指令需要验证，可能是用来压入堆栈顶部的元素
 			gih.Insert_push_Instruction(0);
-			gih.Insert_createInt_Instruction((*iter)->mIntergerConst);
+			gih.Insert_createRealInt_Instruction((*iter)->mIntergerConst);
 			gih.Insert_equal_Instruction();
 			lastCaseToFill = gih.Insert_jz_Instruction(0);
 			gih.Insert_jump_Instruction((*iter)->beginPos);

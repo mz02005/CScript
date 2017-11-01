@@ -27,6 +27,8 @@ namespace compiler
 			CK_USHORT,
 			CK_INT,
 			CK_UINT,
+			CK_INT64,
+			CK_UINT64,
 			CK_FLOAT,
 			CK_DOUBLE,
 			CK_STRING, // 扩展类型，直接可以定义字符串类型
@@ -158,7 +160,7 @@ namespace compiler
 			int participator;
 			int priority;
 			// 用于计算整数常量表达式（用于switch语句）
-			bool (*CalcIntConst)(int &a, int l, int r);
+			bool(*CalcIntConst)(int64_t &a, int64_t l, int64_t r);
 			// 指定结合方向，0是左结合，1是右结合
 			int combineDir;
 		};
@@ -206,6 +208,7 @@ namespace compiler
 			CommonSymbol,
 			Keywords,
 			constInt,
+			constInt64,
 			constFloat,
 			String,
 			SingleChar,
@@ -335,6 +338,20 @@ namespace compiler
 		virtual int GenerateInstruction(Statement *parent, CompileResult *compileResult);
 	};
 
+	class MapExpress : public ExpressionNode
+	{
+		DECLARE_OBJINFO(MapExpress)
+
+	private:
+		std::list<std::pair<PostfixExpression*, PostfixExpression*>> mItemList;
+
+	public:
+		MapExpress();
+		virtual ~MapExpress();
+		int Compile(SimpleCScriptEngContext *context);
+		virtual int GenerateInstruction(Statement *parent, CompileResult *compileResult) override;
+	};
+
 	class PostfixExpression
 	{
 	private:
@@ -352,7 +369,7 @@ namespace compiler
 			return node->isInheritFrom(OBJECT_INFO(OperatorExpressionNode));
 		}
 
-		bool CalcNode(ExpressionNode *n, int &val);
+		bool CalcNode(ExpressionNode *n, int64_t &val);
 		void OnRemoveSingleGrammaTreeNode(ExpressionNode *n, std::list<ExpressionNode*> &l);
 
 		void ThrowBadcast(const char *s);
@@ -372,7 +389,7 @@ namespace compiler
 		int GenerateInstruction(Statement *statement, CompileResult *compileResult);
 		static int GenerateInstruction(ExpressionNode *root, Statement *statement, CompileResult *compileResult);
 
-		bool IsConstIntergerExpression(int &val);
+		bool IsConstIntergerExpression(int64_t &val);
 	};
 
 	class FunctionStatement;
@@ -698,7 +715,7 @@ namespace compiler
 			bool mIsDefaultSection;
 
 			// 常量表达式
-			int mIntergerConst;
+			int64_t mIntergerConst;
 
 			// 接在后面的语句列表
 			std::list<StatementBlock*> mStatementBlocks;
@@ -709,11 +726,11 @@ namespace compiler
 		};
 		std::list<SwitchCaseEntry*> mCaseList;
 
-		std::set<int> mCaseValueSet;
+		std::set<int64_t> mCaseValueSet;
 
 		void ClearSwitchCaseEntry(SwitchCaseEntry *entry);
 		int OnCaseOrDefault(SimpleCScriptEngContext *context, bool isDefault = false);
-		bool HasSameCaseValue(int val) const {
+		bool HasSameCaseValue(int64_t val) const {
 			return mCaseValueSet.find(val) != mCaseValueSet.end();
 		}
 

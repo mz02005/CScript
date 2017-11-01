@@ -27,94 +27,94 @@ namespace runtime {
 		// 第3个参数：hostname（如果需要）
 
 		do {
-			auto paramCount = context->GetParamCount();
-			const char *url = nullptr;
-			const char *hostname = nullptr;
-			const char *urlpath = nullptr;
-			uint32_t port = 80;
-			uint32_t timeout = 0;
+		//	auto paramCount = context->GetParamCount();
+		//	const char *url = nullptr;
+		//	const char *hostname = nullptr;
+		//	const char *urlpath = nullptr;
+		//	uint32_t port = 80;
+		//	uint32_t timeout = 0;
 
-			if (paramCount < 1)
-				break;
+		//	if (paramCount < 1)
+		//		break;
 
-			url = context->GetStringParam(0);
-			if (!url)
-				break;
-			auto urlresult = evhttp_uri_parse(url);
-			if (!urlresult)
-				break;
-			hostname = evhttp_uri_get_host(urlresult);
-			if (!hostname)
-				break;
-			port = static_cast<uint32_t>(evhttp_uri_get_port(urlresult));
-			if (port == uint32_t(-1))
-				port = 80;
-			urlpath = evhttp_uri_get_path(urlresult);
-			if (!urlpath || urlpath[0] == 0)
-				urlpath = "/";
+		//	url = context->GetStringParam(0);
+		//	if (!url)
+		//		break;
+		//	auto urlresult = evhttp_uri_parse(url);
+		//	if (!urlresult)
+		//		break;
+		//	hostname = evhttp_uri_get_host(urlresult);
+		//	if (!hostname)
+		//		break;
+		//	port = static_cast<uint32_t>(evhttp_uri_get_port(urlresult));
+		//	if (port == uint32_t(-1))
+		//		port = 80;
+		//	urlpath = evhttp_uri_get_path(urlresult);
+		//	if (!urlpath || urlpath[0] == 0)
+		//		urlpath = "/";
 
-			if (paramCount >= 2)
-				timeout = context->GetUint32Param(1);
+		//	if (paramCount >= 2)
+		//		timeout = context->GetUint32Param(1);
 
-			if (paramCount >= 3)
-				hostname = context->GetStringParam(2);
+		//	if (paramCount >= 3)
+		//		hostname = context->GetStringParam(2);
 
-			event_base *base;
-			evhttp_connection *conn;
-			evhttp_request *req;
+		//	event_base *base;
+		//	evhttp_connection *conn;
+		//	evhttp_request *req;
 
-			base = event_base_new();
+		//	base = event_base_new();
 
-			struct ResultInfo
-			{
-				bool succeed;
-				event_base *base;
-				int rCode;
-				std::string data;
-			} ri = { false, base, -1, };
+		//	struct ResultInfo
+		//	{
+		//		bool succeed;
+		//		event_base *base;
+		//		int rCode;
+		//		std::string data;
+		//	} ri = { false, base, -1, };
 
-			conn = evhttp_connection_base_new(base, nullptr, hostname, static_cast<unsigned short>(port));
-			evhttp_connection_set_base(conn, base);
-			req = evhttp_request_new([](evhttp_request *req, void *arg)
-			{
-				auto ri = reinterpret_cast<ResultInfo*>(arg);
-				if (req)
-				{
-					auto rc = evhttp_request_get_response_code(req);
-					ri->rCode = rc;
-					if (rc >= 200 && rc < 400)
-					{
-						auto ss = evbuffer_get_length(req->input_buffer);
-						ri->succeed = true;
-						if (ss)
-						{
-							ri->data.resize(ss);
-							memcpy(&ri->data[0], evbuffer_pullup(req->input_buffer, ss), ss);
-						}
-					}
-				}
-				event_base_loopbreak(ri->base);
-			}, &ri);
-			if (hostname)
-				evhttp_add_header(req->output_headers, "host", hostname);
-			evhttp_make_request(conn, req, EVHTTP_REQ_GET, url);
-			if (timeout)
-				evhttp_connection_set_timeout(req->evcon, timeout);
-			event_base_dispatch(base);
+		//	conn = evhttp_connection_base_new(base, nullptr, hostname, static_cast<unsigned short>(port));
+		//	evhttp_connection_set_base(conn, base);
+		//	req = evhttp_request_new([](evhttp_request *req, void *arg)
+		//	{
+		//		auto ri = reinterpret_cast<ResultInfo*>(arg);
+		//		if (req)
+		//		{
+		//			auto rc = evhttp_request_get_response_code(req);
+		//			ri->rCode = rc;
+		//			if (rc >= 200 && rc < 400)
+		//			{
+		//				auto ss = evbuffer_get_length(req->input_buffer);
+		//				ri->succeed = true;
+		//				if (ss)
+		//				{
+		//					ri->data.resize(ss);
+		//					memcpy(&ri->data[0], evbuffer_pullup(req->input_buffer, ss), ss);
+		//				}
+		//			}
+		//		}
+		//		event_base_loopbreak(ri->base);
+		//	}, &ri);
+		//	if (hostname)
+		//		evhttp_add_header(req->output_headers, "host", hostname);
+		//	evhttp_make_request(conn, req, EVHTTP_REQ_GET, url);
+		//	if (timeout)
+		//		evhttp_connection_set_timeout(req->evcon, timeout);
+		//	event_base_dispatch(base);
 
-			evhttp_connection_free(conn);
-			event_base_free(base);
+		//	evhttp_connection_free(conn);
+		//	event_base_free(base);
 
-			if (ri.succeed)
-			{
-				auto rr = new ObjectModule<stringObject>;
-				*rr->mVal = ri.data;
-				return rr;
-			}
+		//	if (ri.succeed)
+		//	{
+		//		auto rr = new ObjectModule<stringObject>;
+		//		*rr->mVal = ri.data;
+		//		return rr;
+		//	}
 		} while (0);
 
 		return NullTypeObject::CreateNullTypeObject();
-	}
+	};
 
 	////////////////////////////////////////////////////////////////////////////
 

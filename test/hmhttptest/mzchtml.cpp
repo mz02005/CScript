@@ -5,6 +5,7 @@
 #include "CScriptEng/arrayType.h"
 #include "mzcLibMysql.h"
 #include "mzcLibHttpConnection.h"
+#include "mzcLibRedis.h"
 
 //
 // <% 
@@ -74,6 +75,7 @@ namespace mzchtml {
 				{ "mimeType", mimeType, },
 				{ "mysql", new runtime::ObjectModule<mzcLib::mysqlObject>, },
 				{ "httpConnection", theConn, },
+				{ "createRedisConnection", new runtime::ObjectModule<mzcLib::createRedisConnectObj>, },
 			};
 			compiler.GetLibRegister().RegistLib("mzchtmlResult", les, sizeof(les) / sizeof(les[0]));
 			HANDLE cr = compiler.Compile(&fs, true);

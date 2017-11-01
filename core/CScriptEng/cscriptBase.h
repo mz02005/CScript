@@ -30,6 +30,7 @@ namespace runtime {
 		DT_function,
 		DT_object,
 		DT_buffer,
+		DT_map,
 		DT_null,
 
 		DT_UserTypeBegin,

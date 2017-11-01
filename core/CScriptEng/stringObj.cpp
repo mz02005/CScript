@@ -107,6 +107,13 @@ namespace runtime {
 		return NULL;
 	}
 
+	stringObject* stringObject::CreateStringObject(const std::string &s)
+	{
+		auto r = new ObjectModule<stringObject>;
+		*r->mVal = s;
+		return r;
+	}
+
 	class String_formatObj : public runtime::baseObjDefault
 	{
 		friend class stringObject;

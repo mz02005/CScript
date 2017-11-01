@@ -9,7 +9,6 @@ import urllib
 
 targetUrl = '192.168.111.128'
 port = 10088;
-# root = '/system/Users/haifengxie/buyuClient/';
 root = '/system/home/mz/TeamTalk/'
 
 find1 = '<th align=\"left\"><a href=\"'

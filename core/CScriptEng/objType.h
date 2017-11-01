@@ -53,4 +53,28 @@ namespace runtime {
 		virtual runtimeObjectBase* doCall(runtime::doCallContext *context);
 	};
 
+	class MapSetObject;
+	class MapGetObject;
+	class MapGetPathObject;
+	class MapCopyObject;
+	class MapObject : public runtime::baseObjDefault
+	{
+		friend class runtimeContext;
+		friend class MapSetObject;
+		friend class MapGetObject;
+		friend class MapGetPathObject;
+		friend class MapCopyObject;
+
+	private:
+		std::map<std::string, runtime::runtimeObjectBase*> mMapData;
+
+		void RemoveAll();
+		void CopyFrom(const MapObject *obj);
+
+	public:
+		virtual ~MapObject();
+		virtual runtimeObjectBase* GetMember(const char *memName) override;
+		virtual uint32_t GetObjectTypeId() const override;
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) override;
+	};
 }

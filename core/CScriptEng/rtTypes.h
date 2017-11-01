@@ -108,6 +108,58 @@ namespace runtime {
 		static uintObject* CreateUintObject(uint32_t v);
 	};
 
+	class CSCRIPTENG_API int64Object : public baseTypeObject
+	{
+	public:
+		typedef int64_t InnerDataType;
+		InnerDataType mVal;
+
+	public:
+		int64Object();
+
+		virtual uint32_t GetObjectTypeId() const override;
+		virtual runtimeObjectBase* Add(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* GetMember(const char *memName) override;
+		virtual runtimeObjectBase* doCall(doCallContext *context) override;
+		virtual runtimeObjectBase* getIndex(int i) override;
+		virtual bool isGreaterThan(runtimeObjectBase *obj) override;
+		virtual bool isEqual(runtimeObjectBase *obj) override;
+
+		virtual stringObject* toString() override;
+
+		static int64Object* CreateInt64Object(int64_t v);
+	};
+
+	class CSCRIPTENG_API uint64Object : public baseTypeObject
+	{
+	public:
+		typedef uint64_t InnerDataType;
+		InnerDataType mVal;
+
+	public:
+		uint64Object();
+
+		virtual uint32_t GetObjectTypeId() const override;
+		virtual runtimeObjectBase* Add(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* Sub(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* Mul(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* Div(const runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* SetValue(runtimeObjectBase *obj) override;
+		virtual runtimeObjectBase* GetMember(const char *memName) override;
+		virtual runtimeObjectBase* doCall(doCallContext *context) override;
+		virtual runtimeObjectBase* getIndex(int i) override;
+		virtual bool isGreaterThan(runtimeObjectBase *obj) override;
+		virtual bool isEqual(runtimeObjectBase *obj) override;
+
+		virtual stringObject* toString() override;
+
+		static uint64Object* CreateUint64Object(uint64_t v);
+	};
+
 	class CSCRIPTENG_API shortObject : public baseTypeObject
 	{
 	public:
@@ -266,6 +318,8 @@ namespace runtime {
 		virtual bool isEqual(runtimeObjectBase *obj);
 
 		virtual stringObject* toString();
+
+		static stringObject* CreateStringObject(const std::string &s);
 	};
 
 	class runtimeContext;
@@ -339,8 +393,10 @@ namespace runtime {
 			r = (T)static_cast<const uintObject*>(o)->mVal;
 			break;
 		case DT_int64:
+			r = (T)static_cast<const int64Object*>(o)->mVal;
 			break;
 		case DT_uint64:
+			r = (T)static_cast<const uint64Object*>(o)->mVal;
 			break;
 		case DT_float:
 			r = (T)static_cast<const floatObject*>(o)->mVal;
@@ -380,8 +436,10 @@ namespace runtime {
 			r = (ReturnType)static_cast<const uintObject*>(o)->mVal;
 			break;
 		case DT_int64:
+			r = (ReturnType)static_cast<const int64Object*>(o)->mVal;
 			break;
 		case DT_uint64:
+			r = (ReturnType)static_cast<const uint64Object*>(o)->mVal;
 			break;
 		case DT_float:
 			r = (ReturnType)static_cast<const floatObject*>(o)->mVal;

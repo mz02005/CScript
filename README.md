@@ -241,6 +241,29 @@ scriptAPI::ScriptRuntimeContext::DestroyScriptRuntimeContext(runtimeContext);
 
 ======================================================================================================
 
+#关于testhttpd
+testhttpd是一个简单的web服务器，通过hmhttptest模块，它可以加载包含CScript代码的网页文件（扩展名必须是mzchtml）
+代码部分使用“<%”和“%>”作为边界字符，这之中的部分都认作CScript代码，而其它部分将作为返回给浏览器的裸数据
+```html
+<!DOCTYPE html>
+<html>
+  <head><title>Test 64 bit integer</title></head>
+  <body>
+    <h1>Test 64 bit integer</h1>
+      <%
+        uint64 v = 0xFFFFFFFF + 1;
+        htmlResult += "<p>" + v.toString() + "</p>";
+        if (v > 0xFFFFFFFF)
+          htmlResult += "<p>OK</p>";
+        else
+          htmlResult += "<p>Fail</p>";
+      %>
+  </body>
+</html>
+```
+
+======================================================================================================
+
 #需要实现的功能和需修改的bug
 - [ ] 编译时的错误没有给出错误位置
 - [x] 函数对象的调用，如果出现了错误，则返回后还会继续上层代码的运行

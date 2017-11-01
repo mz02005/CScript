@@ -170,10 +170,13 @@ namespace runtime {
 
 		int OnInst_createInt(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createUint(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_createInt64(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_createUint64(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createFloat(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createString(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createArray(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_createObject(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
+		int OnInst_createMap(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 
 		int OnInst_pop(Instruction *inst, uint8_t *moreData, uint32_t moreSize);
 		int OnInst_add(Instruction *inst, uint8_t *moreData, uint32_t moreSize);

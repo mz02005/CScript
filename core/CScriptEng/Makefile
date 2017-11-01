@@ -34,12 +34,14 @@ CPPS= \
 	int16Obj.cpp \
 	int32Obj.cpp \
 	int8Obj.cpp \
+	int64Obj.cpp \
 	objType.cpp \
 	rtLib.cpp \
 	stringObj.cpp \
 	uint16Obj.cpp \
 	uint32Obj.cpp \
 	uint8Obj.cpp \
+	uint64Obj.cpp \
 	vm.cpp \
 	CScriptEng.cpp \
 	Trace.cpp
